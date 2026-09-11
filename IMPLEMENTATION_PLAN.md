@@ -1,13 +1,32 @@
 # Stage one — implementation status
 
-- [x] Scope and Arc tenant configuration confirmed.
-- [x] Local Git initialized.
-- [ ] Reproducible workspace and dependency compatibility.
-- [ ] Domain, A2A codecs and encrypted D1/R2 persistence.
-- [ ] ProbeReceiver and negative tests.
-- [ ] Confidential CRE handler, report and EVM log probe.
-- [ ] Local Workers integration, builds and simulations.
-- [ ] Prepared remote deployment and transaction review.
-- [ ] Authorized remote evidence (Cloudflare, Arc receipts).
+## Completed
 
-Access to CRE beta is confirmed. No escrow/payments or live workflow deployment in this stage.
+- [x] Scope and Arc tenant configuration confirmed; read-only RPC evidence recorded.
+- [x] Local Git initialized; linked to existing `gilbertsahumada/private-hire` and periodic commits pushed.
+- [x] pnpm/Turborepo workspace, pinned dependencies and single lockfile.
+- [x] Domain schemas, canonical commitments and exact arithmetic.
+- [x] A2A 1.0 codecs verified against the official SDK.
+- [x] Scoped routes and AES-GCM D1/R2 persistence with immutable result recovery.
+- [x] ProbeReceiver compiled; 12 Foundry tests pass.
+- [x] Next.js/OpenNext build and local workerd integration, including concurrent requests and credential scopes.
+- [x] Confidential HTTP handler, public report path and auxiliary EVM log handler implemented.
+- [x] WASM compilation and two actual CRE CLI simulations: acceptance/rejection plus Arc USDC reads.
+- [x] 17 unit tests cover domain, protocol, persistence and workflow failure handling.
+- [x] Deployment review, unsigned receiver transaction, receipt-verification and simulation scripts.
+
+## Waiting on external actions — stage NOT complete
+
+- [ ] User activates R2 (Cloudflare API returned 10042) and confirms staging authorization.
+- [ ] Provision dedicated staging resources, publish Worker and verify HTTPS/D1/private R2.
+- [ ] User chooses signing method and authorizes receiver deployment/report broadcasts.
+- [ ] Verify receiver deployment, run report-writing simulations and record two Arc report receipts.
+- [ ] Run log-trigger simulation against a real confirmed ProbeRecorded event.
+
+Access to CRE beta is confirmed. No escrow/payments or deployed confidential workflow in this stage. Local simulations currently set `writeReport:false`; they establish transport/evaluation and reads, not report submission.
+
+## Commits
+
+- `a7f10a5`: monorepo foundation, deterministic domain and probe receiver.
+- `a4d248c`: A2A service, encrypted Cloudflare storage and integration scripts.
+- Subsequent commits record CRE workflow, evidence, deployment preparation and validation fixes. See Git history for their hashes.

@@ -1,0 +1,51 @@
+{
+  "recordedAt": "2026-09-11T23:33:12.941144+00:00",
+  "scope": "local validation; no remote deployment or broadcast",
+  "checks": [
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "result": "passed"
+    },
+    {
+      "command": "pnpm build",
+      "result": "passed: shared packages, receiver, CRE WASM and OpenNext Worker"
+    },
+    {
+      "command": "pnpm typecheck",
+      "result": "passed including Node operational scripts separately from restricted CRE types"
+    },
+    {
+      "command": "pnpm test",
+      "result": "17 passed"
+    },
+    {
+      "command": "pnpm contracts:test",
+      "result": "12 passed"
+    },
+    {
+      "command": "pnpm exec tsx scripts/probe-integration.ts",
+      "result": "passed against local workerd D1/R2: persistence, retries, scopes, status, Agent Card and JSON-RPC errors"
+    },
+    {
+      "command": "python3 scripts/simulate.py reject",
+      "result": "decision 2; Arc decimals 6; writeReport false; no broadcast"
+    },
+    {
+      "command": "python3 scripts/simulate.py accept",
+      "result": "decision 1; Arc decimals 6; writeReport false; no broadcast"
+    }
+  ],
+  "sha256": {
+    "pnpm-lock.yaml": "3a424f573e6286b499f202e22777c78690ea172f52a5c062f605b3bc19254f52",
+    "apps/cre/probe/workflow.ts": "06dc5f2ea00bacf33f1176c9cad2120928a0a474eb7a93839d5f9894949c5b8e",
+    "apps/cre/probe/binary.wasm": "552c621a5c90ddd59f9ebfcd123291b5c26b78e727f18ad99dd1ef0bb0572eeb",
+    "packages/contracts/src/ProbeReceiver.sol": "338825436e9ada0f1d2575c81f0727645f455cbae26b7626cc64640ef4438bff",
+    "apps/web/.open-next/worker.js": "d05223bf4d44c84108a102ab62aa3bc9c5568f0c3ac2064c37be5cc65c64bc45"
+  },
+  "pending": [
+    "Remote HTTPS and D1/R2",
+    "Receiver deployment receipt",
+    "Report broadcast receipts",
+    "Real EVM log trigger simulation"
+  ]
+}

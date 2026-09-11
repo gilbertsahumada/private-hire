@@ -1,0 +1,51 @@
+# Confidential Agent Jobs — stage one
+
+A pnpm/Turborepo monorepo testing an A2A 1.0 portfolio agent, encrypted Cloudflare persistence and a confidential CRE workflow's report path to Arc Testnet.
+
+**Current evidence:** the Worker builds and runs in local `workerd`; D1/R2 integration and two CRE CLI simulations succeed (accept/reject with private tolerances). Arc read-only RPC confirms the forwarders and USDC decimals. Remote Cloudflare staging and Arc deployment/report receipts remain pending. The CRE simulator is **not a real TEE**.
+
+There is no escrow, payment, buyer login, marketplace, or deployed CRE workflow in this stage. `ProbeReceiver` is simulation-only and holds no funds.
+
+## Workspace
+
+- `apps/web`: Next.js App Router + OpenNext, A2A and scoped internal endpoints.
+- `apps/cre`: confidential HTTP probe and read-only EVM log handler.
+- `packages/domain`: schemas, canonical commitments and exact arithmetic.
+- `packages/agent-transport`: A2A JSON codecs; separate `./tee` export for CRE.
+- `packages/contracts`: Foundry receiver and tests.
+- `packages/chain`: Arc configuration and generated receiver ABI.
+- `packages/config`: shared configuration notes; root configs are authoritative.
+
+## Local quickstart
+
+Requirements: Node 22, pnpm 10.12.1, Bun >=1.2.21, CRE CLI 1.33.0, Foundry/Solc 0.8.28. See `docs/COMPATIBILITY.md` for the exact tested versions.
+
+```sh
+pnpm install --frozen-lockfile
+pnpm --filter @private-hire/domain build
+pnpm --filter @private-hire/agent-transport build
+pnpm --filter @private-hire/chain build
+python3 scripts/local-setup.py
+pnpm --filter @private-hire/web db:migrate
+pnpm web:build
+pnpm web:preview
+```
+
+In another terminal at the repository root:
+
+```sh
+pnpm exec tsx scripts/probe-integration.ts
+python3 scripts/simulate.py reject
+python3 scripts/simulate.py accept
+pnpm test
+pnpm contracts:test
+pnpm typecheck
+```
+
+Local setup refuses to overwrite credentials. Integration creates unique synthetic probes and public trigger payloads under ignored `.local/`. Repeating a completed task returns the same envelope and nonce. CRE reads scoped credentials from ignored `apps/cre/.env`.
+
+## Deployment and evidence
+
+See `docs/DEPLOYMENT.md` for the prepared staging and unsigned receiver transaction, and `docs/DEMO_RUNBOOK.md` for the three levels of evidence. Nothing in the quickstart publishes infrastructure or broadcasts transactions.
+
+The source specification describes the full future MVP; `IMPLEMENTATION_PLAN.md` tracks this stage only. Evidence is indexed in `docs/evidence/README.md`.

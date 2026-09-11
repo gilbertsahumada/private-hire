@@ -16,7 +16,7 @@ export function requestJson(runtime: TeeRuntime<unknown>, config: EndpointConfig
   try {
     response = new cre.capabilities.HTTPClient().sendRequest(runtime, {
       url: endpoint(config, path), method: payload === undefined ? 'GET' : 'POST',
-      ...(body ? { body: bytesToBase64(body) } : {}), timeout: '20s', cacheSettings: { store: false, maxAge: '0s' },
+      ...(body ? { body: bytesToBase64(body) } : {}), timeout: '10s', cacheSettings: { store: false, maxAge: '0s' },
       multiHeaders: { Authorization: { values: [`Bearer ${token}`] }, 'Content-Type': { values: ['application/json'] }, Accept: { values: ['application/json'] }, 'A2A-Version': { values: ['1.0'] } },
     }).result();
   } catch { throw new Error('HTTP_TRANSPORT_PENDING'); }

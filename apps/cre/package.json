@@ -3,9 +3,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "cre workflow build probe --target local --non-interactive",
-    "typecheck": "tsc --noEmit",
-    "simulate": "cre workflow simulate probe --target local --non-interactive --trigger-index 0 --http-payload @payload.json"
+    "build": "python3 ../../scripts/build-cre.py",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.scripts.json",
+    "simulate": "python3 ../../scripts/simulate.py reject",
+    "verify:receipt": "tsx scripts/verify-receipt.ts"
   },
   "dependencies": {
     "@chainlink/cre-sdk": "1.20.1",

@@ -6,7 +6,7 @@
     "build": "opennextjs-cloudflare build",
     "typecheck": "tsc --noEmit",
     "preview": "opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare deploy",
+    "deploy": "python3 ../../scripts/deploy-web.py",
     "db:migrate": "wrangler d1 migrations apply DB --local"
   },
   "dependencies": {

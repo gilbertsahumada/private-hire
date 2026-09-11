@@ -4,3 +4,4 @@ export const reportParams = parseAbiParameters('uint256 schemaVersion, uint256 c
 export function encodeReport(r: { receiver: Address; probeId: Hex; resultHash: Hex; decision: 1 | 2; validUntil: bigint }): Hex {
   return encodeAbiParameters(reportParams, [1n, BigInt(ARC.id), r.receiver, r.probeId, r.resultHash, r.decision, r.validUntil]);
 }
+export { probeReceiverAbi } from './probe-abi.js';

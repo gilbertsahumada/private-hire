@@ -34,6 +34,14 @@
     },
     "deploy": {
       "cache": false
+    },
+    "@private-hire/cre#build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "probe/binary.wasm"
+      ]
     }
   }
 }

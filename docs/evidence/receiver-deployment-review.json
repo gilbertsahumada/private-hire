@@ -1,0 +1,12 @@
+{
+  "chainId": 5042002,
+  "contract": "ProbeReceiver",
+  "simulationOnly": true,
+  "constructorMockForwarder": "0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1",
+  "value": "0",
+  "estimatedGas": 361067,
+  "gasPriceWei": "22000000000",
+  "estimatedNativeUSDC": "0.007943474",
+  "unsignedTransaction": ".local/receiver-deployment.json",
+  "broadcast": false
+}
