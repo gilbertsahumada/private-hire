@@ -1,0 +1,21 @@
+{
+  "name": "@private-hire/agent-transport",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js",
+    "./tee": "./dist/tee.js"
+  },
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@private-hire/domain": "workspace:*",
+    "@chainlink/cre-sdk": "1.20.1",
+    "@a2a-js/sdk": "1.1.0",
+    "zod": "4.6.2"
+  }
+}

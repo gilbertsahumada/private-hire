@@ -1,0 +1,18 @@
+{
+  "name": "@private-hire/cre",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "cre workflow build probe --target local --non-interactive",
+    "typecheck": "tsc --noEmit",
+    "simulate": "cre workflow simulate probe --target local --non-interactive --trigger-index 0 --http-payload @payload.json"
+  },
+  "dependencies": {
+    "@chainlink/cre-sdk": "1.20.1",
+    "@private-hire/domain": "workspace:*",
+    "@private-hire/agent-transport": "workspace:*",
+    "@private-hire/chain": "workspace:*",
+    "viem": "2.56.3",
+    "zod": "4.6.2"
+  }
+}

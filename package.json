@@ -1,0 +1,24 @@
+{
+  "name": "confidential-agent-jobs",
+  "private": true,
+  "packageManager": "pnpm@10.12.1",
+  "scripts": {
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "test": "vitest run",
+    "contracts:test": "pnpm --filter @private-hire/contracts test",
+    "contracts:build": "pnpm --filter @private-hire/contracts build",
+    "cre:compile": "pnpm --filter @private-hire/cre build",
+    "cre:simulate": "pnpm --filter @private-hire/cre simulate",
+    "web:preview": "pnpm --filter @private-hire/web preview",
+    "web:build": "pnpm --filter @private-hire/web build",
+    "web:deploy": "pnpm --filter @private-hire/web deploy"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "turbo": "2.10.12",
+    "vitest": "3.2.4",
+    "tsx": "4.20.6",
+    "@types/node": "22.19.0"
+  }
+}
