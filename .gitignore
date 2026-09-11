@@ -16,3 +16,6 @@ packages/contracts/cache/
 packages/contracts/broadcast/
 .local/
 .DS_Store
+
+.cre_build_tmp*
+core

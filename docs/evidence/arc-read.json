@@ -1,0 +1,17 @@
+{
+  "checkedAt": "2026-09-11T23:17:59.415828+00:00",
+  "chainId": 5042002,
+  "selector": "3034092155422581607",
+  "addresses": {
+    "forwarder": "0x76c9cf548b4179F8901cda1f8623568b58215E62",
+    "mockForwarder": "0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1",
+    "usdc": "0x3600000000000000000000000000000000000000"
+  },
+  "codeBytes": {
+    "forwarder": 8591,
+    "mockForwarder": 3692,
+    "usdc": 1798
+  },
+  "usdcDecimals": 6,
+  "mode": "read-only RPC; no deployment or transaction"
+}
