@@ -21,3 +21,9 @@ The user's [documentation entrypoint](https://trust8004.xyz/docs) links its API 
 The owner query for `0x0C68C8D018ba72C33e966498B2148dC2af454645` returned `items: []`, `total: 0` during preparation. This means no indexed result; it does not prove absence onchain or Arc indexing coverage. Onchain verification remains authoritative. Preserve registry address alongside the API's chainId:agentId lookup key.
 
 Some nested links under the docs entrypoint returned 404 during inspection; use the live OpenAPI instead of inferring endpoints from those links. No changes were made to the trust8004 project.
+
+## Registration preparation
+
+Run `pnpm --filter @private-hire/cre identity:prepare` to verify published metadata bytes, Arc chain ID, registry code, ERC-721 interfaces and the owner's current identity balance. The command records proxy implementation/code hashes where present, simulates `register(string)` without signing, and estimates gas with a 20% gas-limit margin. It refuses a new registration if the wallet already owns identities so an existing registration can be inspected first.
+
+The public review artifact is `docs/evidence/identity-registration-prepared.json`. This is an unsigned transaction proposal, not a receipt. Simulated return values are deliberately not recorded as an agent ID. Recheck registry implementation, metadata hash, balance and fees immediately before any authorized broadcast; the registry is upgradeable and the estimate can change. Gas amounts use Arc's 18-decimal native USDC representation, not the six-decimal ERC-20 interface.

@@ -1,0 +1,31 @@
+{
+  "status": "prepared-unsigned-awaiting-authorization",
+  "checkedAt": "2026-09-12T12:31:01.145Z",
+  "blockNumber": "61729611",
+  "chainId": 5042002,
+  "registry": "0x8004A818BFB912233c491871b3d84c89A494BD9e",
+  "registryCodeHash": "0xd0e45b1d89fa9b6cc7e97c1f155d64180e5c232aaccf9900ef9d4fd738c02b41",
+  "implementation": "0x7274e874ca62410a93bd8bf61c69d8045e399c02",
+  "implementationCodeHash": "0xa5f9624ea85e45b3f4b8558581f03bfb3e6cefab278d7bf0500ec9bd065dc16f",
+  "account": "0x0C68C8D018ba72C33e966498B2148dC2af454645",
+  "currentlyOwnedIdentities": "0",
+  "agentURI": "https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev/agent/registration.json",
+  "metadataHash": "0x3c40382d00f2c2e191d484946c11614f1d2200eb8221dc8c0a625e61dc70a6f7",
+  "simulation": "register(string) succeeded via eth_call; no identity minted",
+  "transaction": {
+    "from": "0x0C68C8D018ba72C33e966498B2148dC2af454645",
+    "to": "0x8004A818BFB912233c491871b3d84c89A494BD9e",
+    "data": "0xf2c298be0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000005b68747470733a2f2f636f6e666964656e7469616c2d6167656e742d6a6f62732d73746167696e672e67696c62657274736168756d6164612e776f726b6572732e6465762f6167656e742f726567697374726174696f6e2e6a736f6e0000000000",
+    "value": "0",
+    "chainId": 5042002
+  },
+  "gas": {
+    "estimatedGas": "203714",
+    "proposedGasLimit": "244457",
+    "gasPriceWei": "22000000000",
+    "estimatedFeeTestUsdc": "0.004481708",
+    "proposedMaximumAtCurrentGasPriceTestUsdc": "0.005378054",
+    "walletBalanceTestUsdc": "0.98204976"
+  },
+  "source": "https://docs.arc.io/arc/tutorials/register-your-first-ai-agent"
+}
