@@ -1,0 +1,22 @@
+{
+  "workerVersion": "cab486a0-08db-4771-9cf6-1bf915eb317d",
+  "verificationClient": "curl; default Python urllib request returned HTTP 403",
+  "checks": [
+    {
+      "url": "https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev/agent/registration.json",
+      "sha256": "9a37abaa991fdd1377d49b44f541134486a49b8a3a67fb99b1a6acf7619ab147",
+      "matchesLocal": true
+    },
+    {
+      "url": "https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev/agent/portfolio-calculator.svg",
+      "sha256": "af3ff240a073dbe64602ecf7a0fbbdb3884bf54071f5564ed361d1a53f33bbc8",
+      "matchesLocal": true
+    },
+    {
+      "url": "https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev/.well-known/agent-card.json",
+      "sha256": "cdf97e0ec78d229ba1725af98f45bcc2ea38d9f5f7753c9abc25aafdec2d158d",
+      "matchesLocal": false
+    }
+  ],
+  "registrationStatus": "pending; no registration transaction sent"
+}
