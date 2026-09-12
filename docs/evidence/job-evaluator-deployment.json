@@ -1,0 +1,25 @@
+{
+  "status": "confirmed",
+  "chainId": 5042002,
+  "transactionHash": "0x554943e013274a96dd66d45e33b2febb5cad1dc8805c17f3ed205735c2de6178",
+  "address": "0x391579ce844b95fc871fa9ce0af1ac8208418962",
+  "blockNumber": "61751678",
+  "blockHash": "0x45962cde478f084460ef34639c72c164cf4551773e1193fbd6c471028afd38eb",
+  "sender": "0x0c68c8d018ba72c33e966498b2148dc2af454645",
+  "constructor": {
+    "mockForwarder": "0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1",
+    "escrow": "0x0747EEf0706327138c69792bF28Cd525089e4583"
+  },
+  "simulationOnly": true,
+  "runtimeCodeHash": "0xc6948c95c8c8d08c1f09a1c367ae1407f1b53e1720960332bb0299aa9e23e248",
+  "bytecodeHash": "0xf3ed809b5207eeb3dbd2d93912f764d292f5acfd31e3082f128f3da93f64dc08",
+  "artifactRuntimeVerified": true,
+  "gasUsed": "696351",
+  "effectiveGasPrice": "22000000000",
+  "feeTestUsdc": "0.015319722",
+  "authorizedMaximumTestUsdc": "0.02",
+  "scope": "Arc testnet evaluator deployment; no job transaction or CRE broadcast",
+  "stagingVersion": "a1387f23-18fa-4c38-917e-6919be82fe7b",
+  "contractingEnabled": false,
+  "creJobWriteReportEnabled": false
+}
