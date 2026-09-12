@@ -1,0 +1,23 @@
+{
+  "mode": "CRE simulation + Arc testnet transaction",
+  "agentTransport": "HTTPS Cloudflare staging",
+  "origin": "https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev",
+  "liveTee": false,
+  "reportArtifactCommitmentsMatch": true,
+  "transactions": [
+    {
+      "hash": "0x67397c6db229933bf48ea2f6cc5d19617ac167ade20d9ab5e9a569ae9ca1e1b5",
+      "probeId": "probe-mtyc77tg-reject",
+      "decision": 2,
+      "receiptEventIndex": 0
+    },
+    {
+      "hash": "0xcd1ee7bcc7fc8eeae5f4831a93e1a34933bc5c9b999de284497be666c20af26d",
+      "probeId": "probe-mtyc77tg-accept",
+      "decision": 1,
+      "receiptEventIndex": 0
+    }
+  ],
+  "totalReportFeeUSDC": "0.005047262",
+  "walletBalanceUSDC": "0.98204976"
+}

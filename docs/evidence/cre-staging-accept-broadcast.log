@@ -1,0 +1,30 @@
+Initializing...
+Loading settings...
+Checking RPC connectivity...
+Compiling workflow...
+✓ Workflow compiled
+✓ Simulation limits enabled
+  HTTP: req=120kb resp=250kb timeout=10s | ConfHTTP: req=125kb resp=500kb timeout=1m30s | Consensus obs=25kb | ChainWrite evm_report=50kb evm_gas=10000000 solana_report=265b solana_cu=300000 | WASM binary=100mb compressed=20mb
+  Binary hash: ee30f03d5d9679d3f98eb8b24ee49bb075190a71bd8d009ae6311246e6c68937
+  Config hash: 0be1af38e644d01fe68f839fb8a844a9493f40933842677349d1c3c3ee6f1b37
+✓ Loaded JSON from file: /Users/gilbertsahumada/projects/private-hire/.local/accept.json
+✓ Created HTTP trigger payload with 1 fields
+2026-09-12T14:10:36Z [SIMULATION] Simulator Initialized
+
+2026-09-12T14:10:36Z [SIMULATION] Running trigger trigger=http-trigger@1.0.0-alpha
+╭────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ Trigger requested TEE Execution your trigger will run in one of the following Tees:                │
+│     - AWS Nitro in us-west-2                                                                       │
+│ The simulator is not a real TEE, and is meant to debug.                                            │
+│ Do not use it for sensitive information.                                                           │
+│ During real execution, user logs for this trigger will not be visible, and will not leave the TEE. │
+│ They are presented in the simulator for debugging only.                                            │
+│                                                                                                    │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+
+✓ Workflow Simulation Result:
+"CRE_SIMULATION decision=1 txHash=0xcd1ee7bcc7fc8eeae5f4831a93e1a34933bc5c9b999de284497be666c20af26d"
+
+2026-09-12T14:10:39Z [SIMULATION] Execution finished signal received
+2026-09-12T14:10:39Z [SIMULATION] Skipping WorkflowEngineV2
