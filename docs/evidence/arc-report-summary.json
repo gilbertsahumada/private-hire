@@ -1,0 +1,20 @@
+{
+  "mode": "CRE simulation + Arc testnet transaction",
+  "agentTransport": "local HTTP",
+  "liveTee": false,
+  "reportArtifactHashesMatch": true,
+  "transactions": [
+    {
+      "hash": "0x45203c0381ddf924c7535476b35ca7728ce5a150e6b6579e745e095b9e441f4e",
+      "probeId": "probe-mty73dza-reject",
+      "decision": 2
+    },
+    {
+      "hash": "0x4b8ebf26e1777690b52bf0d29af4208f183fd7493d62fccda9f06ef6d60a14a5",
+      "probeId": "probe-mty73dza-accept",
+      "decision": 1
+    }
+  ],
+  "totalReportFeeUSDC": "0.005047526",
+  "walletBalanceUSDC": "0.987097022"
+}

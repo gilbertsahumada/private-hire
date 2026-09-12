@@ -1,0 +1,23 @@
+{
+  "receiver": "0x98b1a734b54a9a02C2EB68062061e273b3D264D0",
+  "event": {
+    "eventName": "ProbeRecorded",
+    "args": {
+      "probeId": "0x49bd76edf836c6c36b859fcda9a75c8094f984defd371868fc1a4bfb1b960c18",
+      "resultHash": "0xe62084c6e15f9ae36fabae3ac729412bd5675b622522d9123e32b7be01b7fd0a",
+      "decision": 1
+    }
+  },
+  "logIndex": 58,
+  "receiptEventIndex": 0,
+  "probeId": "probe-mty73dza-accept",
+  "decision": 1,
+  "mode": "CRE simulation + Arc testnet transaction; not live TEE",
+  "chainId": 5042002,
+  "transactionHash": "0x4b8ebf26e1777690b52bf0d29af4208f183fd7493d62fccda9f06ef6d60a14a5",
+  "blockNumber": "61709814",
+  "blockHash": "0x584a713f67d4484e127f17485cbd1d1d90d8325993fe23b31e951910aaa726fc",
+  "gasUsed": "114690",
+  "effectiveGasPriceWei": "22000000000",
+  "transactionFeeWei": "2523180000000000"
+}

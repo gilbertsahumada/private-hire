@@ -1,6 +1,6 @@
 # Evidence index — stage one
 
-Evidence is recorded from this repository's actual commands. The Arc simulation-only receiver deployment is confirmed. No escrow payment or report transaction is claimed.
+Evidence is recorded from this repository's actual commands. The Arc simulation-only receiver deployment is confirmed. Both report transactions are confirmed. No escrow payment is claimed.
 
 | Artifact | What it proves | What it does not prove |
 |---|---|---|
@@ -16,9 +16,11 @@ CRE logs include binary/config hashes and the simulator's explicit TEE disclaime
 - R2 activation and staging authorization received; resources provisioned. Application deployment still fails with binding error 10136.
 - Actual Cloudflare Worker URL, D1 and private R2 verification.
 - Receiver deployment completed: `deployment-320891028abb.json` records its verified receipt and fee.
-- Report-writing simulations completed without broadcast; two confirmed report transactions remain pending.
-- Log-trigger simulation using an actual ProbeRecorded transaction.
+- Report-writing dry runs and both report transactions completed; see `report-45203c0381dd.json` and `report-4b8ebf26e177.json`.
+- Log-trigger simulation completed against the actual rejection transaction: `cre-local-log-no-broadcast.log`.
 
 Do not replace these with local mock results. Once available, receipt verification writes separate `deployment-*.json` and `report-*.json` records. The target label is **CRE simulation + Arc testnet transaction**, not live TEE execution.
 
 `cre-local-report-dry-run.json` records the probe identifiers and RPC checks showing zero stored decisions/report hashes after both simulations. The logs show `not-broadcast`; no onchain report delivery is claimed.
+
+`arc-report-summary.json` compares onchain result hashes with A2A artifacts and records both fees and the post-report wallet balance. Scope: **CRE simulation + Arc testnet transaction**, with a local HTTP agent; no live TEE or remote Cloudflare proof.

@@ -9,7 +9,7 @@
 - User confirmed R2 activation and authorized staging. Listing and creating buckets succeeds. Worker secrets are installed, but publishing the application failed twice with API error 10136: R2 binding requires activation. The cause is not confirmed; no successful HTTPS application deployment is claimed.
 - Arc: chainId 5042002. The unsigned ProbeReceiver deployment is prepared under ignored `.local/receiver-deployment.json`; its review is in `docs/evidence/receiver-deployment-review.json`.
 - Dedicated wallet `0x0C68C8D018ba72C33e966498B2148dC2af454645` is configured in the ignored root `.env`. The user authorized the receiver deployment with a 0.02 test USDC gas cap.
-- Receiver `0x98b1a734b54a9a02C2EB68062061e273b3D264D0` was deployed in transaction `0x320891028abbf3a149f3a700f697c838743a2a348ffa9f7cd1203f609ad67e26`. Receipt verified: fee 0.007855452 test USDC. Report broadcasts are not yet authorized.
+- Receiver `0x98b1a734b54a9a02C2EB68062061e273b3D264D0` was deployed in transaction `0x320891028abbf3a149f3a700f697c838743a2a348ffa9f7cd1203f609ad67e26`. Receipt verified: fee 0.007855452 test USDC. The user subsequently authorized both report broadcasts; acceptance and rejection are confirmed in `docs/evidence/arc-report-summary.json`.
 
 Wrangler and CRE staging configs now contain the actual D1 UUID and planned origin `https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev`. The staging config contains the verified receiver address; `writeReport` stays false until the report test is prepared. Resource creation commands below are the runbook; check existing resources before re-running them.
 
@@ -65,7 +65,7 @@ python3 scripts/configure-staging.py --origin https://ACTUAL-WORKER-ORIGIN --dat
 
 ## Reports and log verification
 
-First run the staging simulations **without** broadcast. Then, only after explicit authorization, provide the user's CRE signing credential through their local secret environment and run:
+First run the staging simulations **without** broadcast. Then, only after explicit authorization, configure the dedicated signer in the ignored root `.env` (the wrapper reads it only with `--broadcast`) and run:
 
 ```sh
 ALLOW_ARC_BROADCAST=yes python3 scripts/simulate.py reject --target staging --broadcast
@@ -83,3 +83,5 @@ A successful transaction through MockKeystoneForwarder demonstrates only the sim
 The authorized deployment was submitted from `apps/cre` with `ALLOW_ARC_DEPLOY=yes pnpm exec tsx scripts/deploy-receiver.ts`. The script checks chain, wallet, bytecode, constructor and a maximum 0.02 test USDC fee; it records the signed transaction hash before broadcasting and refuses duplicate submissions. It reads only the local root `.env`; wallet credentials are not Worker secrets.
 
 The receipt is in `docs/evidence/deployment-320891028abb.json`. Solidity formatting afterward changes source metadata for future builds, so the newly compiled bytecode need not be byte-for-byte identical to the deployment artifact even though formatting preserves behavior.
+
+For EVM log replay, `--log-index` maps to CRE `--evm-event-index`: use `receiptEventIndex` from receipt verification (zero-based within the transaction). `logIndex` is the global block log index and is not interchangeable. The verified rejection event has receiptEventIndex 0 and global logIndex 131.
