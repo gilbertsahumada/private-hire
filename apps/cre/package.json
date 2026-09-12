@@ -6,7 +6,8 @@
     "build": "python3 ../../scripts/build-cre.py",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.scripts.json",
     "simulate": "python3 ../../scripts/simulate.py reject",
-    "verify:receipt": "tsx scripts/verify-receipt.ts"
+    "verify:receipt": "tsx scripts/verify-receipt.ts",
+    "identity:prepare": "tsx scripts/prepare-identity.ts"
   },
   "dependencies": {
     "@chainlink/cre-sdk": "1.20.1",
