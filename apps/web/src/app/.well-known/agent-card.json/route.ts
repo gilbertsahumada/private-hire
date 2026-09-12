@@ -4,9 +4,9 @@ import { bindings } from '../../../lib/http';
 export function GET() {
   const origin = bindings().PUBLIC_ORIGIN;
   const card = AgentCard.fromJSON({
-    name: 'Portfolio probe',
+    name: 'Portfolio Calculator',
     description:
-      'Deterministic synthetic portfolio analysis. Stage-one test provider; not registered or funded.',
+      'Exact portfolio values, weights and concentration for up to ten synthetic positions. Authenticated, operator-provisioned staging probes; registration pending and paid jobs not enabled.',
     version: '0.1.0',
     supportedInterfaces: [
       {
@@ -25,9 +25,10 @@ export function GET() {
     skills: [
       {
         id: 'portfolio-probe',
-        name: 'Portfolio probe',
-        description: 'Compute values, weights and concentration.',
-        tags: ['portfolio', 'deterministic'],
+        name: 'Portfolio Calculator',
+        description:
+          'Calculate position values and total micro-USD value using integer truncation, weights in basis points, and concentration as the maximum weight. Returns portfolio-result/v1 JSON.',
+        tags: ['portfolio', 'deterministic', 'valuation', 'concentration'],
       },
     ],
   });

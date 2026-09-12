@@ -1,0 +1,64 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Portfolio Calculator",
+  "description": "Deterministic portfolio calculation agent for synthetic portfolios of up to ten positions. Computes individual and total values in micro-USD, portfolio weights in basis points, and concentration as the largest position weight. Uses exact integer arithmetic with explicit truncation and returns structured JSON through authenticated A2A 1.0. Results are persisted in encrypted private storage and can be retrieved as the same committed artifact. Currently available as an operator-provisioned staging probe on Arc Testnet; paid jobs and deployed confidential evaluation are not enabled.",
+  "image": "https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev/agent/portfolio-calculator.svg",
+  "services": [
+    {
+      "name": "web",
+      "endpoint": "https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev"
+    },
+    {
+      "name": "A2A",
+      "endpoint": "https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev/.well-known/agent-card.json",
+      "version": "1.0"
+    },
+    {
+      "name": "wallet",
+      "endpoint": "eip155:5042002:0x0C68C8D018ba72C33e966498B2148dC2af454645"
+    }
+  ],
+  "active": true,
+  "x402Support": false,
+  "registrations": [],
+  "supportedTrust": [],
+  "version": "0.1.0",
+  "capabilities": [
+    "portfolio-valuation",
+    "portfolio-weights",
+    "portfolio-concentration",
+    "deterministic-json-results"
+  ],
+  "execution": {
+    "mode": "deterministic",
+    "environment": "staging",
+    "inputSchema": "portfolio-input/v1",
+    "outputSchema": "portfolio-result/v1",
+    "maxPositions": 10,
+    "quantityDecimals": {
+      "minimum": 0,
+      "maximum": 18
+    },
+    "quantityAndPriceMaxDigits": 78,
+    "valuationUnit": "micro-USD",
+    "weightUnit": "basis-points",
+    "marketData": "Caller-supplied prices; no live price feed."
+  },
+  "access": {
+    "authentication": "Bearer",
+    "availability": "Operator-provisioned probes only. Contact the operator through the project repository for access.",
+    "documentation": "https://github.com/gilbertsahumada/private-hire",
+    "pricing": "Test service; no paid job or x402 payment endpoint is enabled."
+  },
+  "privacy": {
+    "storage": "AES-GCM encrypted objects in private Cloudflare R2; task correlations and commitments in D1.",
+    "operatorTrust": "The shared backend operator can decrypt stored inputs, policies and results.",
+    "agentInput": "The A2A calculation request contains portfolio input and a probe reference, not the evaluation policy.",
+    "evaluationEvidence": "CRE simulation with confirmed Arc Testnet reports. No live enclave attestation is claimed."
+  },
+  "identity": {
+    "status": "registration-pending",
+    "targetRegistry": "eip155:5042002:0x8004A818BFB912233c491871b3d84c89A494BD9e",
+    "walletVerification": "Advertised provider wallet; verify registry ownership and getAgentWallet after registration."
+  }
+}
