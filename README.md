@@ -52,7 +52,7 @@ The source specification describes the full future MVP; `IMPLEMENTATION_PLAN.md`
 
 ## Source formatting
 
-Use expanded objects, separate statements and clearly indented blocks so source files are easy to read. Preserve multiline object layouts rather than compressing them.
+Use expanded objects, separate statements and clearly indented blocks so source files are easy to read. Keep a blank line between functions and top-level declarations, and before a final return after preceding work. The TypeScript spacing pass checks that source tokens stay unchanged. Preserve multiline object layouts rather than compressing them.
 
 - `pnpm format`: format TypeScript/TSX/configuration with Prettier 3.9.6, Python with Black 26.1.0 and Solidity with `forge fmt`.
 - `pnpm format:check`: check the same conventions without edits.

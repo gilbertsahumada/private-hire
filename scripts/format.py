@@ -11,12 +11,16 @@ root = Path(__file__).resolve().parents[1]
 
 commands = [
     (
+        ["node", "scripts/space-typescript.mjs", *(["--check"] if args.check else [])],
+        root,
+    ),
+    (
         [
             "pnpm",
             "exec",
             "prettier",
             "--check" if args.check else "--write",
-            "**/*.{ts,tsx,json,jsonc,yaml,yml}",
+            "**/*.{ts,tsx,js,mjs,json,jsonc,yaml,yml}",
         ],
         root,
     ),
