@@ -34,3 +34,5 @@ Do not replace these with local mock results. Once available, receipt verificati
 ## Market application (pending onchain activation)
 
 `market-validation.json` records the application build, automated tests, published Worker and live authentication checks. `market-deployment-prepared.json` is an unsigned evaluator proposal, not a receipt. The three paid/reject/refund job journeys remain pending. Earlier probes are not market jobs.
+
+`job-evaluator-deployment.json` confirms the separately authorized JobEvaluator deployment and its runtime bytecode, immutable configuration, canonical receipt and actual gas fee. This is a deployment transaction only; no job funding or CRE job report broadcast is claimed.

@@ -2,7 +2,7 @@
 
 ## Delivery status
 
-The application and simulation evaluator are implemented. Contracting remains disabled until the evaluator is deployed and its runtime code hash is configured. No paid job or income is fabricated from the earlier probes. The three real acceptance/rejection/expiry journeys remain pending; this stage is not complete.
+The application and simulation evaluator are implemented. The evaluator is deployed and its runtime code hash is configured. Contracting remains disabled pending the separately authorized browser-wallet job journeys. No paid job or income is fabricated from the earlier probes. The three real acceptance/rejection/expiry journeys remain pending; this stage is not complete.
 
 The English interface provides Agents, private Jobs and Provider workspaces, browser wallet discovery, SIWE login, immutable quotes, reviewed transactions, private results and receipt recovery. Browser wallets sign buyer/provider transactions; no provider key is stored in Workers. The operator runs CRE explicitly.
 
@@ -14,7 +14,7 @@ Use the existing Arc ERC-8183 proxy `0x0747EEf0706327138c69792bF28Cd525089e4583`
 
 `JOB_CONTEXT_TOKEN` and `JOB_OPERATOR_TOKEN` are distinct service credentials, separate from `A2A_TOKEN`. Keep them in Worker secrets and an ignored operator environment file. Never put private keys in public environment variables. A provider must import its wallet into its own browser extension outside this application.
 
-The unsigned deployment proposal is `docs/evidence/market-deployment-prepared.json`. It targets Arc chain 5042002, constructor mock forwarder `0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1` and the existing escrow. Deployment and subsequent testnet spending require separate concrete approval. No deployment has been performed for this evaluator.
+The unsigned deployment proposal is `docs/evidence/market-deployment-prepared.json`. It targets Arc chain 5042002, constructor mock forwarder `0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1` and the existing escrow. The user authorized only evaluator deployment with a 0.02 test-USDC gas ceiling. It is confirmed at `0x391579ce844b95fc871fa9ce0af1ac8208418962`, transaction `0x554943e013274a96dd66d45e33b2febb5cad1dc8805c17f3ed205735c2de6178`, fee 0.015319722 test USDC. Runtime bytecode (including verified immutable getters), destination and canonical receipt were checked; see `docs/evidence/job-evaluator-deployment.json`. Subsequent job spending and report broadcasts require separate approval.
 
 ## Trust and persistence boundaries
 
@@ -54,7 +54,7 @@ Local automated tests cover calculation vectors, SIWE replay/domain/session expi
 
 Browser checks run against the real HTTPS staging in desktop and mobile layouts. The test wallet signs only SIWE messages and refuses transactions. These checks do not demonstrate funding, submit or payment.
 
-Pending after evaluator authorization: deploy/verify evaluator, configure code pins (scoped service credentials are already provisioned), enable hiring, connect buyer/provider browser wallets, and create three separate real jobs. Record starting/final balances, allowance, each receipt and event, encrypted artifact commitment, operator execution and reload/browser-closed recovery. Acceptance must pay; committed rejection must refund; expiry must show Refund available until claimRefund confirms. Budget and gas must be recorded separately. Keep the stage pending until all three journeys have authentic evidence.
+Pending after the confirmed evaluator deployment: authorize the job test journeys, enable hiring, connect buyer/provider browser wallets, and create three separate real jobs. Record starting/final balances, allowance, each receipt and event, encrypted artifact commitment, operator execution and reload/browser-closed recovery. Acceptance must pay; committed rejection must refund; expiry must show Refund available until claimRefund confirms. Budget and gas must be recorded separately. Keep the stage pending until all three journeys have authentic evidence.
 
 Workers compatibility: use fetch redirect `manual` and reject non-2xx responses. Workers rejects redirect `error`; local preview did not expose this production difference. Temporary private diagnostic logging was removed after identifying it.
 

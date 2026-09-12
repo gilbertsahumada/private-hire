@@ -1,6 +1,6 @@
 {
   "origin": "https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev",
   "allowLocalHttp": false,
-  "receiver": "0x0000000000000000000000000000000000000000",
+  "receiver": "0x391579ce844b95fc871fa9ce0af1ac8208418962",
   "writeReport": false
 }

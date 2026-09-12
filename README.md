@@ -4,7 +4,7 @@ A pnpm/Turborepo monorepo testing an A2A 1.0 portfolio agent, encrypted Cloudfla
 
 **Current evidence:** the Worker builds and runs in local `workerd`; D1/R2 integration and two CRE CLI simulations succeed (accept/reject with private tolerances). Arc read-only RPC confirms the forwarders and USDC decimals. The simulation-only receiver is deployed on Arc with a confirmed receipt. Both CRE report transactions and the EVM log-trigger simulation are confirmed. Cloudflare HTTPS staging is live; remote D1/R2 integration and both complete CRE HTTPS report executions pass, with confirmed Arc receipts and matching artifact commitments. The CRE simulator is **not a real TEE**.
 
-The Agents / Jobs / Provider application now integrates browser SIWE, encrypted quotes and the existing ERC-8183 escrow. Contracting remains disabled pending an authorized evaluator deployment and three actual paid/reject/refund journeys. See [market implementation](docs/MARKET_IMPLEMENTATION.md). No deployed CRE workflow is claimed; `ProbeReceiver` remains a separate, fund-free historical probe.
+The Agents / Jobs / Provider application now integrates browser SIWE, encrypted quotes and the existing ERC-8183 escrow. The evaluator is deployed and verified. Contracting remains disabled pending the separately authorized paid/reject/refund test journeys. See [market implementation](docs/MARKET_IMPLEMENTATION.md). No deployed CRE workflow is claimed; `ProbeReceiver` remains a separate, fund-free historical probe.
 
 ## Workspace
 

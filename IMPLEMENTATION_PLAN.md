@@ -62,7 +62,7 @@ This sequence overrides section 21's contract-first order and section 9's instru
 - [x] Job persistence, A2A dispatch, CRE evaluation and simulation evaluator implemented.
 - [x] Local application and receiver tests; compatibility tested against an Arc fork.
 - [x] Publish staging with hiring disabled and additive D1 migrations.
-- [ ] Authorize and deploy JobEvaluator, verify its runtime and configure readiness pins.
+- [x] Authorize and deploy JobEvaluator, verify its runtime and configure readiness pins. Receipt: `docs/evidence/job-evaluator-deployment.json`; fee 0.015319722 test USDC.
 - [ ] Verify three genuine testnet jobs: payment, rejection refund and expiry refund.
 
 See `docs/MARKET_IMPLEMENTATION.md` for commands, trust boundaries and pending evidence. Application code and browser login tests do not establish payment success.
