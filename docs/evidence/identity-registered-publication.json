@@ -1,0 +1,14 @@
+{
+  "workerVersion": "647a2bab-324e-4c2f-9bbe-2e3a35f44dba",
+  "agentId": "894552",
+  "checks": [
+    {
+      "url": "https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev/agent/registration.json",
+      "sha256": "afcbca838f4165da6fd9ca5bdfe4c32d7d4bac6df76746f96b696df5b36662f5"
+    },
+    {
+      "url": "https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev/.well-known/agent-card.json",
+      "sha256": "0fefa26545f5a167efb93a291d41082d7cd9d220836ffd97ac4b74996d0447be"
+    }
+  ]
+}
