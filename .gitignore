@@ -19,3 +19,6 @@ packages/contracts/broadcast/
 
 .cre_build_tmp*
 core
+
+__pycache__/
+*.pyc

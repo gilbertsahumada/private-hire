@@ -1,6 +1,7 @@
 from pathlib import Path
 from urllib.parse import urlparse
 import json, argparse, re
+from read_config import read_jsonc
 
 p = argparse.ArgumentParser()
 p.add_argument("--origin", required=True)
@@ -28,7 +29,7 @@ if a.receiver and (
     raise SystemExit("Actual receiver address required.")
 root = Path(__file__).resolve().parents[1]
 w = root / "apps/web/wrangler.jsonc"
-d = json.loads(w.read_text())
+d = read_jsonc(w)
 d["vars"]["PUBLIC_ORIGIN"] = a.origin.rstrip("/")
 d["d1_databases"][0]["database_id"] = a.database_id
 w.write_text(json.dumps(d, indent=2) + "\n")
