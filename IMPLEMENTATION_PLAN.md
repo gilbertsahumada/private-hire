@@ -37,3 +37,21 @@ Access to CRE beta is confirmed. No escrow/payments or deployed confidential wor
 - Subsequent commits record CRE workflow, evidence, deployment preparation and validation fixes. See Git history for their hashes.
 
 The user authorized both unified HTTPS broadcasts. Acceptance and rejection are confirmed on Arc; their event hashes match recalculated commitments of artifacts recovered from HTTPS A2A. The log trigger also passed against the new rejection event. See `docs/evidence/https-arc-report-summary.json`.
+
+## Next stage — identity first (user correction)
+
+The user superseded the proposed contract-first sequence. Integrate ERC-8004 identity first, then reuse ERC-8183 for jobs and payments. Do not start a custom escrow implementation by default.
+
+- [ ] Inspect the existing trust8004 public API using its local source at `../agent-registration`; keep that project unchanged.
+- [ ] Prepare the provider registration metadata and bind its A2A service to the dedicated Arc wallet. Verify existing registration before preparing a new one.
+- [ ] Verify the Arc IdentityRegistry by RPC and its actual interface; record chain + registry + agentId, ownership and provider wallet separately.
+- [ ] Prepare registration for explicit transaction authorization; do not represent an unregistered provider as registered.
+- [ ] Inspect the existing ERC-8183 deployment, verified source and ABI before integration. Record differences from the original specification and resolve them before moving funds.
+- [ ] Implement only the application integration and CRE evaluator components required by the selected ERC-8183 implementation; test acceptance, rejection and expiry locally before preparing testnet transactions.
+
+Discovery sources (documentation, not yet RPC verification):
+
+- [Arc ERC-8004 quickstart](https://docs.arc.io/arc/tutorials/register-your-first-ai-agent) lists IdentityRegistry `0x8004A818BFB912233c491871b3d84c89A494BD9e`.
+- [Arc ERC-8183 walkthrough](https://www.arc.io/blog/running-an-agentic-economic-flow-on-arc-with-erc-8183) lists `0x0747EEf0706327138c69792bF28Cd525089e4583`. Its `fund(uint256,bytes)` example differs from the specification's `fund(uint256,uint256,bytes)`; do not assume matching ABI or budget protection.
+
+This sequence overrides section 21's contract-first order and section 9's instruction to implement a custom JobEscrow until compatibility has been assessed. No new escrow contracts or registrations were deployed during this correction.
