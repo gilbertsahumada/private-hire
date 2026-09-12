@@ -123,3 +123,44 @@ export function completedTask(raw: unknown, taskId: string) {
 
   return task.artifacts[0].parts[0].data;
 }
+
+export const jobSendSchema = sendSchema.extend({
+  message: sendSchema.shape.message.extend({
+    parts: z
+      .array(
+        z.strictObject({
+          data: z.strictObject({
+            requestId: probeIdSchema,
+            manifestHash: z.string().regex(/^0x[0-9a-f]{64}$/),
+            input: inputSchema,
+          }),
+          mediaType: z.literal('application/json').optional(),
+        }),
+      )
+      .length(1),
+  }),
+});
+
+export function jobSendRequest(
+  requestId: string,
+  manifestHash: string,
+  input: PortfolioInput,
+) {
+  const request = sendRequest(requestId, input);
+
+  return {
+    ...request,
+    params: {
+      ...request.params,
+      message: {
+        ...request.params.message,
+        parts: [
+          {
+            data: { requestId, manifestHash, input },
+            mediaType: 'application/json',
+          },
+        ],
+      },
+    },
+  };
+}

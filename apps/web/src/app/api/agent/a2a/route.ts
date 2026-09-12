@@ -1,3 +1,7 @@
+import { jobSendSchema } from '@private-hire/agent-transport';
+import { marketEnv } from '../../../../lib/market-env';
+import { runJob, getDelivery } from '../../../../lib/job-tasks';
+import { draft } from '../../../../lib/jobs';
 import {
   rpcSchema,
   sendSchema,
@@ -14,8 +18,6 @@ import { startTask, getTask } from '../../../../lib/service';
 
 export async function POST(request: Request) {
   const env = bindings();
-  if (env.ENABLE_PROBE !== 'true')
-    return json({ error: 'PROBE_DISABLED' }, 404);
   if (!(await authorized(request, env.A2A_TOKEN)))
     return json({ error: 'UNAUTHORIZED' }, 401);
   if (request.headers.get('a2a-version') !== '1.0')
@@ -33,6 +35,25 @@ export async function POST(request: Request) {
     const rpc = parsed.data;
     id = rpc.id;
     if (rpc.method === 'SendMessage') {
+      const jobParams = jobSendSchema.safeParse(rpc.params);
+      if (jobParams.success) {
+        const { requestId, manifestHash, input } =
+          jobParams.data.message.parts[0].data;
+        const result = await runJob(
+          marketEnv(),
+          requestId,
+          input,
+          manifestHash,
+        );
+
+        return json({
+          jsonrpc: '2.0',
+          id,
+          result: { task: asTask(requestId, result) },
+        });
+      }
+      if (env.ENABLE_PROBE !== 'true')
+        return json({ error: 'PROBE_DISABLED' }, 404);
       const params = sendSchema.safeParse(rpc.params);
       if (!params.success)
         return json({
@@ -56,6 +77,25 @@ export async function POST(request: Request) {
           id,
           error: { code: -32602, message: 'Invalid params' },
         });
+
+      const job = await marketEnv()
+        .DB.prepare('SELECT request_id FROM market_tasks WHERE task_id=?')
+        .bind(params.data.id)
+        .first<{ request_id: string }>();
+      if (job)
+        return json({
+          jsonrpc: '2.0',
+          id,
+          result: asTask(
+            params.data.id,
+            await getDelivery(
+              marketEnv(),
+              await draft(marketEnv(), job.request_id),
+            ),
+          ),
+        });
+      if (env.ENABLE_PROBE !== 'true')
+        return json({ error: 'PROBE_DISABLED' }, 404);
 
       return json({
         jsonrpc: '2.0',
@@ -86,4 +126,18 @@ export async function POST(request: Request) {
       },
     });
   }
+}
+
+function asTask(id: string, result: unknown) {
+  return {
+    id,
+    contextId: id,
+    status: { state: 'TASK_STATE_COMPLETED' },
+    artifacts: [
+      {
+        artifactId: 'result',
+        parts: [{ data: result, mediaType: 'application/json' }],
+      },
+    ],
+  };
 }
