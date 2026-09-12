@@ -20,7 +20,12 @@
   ],
   "active": true,
   "x402Support": false,
-  "registrations": [],
+  "registrations": [
+    {
+      "agentId": 894552,
+      "agentRegistry": "eip155:5042002:0x8004A818BFB912233c491871b3d84c89A494BD9e"
+    }
+  ],
   "supportedTrust": [],
   "version": "0.1.0",
   "capabilities": [
@@ -57,8 +62,9 @@
     "evaluationEvidence": "CRE simulation with confirmed Arc Testnet reports. No live enclave attestation is claimed."
   },
   "identity": {
-    "status": "registration-pending",
-    "targetRegistry": "eip155:5042002:0x8004A818BFB912233c491871b3d84c89A494BD9e",
-    "walletVerification": "Advertised provider wallet; verify registry ownership and getAgentWallet after registration."
+    "status": "registered",
+    "registry": "eip155:5042002:0x8004A818BFB912233c491871b3d84c89A494BD9e",
+    "walletVerification": "Registry ownerOf and getAgentWallet verified against the dedicated Arc wallet.",
+    "registrationTransaction": "0x9aa39d713841788f9e1db90fc98783462f1359617461fb2303c94310b2a0664c"
   }
 }

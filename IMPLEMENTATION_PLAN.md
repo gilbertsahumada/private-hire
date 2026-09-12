@@ -43,9 +43,9 @@ The user authorized both unified HTTPS broadcasts. Acceptance and rejection are 
 The user superseded the proposed contract-first sequence. Integrate ERC-8004 identity first, then reuse ERC-8183 for jobs and payments. Do not start a custom escrow implementation by default.
 
 - [ ] Inspect the existing trust8004 public API using its local source at `../agent-registration`; keep that project unchanged.
-- [ ] Prepare the provider registration metadata and bind its A2A service to the dedicated Arc wallet. Verify existing registration before preparing a new one.
-- [ ] Verify the Arc IdentityRegistry by RPC and its actual interface; record chain + registry + agentId, ownership and provider wallet separately.
-- [ ] Prepare registration for explicit transaction authorization; do not represent an unregistered provider as registered.
+- [x] Prepare the provider registration metadata and bind its A2A service to the dedicated Arc wallet. Verify existing registration before preparing a new one.
+- [x] Verify the Arc IdentityRegistry by RPC and its actual interface; record chain + registry + agentId, ownership and provider wallet separately.
+- [x] Prepare and obtain explicit registration authorization; Arc agent 894552 confirmed, owner/wallet/URI verified. trust8004 indexes the onchain registration; metadata enrichment was pending at first lookup.
 - [ ] Inspect the existing ERC-8183 deployment, verified source and ABI before integration. Record differences from the original specification and resolve them before moving funds.
 - [ ] Implement only the application integration and CRE evaluator components required by the selected ERC-8183 implementation; test acceptance, rejection and expiry locally before preparing testnet transactions.
 

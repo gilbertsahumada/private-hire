@@ -6,7 +6,7 @@ export function GET() {
   const card = AgentCard.fromJSON({
     name: 'Portfolio Calculator',
     description:
-      'Exact portfolio values, weights and concentration for up to ten synthetic positions. Authenticated, operator-provisioned staging probes; registration pending and paid jobs not enabled.',
+      'Exact portfolio values, weights and concentration for up to ten synthetic positions. Authenticated, operator-provisioned staging probes; ERC-8004 agent 894552 on Arc Testnet; paid jobs not enabled.',
     version: '0.1.0',
     supportedInterfaces: [
       {

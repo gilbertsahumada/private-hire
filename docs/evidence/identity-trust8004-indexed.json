@@ -1,0 +1,11 @@
+{
+  "id": 1580384,
+  "agentId": "894552",
+  "chainId": 5042002,
+  "contractAddress": "0x8004a818bfb912233c491871b3d84c89a494bd9e",
+  "registerTxHash": "0x9aa39d713841788f9e1db90fc98783462f1359617461fb2303c94310b2a0664c",
+  "ownerAddress": "0x0c68c8d018ba72c33e966498b2148dc2af454645",
+  "ipfsUri": "https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev/agent/registration.json",
+  "name": "Agent #894552",
+  "metadataStatus": "pending"
+}

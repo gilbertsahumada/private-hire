@@ -1,0 +1,14 @@
+{
+  "status": "confirmed",
+  "chainId": 5042002,
+  "registry": "0x8004A818BFB912233c491871b3d84c89A494BD9e",
+  "transactionHash": "0x9aa39d713841788f9e1db90fc98783462f1359617461fb2303c94310b2a0664c",
+  "blockNumber": "61729922",
+  "agentId": "894552",
+  "agentRegistry": "eip155:5042002:0x8004A818BFB912233c491871b3d84c89A494BD9e",
+  "owner": "0x0C68C8D018ba72C33e966498B2148dC2af454645",
+  "agentWallet": "0x0C68C8D018ba72C33e966498B2148dC2af454645",
+  "agentURI": "https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev/agent/registration.json",
+  "feeTestUsdc": "0.004420944",
+  "remainingBalanceTestUsdc": "0.977628816"
+}
