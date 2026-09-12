@@ -1,0 +1,17 @@
+node_modules
+pnpm-lock.yaml
+dist
+.local
+.env*
+**/.dev.vars*
+**/.next
+**/.open-next
+**/.wrangler
+**/.turbo
+**/out
+**/cache
+**/broadcast
+**/*.wasm
+docs/evidence
+CODEX_IMPLEMENTATION_SPEC.md
+apps/web/next-env.d.ts

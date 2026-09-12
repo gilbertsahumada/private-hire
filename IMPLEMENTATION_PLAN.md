@@ -20,8 +20,10 @@
 - [x] User activated R2 and authorized staging; bucket listing/creation now succeeds.
 - [x] Dedicated D1 created and migrated; private Standard R2 bucket and Worker secrets created.
 - [ ] Publish Worker and verify HTTPS/D1/private R2. Two deployment attempts failed with Cloudflare 10136 when attaching the existing R2 bucket; activation/entitlement inconsistency remains unresolved.
-- [ ] User chooses signing method and authorizes receiver deployment/report broadcasts.
-- [ ] Verify receiver deployment, run report-writing simulations and record two Arc report receipts.
+- [x] User authorized a dedicated local wallet and receiver deployment capped at 0.02 test USDC. Deployment confirmed; fee 0.007855452 test USDC.
+- [ ] Obtain separate authorization for report broadcasts.
+- [x] Verify deployed receiver `0x98b1a734b54a9a02C2EB68062061e273b3D264D0`, mock forwarder and simulation-only flag.
+- [ ] Run report-writing simulations and record two Arc report receipts.
 - [ ] Run log-trigger simulation against a real confirmed ProbeRecorded event.
 
 Access to CRE beta is confirmed. No escrow/payments or deployed confidential workflow in this stage. Local simulations currently set `writeReport:false`; they establish transport/evaluation and reads, not report submission.

@@ -2,7 +2,7 @@
 
 A pnpm/Turborepo monorepo testing an A2A 1.0 portfolio agent, encrypted Cloudflare persistence and a confidential CRE workflow's report path to Arc Testnet.
 
-**Current evidence:** the Worker builds and runs in local `workerd`; D1/R2 integration and two CRE CLI simulations succeed (accept/reject with private tolerances). Arc read-only RPC confirms the forwarders and USDC decimals. Remote Cloudflare staging and Arc deployment/report receipts remain pending. The CRE simulator is **not a real TEE**.
+**Current evidence:** the Worker builds and runs in local `workerd`; D1/R2 integration and two CRE CLI simulations succeed (accept/reject with private tolerances). Arc read-only RPC confirms the forwarders and USDC decimals. The simulation-only receiver is deployed on Arc with a confirmed receipt. Remote Cloudflare staging and report receipts remain pending. The CRE simulator is **not a real TEE**.
 
 There is no escrow, payment, buyer login, marketplace, or deployed CRE workflow in this stage. `ProbeReceiver` is simulation-only and holds no funds.
 
@@ -49,3 +49,12 @@ Local setup refuses to overwrite credentials. Integration creates unique synthet
 See `docs/DEPLOYMENT.md` for the prepared staging and unsigned receiver transaction, and `docs/DEMO_RUNBOOK.md` for the three levels of evidence. Nothing in the quickstart publishes infrastructure or broadcasts transactions.
 
 The source specification describes the full future MVP; `IMPLEMENTATION_PLAN.md` tracks this stage only. Evidence is indexed in `docs/evidence/README.md`.
+
+## Source formatting
+
+Use expanded objects, separate statements and clearly indented blocks so source files are easy to read. Preserve multiline object layouts rather than compressing them.
+
+- `pnpm format`: format TypeScript/TSX/configuration with Prettier 3.9.6, Python with Black 26.1.0 and Solidity with `forge fmt`.
+- `pnpm format:check`: check the same conventions without edits.
+
+Python formatting uses the installed `uv` runner, which keeps Black isolated from global Python packages. Historical evidence, the original specification, secrets and build outputs are excluded.

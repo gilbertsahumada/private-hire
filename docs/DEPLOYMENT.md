@@ -8,9 +8,10 @@
 - Private R2: `confidential-agent-jobs-private-staging` (created, Standard class, EEUR).
 - User confirmed R2 activation and authorized staging. Listing and creating buckets succeeds. Worker secrets are installed, but publishing the application failed twice with API error 10136: R2 binding requires activation. The cause is not confirmed; no successful HTTPS application deployment is claimed.
 - Arc: chainId 5042002. The unsigned ProbeReceiver deployment is prepared under ignored `.local/receiver-deployment.json`; its review is in `docs/evidence/receiver-deployment-review.json`.
-- No wallet address/key has been selected. No transaction was signed or broadcast by the implementation.
+- Dedicated wallet `0x0C68C8D018ba72C33e966498B2148dC2af454645` is configured in the ignored root `.env`. The user authorized the receiver deployment with a 0.02 test USDC gas cap.
+- Receiver `0x98b1a734b54a9a02C2EB68062061e273b3D264D0` was deployed in transaction `0x320891028abbf3a149f3a700f697c838743a2a348ffa9f7cd1203f609ad67e26`. Receipt verified: fee 0.007855452 test USDC. Report broadcasts are not yet authorized.
 
-Wrangler and CRE staging configs now contain the actual D1 UUID and planned origin `https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev`. The receiver remains unconfigured. Resource creation commands below are the runbook; check existing resources before re-running them.
+Wrangler and CRE staging configs now contain the actual D1 UUID and planned origin `https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev`. The staging config contains the verified receiver address; `writeReport` stays false until the report test is prepared. Resource creation commands below are the runbook; check existing resources before re-running them.
 
 ## Cloudflare (staging authorization already granted)
 
@@ -76,3 +77,9 @@ python3 scripts/simulate.py log --target staging --tx-hash ACTUAL_TX_HASH --log-
 CRE CLI's default simulator key is suitable only for dry runs. If the user chooses browser signatures and cannot provide a CLI signer, stop before broadcast and adapt the submission path with the user; do not export or collect their wallet key through chat.
 
 A successful transaction through MockKeystoneForwarder demonstrates only the simulation/testnet path. The deployed Confidential Workflows mode, its real identity checks and escrow settlement are later stages.
+
+## Completed receiver deployment
+
+The authorized deployment was submitted from `apps/cre` with `ALLOW_ARC_DEPLOY=yes pnpm exec tsx scripts/deploy-receiver.ts`. The script checks chain, wallet, bytecode, constructor and a maximum 0.02 test USDC fee; it records the signed transaction hash before broadcasting and refuses duplicate submissions. It reads only the local root `.env`; wallet credentials are not Worker secrets.
+
+The receipt is in `docs/evidence/deployment-320891028abb.json`. Solidity formatting afterward changes source metadata for future builds, so the newly compiled bytecode need not be byte-for-byte identical to the deployment artifact even though formatting preserves behavior.

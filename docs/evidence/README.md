@@ -1,6 +1,6 @@
 # Evidence index — stage one
 
-Evidence is recorded from this repository's actual commands. No remote deployment or payment is claimed.
+Evidence is recorded from this repository's actual commands. The Arc simulation-only receiver deployment is confirmed. No escrow payment or report transaction is claimed.
 
 | Artifact | What it proves | What it does not prove |
 |---|---|---|
@@ -15,7 +15,7 @@ CRE logs include binary/config hashes and the simulator's explicit TEE disclaime
 
 - R2 activation and staging authorization received; resources provisioned. Application deployment still fails with binding error 10136.
 - Actual Cloudflare Worker URL, D1 and private R2 verification.
-- User-controlled receiver deployment and successful Arc receipt.
+- Receiver deployment completed: `deployment-320891028abb.json` records its verified receipt and fee.
 - Report-writing simulation and two confirmed report transactions.
 - Log-trigger simulation using an actual ProbeRecorded transaction.
 

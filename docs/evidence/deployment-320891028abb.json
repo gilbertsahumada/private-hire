@@ -1,0 +1,13 @@
+{
+  "receiver": "0x98b1a734b54a9a02c2eb68062061e273b3d264d0",
+  "forwarder": "0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1",
+  "simulationOnly": true,
+  "mode": "simulation-only receiver deployment",
+  "chainId": 5042002,
+  "transactionHash": "0x320891028abbf3a149f3a700f697c838743a2a348ffa9f7cd1203f609ad67e26",
+  "blockNumber": "61705157",
+  "blockHash": "0x570ba355565168b037bfdd9a094dfd40317612fb2bbf5a9ddb7b0a3e3f440736",
+  "gasUsed": "357066",
+  "effectiveGasPriceWei": "22000000000",
+  "transactionFeeWei": "7855452000000000"
+}

@@ -14,6 +14,9 @@ importers:
       '@types/node':
         specifier: 22.19.0
         version: 22.19.0
+      prettier:
+        specifier: 3.9.6
+        version: 3.9.6
       tsx:
         specifier: 4.20.6
         version: 4.20.6
@@ -52,7 +55,7 @@ importers:
     dependencies:
       '@a2a-js/sdk':
         specifier: 1.1.0
-        version: 1.1.0(express@5.2.1)
+        version: 1.1.0(@bufbuild/protobuf@2.6.3)(express@5.2.1)
       '@opennextjs/cloudflare':
         specifier: 1.20.6
         version: 1.20.6(next@16.3.5(@types/node@22.19.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.131.1(@types/node@22.19.0))
@@ -89,7 +92,7 @@ importers:
     dependencies:
       '@a2a-js/sdk':
         specifier: 1.1.0
-        version: 1.1.0(express@5.2.1)
+        version: 1.1.0(@bufbuild/protobuf@2.6.3)(express@5.2.1)
       '@chainlink/cre-sdk':
         specifier: 1.20.1
         version: 1.20.1(typescript@5.9.3)
@@ -2551,6 +2554,11 @@ packages:
     resolution: {integrity: sha512-RRuzqDtt5Y9h3quz5hWhK+TPnsmVs6WwSU6LkJMeY4HstUEDuYTG8UJSdawMRzmzAtV+KEoG8N3Qg2qLy5vM/A==}
     engines: {node: ^10 || ^12 || >=14}
 
+  prettier@3.9.6:
+    resolution: {integrity: sha512-OpN0zzVdiaiAhxpuuj5efpIS4sY9j7bY6uR5mnj5yPzGkdkjNKSJeUThPb60Jw29QuAZgA4o+/iB49kFiaBX6g==}
+    engines: {node: '>=14'}
+    hasBin: true
+
   proxy-addr@2.0.7:
     resolution: {integrity: sha512-llQsMLSUDUPT44jdrU/O37qlnifitDP+ZwrmmZcoSKyLKvtZxpyV0n2/bD/N4tBAAZ/gJEdZU7KMraoK1+XYAg==}
     engines: {node: '>= 0.10'}
@@ -2967,10 +2975,11 @@ packages:
 
 snapshots:
 
-  '@a2a-js/sdk@1.1.0(express@5.2.1)':
+  '@a2a-js/sdk@1.1.0(@bufbuild/protobuf@2.6.3)(express@5.2.1)':
     dependencies:
       jose: 6.2.12
     optionalDependencies:
+      '@bufbuild/protobuf': 2.6.3
       express: 5.2.1
 
   '@adraffy/ens-normalize@1.11.1': {}
@@ -5412,6 +5421,8 @@ snapshots:
       nanoid: 3.3.19
       picocolors: 1.1.1
       source-map-js: 1.2.1
+
+  prettier@3.9.6: {}
 
   proxy-addr@2.0.7:
     dependencies:
