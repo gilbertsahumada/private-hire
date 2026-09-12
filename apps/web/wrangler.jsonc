@@ -14,7 +14,7 @@
   "vars": {
     "PUBLIC_ORIGIN": "https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev",
     "ENABLE_PROBE": "true",
-    "JOBS_ENABLED": "false",
+    "JOBS_ENABLED": "true",
     "JOB_EVALUATOR": "0x391579ce844b95fc871fa9ce0af1ac8208418962",
     "JOB_EVALUATOR_CODE_HASH": "0xc6948c95c8c8d08c1f09a1c367ae1407f1b53e1720960332bb0299aa9e23e248",
     "ESCROW_CODE_HASH": "0x6fbb70f32c57790a7bc472b3fd6adb3bc22e911239f1a86f77898e69f62d5d13",

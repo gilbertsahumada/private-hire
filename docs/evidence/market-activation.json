@@ -1,0 +1,19 @@
+{
+  "checkedAt": "2026-09-12T16:09:14.880390+00:00",
+  "workerVersion": "2beeb481-1214-4b8e-a338-02488f6e6522",
+  "mode": "read-only activation checks; manual wallet journey pending",
+  "chainId": 5042002,
+  "rpcFallback": "https://rpc.blockdaemon.testnet.arc.network",
+  "source": "https://docs.arc.io/arc/references/rpc-endpoints",
+  "fallbackChainRuntimeAndReceiptVerified": true,
+  "catalog": {
+    "identityVerified": true,
+    "enabled": true,
+    "stale": false
+  },
+  "applicationTestsPassed": 31,
+  "browserProfileTestsPassed": 2,
+  "typecheck": "passed",
+  "webBuild": "passed",
+  "jobTransactions": []
+}

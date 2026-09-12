@@ -2,7 +2,7 @@
 
 ## Delivery status
 
-The application and simulation evaluator are implemented. The evaluator is deployed and its runtime code hash is configured. Contracting remains disabled pending the separately authorized browser-wallet job journeys. No paid job or income is fabricated from the earlier probes. The three real acceptance/rejection/expiry journeys remain pending; this stage is not complete.
+The application and simulation evaluator are implemented. The evaluator is deployed and its runtime code hash is configured. The user authorized starting the first browser-wallet job journey; staging contracting is enabled only when the live checks succeed. No paid job or income is fabricated from the earlier probes. The three real acceptance/rejection/expiry journeys remain pending; this stage is not complete.
 
 The English interface provides Agents, private Jobs and Provider workspaces, browser wallet discovery, SIWE login, immutable quotes, reviewed transactions, private results and receipt recovery. Browser wallets sign buyer/provider transactions; no provider key is stored in Workers. The operator runs CRE explicitly.
 
@@ -54,10 +54,16 @@ Local automated tests cover calculation vectors, SIWE replay/domain/session expi
 
 Browser checks run against the real HTTPS staging in desktop and mobile layouts. The test wallet signs only SIWE messages and refuses transactions. These checks do not demonstrate funding, submit or payment.
 
-Pending after the confirmed evaluator deployment: authorize the job test journeys, enable hiring, connect buyer/provider browser wallets, and create three separate real jobs. Record starting/final balances, allowance, each receipt and event, encrypted artifact commitment, operator execution and reload/browser-closed recovery. Acceptance must pay; committed rejection must refund; expiry must show Refund available until claimRefund confirms. Budget and gas must be recorded separately. Keep the stage pending until all three journeys have authentic evidence.
+Pending after the confirmed evaluator deployment and first-job authorization: connect buyer/provider browser wallets, and create three separate real jobs. Record starting/final balances, allowance, each receipt and event, encrypted artifact commitment, operator execution and reload/browser-closed recovery. Acceptance must pay; committed rejection must refund; expiry must show Refund available until claimRefund confirms. Budget and gas must be recorded separately. Keep the stage pending until all three journeys have authentic evidence.
 
 Workers compatibility: use fetch redirect `manual` and reject non-2xx responses. Workers rejects redirect `error`; local preview did not expose this production difference. Temporary private diagnostic logging was removed after identifying it.
 
 The public Arc RPC returned rate-limit errors under repeated browser reads. Identity reads are sequential with bounded retries; the catalog reuses a successful D1 verification for up to 30 seconds. Draft creation and create/fund preparation bypass this display cache and verify identity again. A failed fresh check prevents hiring.
 
 Rate limits can persist after retries. The profile then shows verification unavailable with an explicit retry action and keeps hiring disabled. Browser tests compare the visible identity state to the actual API response; they do not assert that the public RPC is always available. Reliable fresh reads remain required before the three funded journeys.
+
+## First-job activation and RPC resilience
+
+The buyer will perform MetaMask actions manually in Brave. No buyer private key is handled by the app or operator. The first-job setup passed the contract and identity preflight; no job transaction has been signed by these checks.
+
+The server keeps `https://rpc.testnet.arc.io` as primary and falls back to `https://rpc.blockdaemon.testnet.arc.network`, listed in the [official Arc RPC documentation](https://docs.arc.io/arc/references/rpc-endpoints). Before adding it, the fallback was checked against chain 5042002, the evaluator runtime hash and the canonical deployment block hash. This changes neither network nor escrow. Both endpoints failing still blocks hiring. The profile now explains live-check failures instead of suggesting the deployed evaluator is missing.
