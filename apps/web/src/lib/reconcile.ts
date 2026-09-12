@@ -1,3 +1,4 @@
+import { getDelivery } from './job-tasks';
 import { MARKET, escrowAbi } from '@private-hire/chain';
 import { chainClient, same } from './catalog';
 import { type MarketEnv, MarketError } from './market-env';
@@ -14,7 +15,7 @@ export async function reconcile(env: MarketEnv, fromBlock?: string) {
   const start = BigInt(cursor?.next_block ?? fromBlock!);
   const latest = await chainClient.getBlockNumber();
   const end = start + 999n < latest ? start + 999n : latest;
-  if (start > end) return { nextBlock: start.toString(), caughtUp: true };
+
   // Recheck recent indexed blocks before advancing; divergent events must not remain displayed.
   const prior = await env.DB.prepare(
     'SELECT DISTINCT block_number,block_hash FROM market_events ORDER BY CAST(block_number AS INTEGER) DESC LIMIT 20',
@@ -24,6 +25,11 @@ export async function reconcile(env: MarketEnv, fromBlock?: string) {
       blockNumber: BigInt(p.block_number),
     });
     if (block.hash !== p.block_hash) {
+      await env.DB.prepare(
+        "UPDATE market_drafts SET job_id=NULL,chain_status=NULL WHERE request_id IN (SELECT request_id FROM market_events WHERE block_number=? AND event_name='JobCreated')",
+      )
+        .bind(p.block_number)
+        .run();
       await env.DB.prepare('DELETE FROM market_events WHERE block_number=?')
         .bind(p.block_number)
         .run();
@@ -33,13 +39,16 @@ export async function reconcile(env: MarketEnv, fromBlock?: string) {
       throw new MarketError('REORG_RESCAN_REQUIRED', 409);
     }
   }
-  const logs = await chainClient.getContractEvents({
-    address: MARKET.escrow,
-    abi: escrowAbi,
-    fromBlock: start,
-    toBlock: end,
-    strict: true,
-  });
+  const logs =
+    start > end
+      ? []
+      : await chainClient.getContractEvents({
+          address: MARKET.escrow,
+          abi: escrowAbi,
+          fromBlock: start,
+          toBlock: end,
+          strict: true,
+        });
   for (const log of logs) {
     const id = log.args.jobId;
     if (id === undefined) continue;
@@ -100,6 +109,16 @@ export async function reconcile(env: MarketEnv, fromBlock?: string) {
   )
     .bind(MARKET.escrow, (end + 1n).toString())
     .run();
+  const reserved = await env.DB.prepare(
+    "SELECT d.* FROM market_drafts d JOIN market_tasks t ON t.request_id=d.request_id WHERE t.state='reserved' LIMIT 100",
+  ).all<Draft>();
+  for (const row of reserved.results) {
+    try {
+      await getDelivery(env, row);
+    } catch {
+      /* Missing or unverifiable objects remain pending. */
+    }
+  }
   const jobs = await env.DB.prepare(
     'SELECT request_id,job_id,chain_status FROM market_drafts WHERE chain_status IN (1,2) ORDER BY created_at LIMIT 100',
   ).all();

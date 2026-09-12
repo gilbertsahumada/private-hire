@@ -4,6 +4,7 @@ import {
   encodeFunctionData,
   erc20Abi,
   parseEventLogs,
+  parseAbiItem,
   type Address,
   type Hex,
   zeroAddress,
@@ -68,7 +69,7 @@ export async function createDraft(
   raw: unknown,
 ) {
   await verifyMarket(env);
-  await verifyIdentity();
+  await verifyIdentity(env);
   const b = z
     .strictObject({
       requestId: probeIdSchema,
@@ -90,7 +91,7 @@ export async function createDraft(
     if (
       JSON.stringify(m.input) !== JSON.stringify(b.input) ||
       JSON.stringify(m.policy) !== JSON.stringify(b.policy) ||
-      m.expiredAt - existing.created_at !== b.durationMinutes * 60
+      m.durationMinutes !== b.durationMinutes
     )
       throw new MarketError('CONFLICT', 409);
 
@@ -113,6 +114,7 @@ export async function createDraft(
     policy: b.policy,
     budget: env.JOB_PRICE_ATOMIC ?? MARKET.fee,
     token: ARC.usdc,
+    durationMinutes: b.durationMinutes,
     expiredAt: created + b.durationMinutes * 60,
     nonce: nonce(),
   });
@@ -121,6 +123,7 @@ export async function createDraft(
     await writeOnce(env, object_key, `manifest:${wallet}:${b.requestId}`, m),
   );
   if (
+    saved.durationMinutes !== b.durationMinutes ||
     saved.buyer !== wallet ||
     JSON.stringify(saved.input) !== JSON.stringify(b.input) ||
     JSON.stringify(saved.policy) !== JSON.stringify(b.policy)
@@ -138,7 +141,7 @@ export async function createDraft(
       object_key,
       saved.budget,
       saved.expiredAt,
-      saved.expiredAt - b.durationMinutes * 60,
+      saved.expiredAt - saved.durationMinutes * 60,
       saved.chainId,
       saved.escrow,
       saved.evaluator,
@@ -187,7 +190,28 @@ export async function jobView(env: MarketEnv, d: Draft, wallet: string) {
   )
     .bind(d.request_id)
     .all();
+  const creation = (
+    events.results as { event_name: string; block_number: string }[]
+  ).find((e) => e.event_name === 'JobCreated');
+  const reports =
+    job && [3, 4].includes(job.status) && creation
+      ? await chainClient.getLogs({
+          address: d.evaluator,
+          event: parseAbiItem(
+            'event JobEvaluated(uint256 indexed jobId, bytes32 indexed reportHash, uint8 decision)',
+          ),
+          args: { jobId: job.id },
+          fromBlock: BigInt(creation.block_number),
+          toBlock: 'latest',
+          strict: true,
+        })
+      : [];
   const m = await manifest(env, d);
+  const attempts = await env.DB.prepare(
+    'SELECT phase,state,updated_at FROM market_attempts WHERE request_id=? ORDER BY updated_at DESC LIMIT 10',
+  )
+    .bind(d.request_id)
+    .all();
 
   return {
     ...d,
@@ -195,6 +219,12 @@ export async function jobView(env: MarketEnv, d: Draft, wallet: string) {
     onchainBudget: job?.budget.toString() ?? null,
     task,
     events: events.results,
+    attempts: attempts.results,
+    reports: reports.map((r) => ({
+      hash: r.args.reportHash,
+      decision: r.args.decision,
+      txHash: r.transactionHash,
+    })),
     input: m.input,
     ...(same(wallet, d.buyer) ? { policy: m.policy } : {}),
     refundAvailable:
@@ -220,7 +250,7 @@ export async function prepareAction(
     if (now >= d.expired_at) throw new MarketError('JOB_EXPIRED');
   }
   if (action === 'create' && isBuyer && !job && !d.pending_tx) {
-    await verifyIdentity();
+    await verifyIdentity(env);
     if (d.expired_at <= now + 300) throw new MarketError('EXPIRY_TOO_CLOSE');
     data = encodeFunctionData({
       abi: escrowAbi,
@@ -258,7 +288,7 @@ export async function prepareAction(
     job.budget === BigInt(d.budget) &&
     job.budget > 0n
   ) {
-    await verifyIdentity();
+    await verifyIdentity(env);
     data = encodeFunctionData({
       abi: escrowAbi,
       functionName: 'fund',
@@ -316,8 +346,6 @@ export async function confirmTx(
   hash: Hex,
 ) {
   const receipt = await chainClient.getTransactionReceipt({ hash });
-  if (receipt.status !== 'success')
-    throw new MarketError('TRANSACTION_REVERTED', 409);
   if (!same(receipt.from, wallet))
     throw new MarketError('WRONG_TRANSACTION', 403);
   const tx = await chainClient.getTransaction({ hash });
@@ -327,6 +355,17 @@ export async function confirmTx(
   });
   if (block.hash !== receipt.blockHash)
     throw new MarketError('REORG_PENDING', 409);
+  if (receipt.status !== 'success') {
+    if (!same(receipt.to ?? '', ARC.usdc) && !same(receipt.to ?? '', d.escrow))
+      throw new MarketError('WRONG_TRANSACTION');
+    await env.DB.prepare(
+      'UPDATE market_drafts SET pending_tx=NULL WHERE request_id=? AND pending_tx=?',
+    )
+      .bind(d.request_id, hash)
+      .run();
+
+    return { confirmed: false, reverted: true };
+  }
   if (same(receipt.to ?? '', ARC.usdc)) {
     const call = decodeFunctionData({ abi: erc20Abi, data: tx.input });
     if (

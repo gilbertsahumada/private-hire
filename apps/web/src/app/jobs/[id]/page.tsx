@@ -21,6 +21,8 @@ type Job = {
   events: { tx_hash: string; event_name: string; block_number: string }[];
   input: unknown;
   policy?: unknown;
+  reports: { hash: string; decision: number; txHash: string }[];
+  attempts: { phase: string; state: string; updated_at: number }[];
 };
 
 type Prepared = {
@@ -83,9 +85,14 @@ export default function JobDetail({
   }
 
   async function confirm(hash: string) {
-    await api(`/api/jobs/${id}/confirm-tx`, { hash });
+    const receipt = await api<{ reverted?: boolean }>(
+      `/api/jobs/${id}/confirm-tx`,
+      { hash },
+    );
     localStorage.removeItem(`job-tx:${id}`);
     await refresh();
+    if (receipt.reverted)
+      setError('Transaction reverted. You can review and retry the action.');
   }
 
   async function sign() {
@@ -125,7 +132,6 @@ export default function JobDetail({
       const hash = localStorage.getItem(`job-tx:${id}`) ?? job?.pending_tx;
       if (hash) {
         await confirm(hash);
-        setError('');
       } else await refresh();
     } catch {
       setError(
@@ -190,13 +196,17 @@ export default function JobDetail({
             <dd>{job.manifest_hash}</dd>
             <dt>Work status</dt>
             <dd>
-              {job.task?.state === 'ready'
-                ? 'Result ready'
-                : job.chain_status === 1
-                  ? 'Awaiting operator dispatch'
-                  : job.chain_status === 2
-                    ? 'Awaiting operator evaluation'
-                    : 'Not running'}
+              {job.attempts?.[0]?.state === 'running'
+                ? job.attempts[0].phase === 'dispatch'
+                  ? 'Agent running'
+                  : 'Evaluating · CRE simulation'
+                : job.task?.state === 'ready'
+                  ? 'Result ready'
+                  : job.chain_status === 1
+                    ? 'Awaiting operator dispatch'
+                    : job.chain_status === 2
+                      ? 'Awaiting operator evaluation'
+                      : 'Not running'}
             </dd>
           </dl>
           {job.chain_status === 0 && job.onchainBudget === '0' && (
@@ -299,6 +309,27 @@ export default function JobDetail({
               </button>
               {result !== null && <pre>{JSON.stringify(result, null, 2)}</pre>}
             </>
+          )}
+          {!!job.reports?.length && (
+            <section className="panel">
+              <h2>Public evaluation report</h2>
+              {job.reports.map((r) => (
+                <div key={r.hash}>
+                  <p>
+                    {r.decision === 1 ? 'Accepted' : 'Rejected'} · CRE
+                    simulation
+                  </p>
+                  <p className="subtle">{r.hash}</p>
+                  <a
+                    href={`https://testnet.arcscan.app/tx/${r.txHash}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    View evaluator receipt
+                  </a>
+                </div>
+              ))}
+            </section>
           )}
           <h2>Confirmed activity</h2>
           {!job.events.length ? (

@@ -1,5 +1,5 @@
 import { session } from '../../../lib/auth';
-import { createDraft, type Draft } from '../../../lib/jobs';
+import { createDraft, chainJob, type Draft } from '../../../lib/jobs';
 import {
   fail,
   marketEnv,
@@ -20,7 +20,23 @@ export async function GET(request: Request) {
       .bind(wallet)
       .all<Draft>();
 
-    return publicJson({ jobs: rows.results });
+    const jobs = await Promise.all(
+      rows.results.map(async (d) => {
+        const job = await chainJob(d);
+
+        return {
+          ...d,
+          chain_status: job?.status ?? null,
+          onchainBudget: job?.budget.toString() ?? null,
+          refundAvailable:
+            !!job &&
+            [1, 2].includes(job.status) &&
+            Date.now() / 1000 >= d.expired_at,
+        };
+      }),
+    );
+
+    return publicJson({ jobs });
   } catch (e) {
     return fail(e);
   }

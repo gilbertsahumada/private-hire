@@ -7,7 +7,7 @@ import {
   toHex,
   type Hex,
 } from 'viem';
-import { arcTestnet } from 'viem/chains';
+import { arcChain as arcTestnet } from '@private-hire/chain';
 import { z } from 'zod';
 import { nonce } from './storage';
 import { MarketError, type MarketEnv } from './market-env';

@@ -1,5 +1,12 @@
-import { createPublicClient, http, keccak256, type Address } from 'viem';
-import { arcTestnet } from 'viem/chains';
+import snapshot from './agent-snapshot.json';
+import {
+  createPublicClient,
+  http,
+  keccak256,
+  parseAbi,
+  type Address,
+} from 'viem';
+import { arcChain as arcTestnet } from '@private-hire/chain';
 import { ARC, MARKET, escrowAbi, identityAbi } from '@private-hire/chain';
 import { z } from 'zod';
 import { type MarketEnv, MarketError } from './market-env';
@@ -16,6 +23,7 @@ export async function verifyMarket(env: MarketEnv) {
   if (
     env.JOBS_ENABLED !== 'true' ||
     !env.JOB_EVALUATOR ||
+    !env.JOB_EVALUATOR_CODE_HASH ||
     /^0x0{40}$/i.test(env.JOB_EVALUATOR)
   )
     throw new MarketError('CONTRACTING_NOT_ENABLED', 503);
@@ -43,6 +51,39 @@ export async function verifyMarket(env: MarketEnv) {
         functionName: 'evaluatorFeeBP',
       }),
     ]);
+  const evaluatorAddress = env.JOB_EVALUATOR as Address;
+  const evaluatorAbi = parseAbi([
+    'function forwarder() view returns (address)',
+    'function escrow() view returns (address)',
+    'function SIMULATION_ONLY() view returns (bool)',
+  ]);
+  const [evaluatorCode, forwarder, evaluatorEscrow, simulation] =
+    await Promise.all([
+      chainClient.getCode({ address: evaluatorAddress }),
+      chainClient.readContract({
+        address: evaluatorAddress,
+        abi: evaluatorAbi,
+        functionName: 'forwarder',
+      }),
+      chainClient.readContract({
+        address: evaluatorAddress,
+        abi: evaluatorAbi,
+        functionName: 'escrow',
+      }),
+      chainClient.readContract({
+        address: evaluatorAddress,
+        abi: evaluatorAbi,
+        functionName: 'SIMULATION_ONLY',
+      }),
+    ]);
+  if (
+    !evaluatorCode ||
+    keccak256(evaluatorCode) !== env.JOB_EVALUATOR_CODE_HASH ||
+    !same(forwarder, ARC.mockForwarder) ||
+    !same(evaluatorEscrow, MARKET.escrow) ||
+    !simulation
+  )
+    throw new MarketError('EVALUATOR_CONFIGURATION_CHANGED', 503);
   const implementation = `0x${slot?.slice(-40)}` as Address;
   const implementationCode = await chainClient.getCode({
     address: implementation,
@@ -61,7 +102,7 @@ export async function verifyMarket(env: MarketEnv) {
     throw new MarketError('CONTRACT_CONFIGURATION_CHANGED', 503);
 }
 
-export async function verifyIdentity() {
+export async function verifyIdentity(env?: MarketEnv) {
   const args = [BigInt(MARKET.agentId)] as const;
   const [owner, wallet, uri] = await Promise.all([
     chainClient.readContract({
@@ -89,11 +130,15 @@ export async function verifyIdentity() {
     uri !== `${MARKET.origin}/agent/registration.json`
   )
     throw new MarketError('AGENT_IDENTITY_CHANGED', 503);
-  const metadata = await fetch(uri, {
-    signal: AbortSignal.timeout(8000),
-    redirect: 'error',
-    cache: 'no-store',
-  });
+  const metadata = env?.ASSETS
+    ? await env.ASSETS.fetch(new Request(uri))
+    : await fetch(uri, {
+        signal: AbortSignal.timeout(8000),
+        redirect: 'error',
+        cache: 'no-store',
+      });
+  if (!metadata.ok)
+    throw new MarketError(`METADATA_HTTP_${metadata.status}`, 503);
   const parsed = z
     .object({
       services: z.array(z.object({ name: z.string(), endpoint: z.string() })),
@@ -110,12 +155,14 @@ export async function verifyIdentity() {
 export async function catalog(env: MarketEnv) {
   let indexedName: string | null = null;
   let stale = false;
+  let discoveryReason = '';
   try {
     const response = await fetch(
       'https://trust8004.xyz/api/v1/catalog/agents/5042002:894552',
       { signal: AbortSignal.timeout(6000), redirect: 'error' },
     );
-    if (!response.ok) throw new Error();
+    if (!response.ok)
+      throw new MarketError(`DISCOVERY_HTTP_${response.status}`, 503);
     const data = z
       .object({
         agentId: z.literal('894552'),
@@ -136,24 +183,28 @@ export async function catalog(env: MarketEnv) {
     )
       .bind('894552', JSON.stringify(data), Date.now())
       .run();
-  } catch {
+  } catch (error) {
     stale = true;
+    discoveryReason =
+      error instanceof MarketError ? error.code : 'DISCOVERY_PENDING';
     const cached = await env.DB.prepare(
       'SELECT body FROM public_agent_cache WHERE id=?',
     )
       .bind('894552')
       .first<{ body: string }>();
-    indexedName = cached ? JSON.parse(cached.body).name : null;
+    indexedName = cached ? JSON.parse(cached.body).name : snapshot.name;
   }
   let identityVerified = false;
   let enabled = false;
+  let availabilityReason = '';
   try {
-    await verifyIdentity();
+    await verifyIdentity(env);
     identityVerified = true;
     await verifyMarket(env);
     enabled = true;
-  } catch {
-    /* Expose availability independently from public discovery. */
+  } catch (error) {
+    availabilityReason =
+      error instanceof MarketError ? error.code : 'VERIFICATION_PENDING';
   }
 
   return {
@@ -166,8 +217,10 @@ export async function catalog(env: MarketEnv) {
     chainId: ARC.id,
     price: env.JOB_PRICE_ATOMIC ?? MARKET.fee,
     stale,
+    discoveryReason,
     identityVerified,
     enabled,
+    availabilityReason,
     mode: 'CRE simulation',
     trustUrl: 'https://trust8004.xyz/agents/5042002:894552',
   };

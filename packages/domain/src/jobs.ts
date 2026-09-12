@@ -32,6 +32,7 @@ export const manifestSchema = z.strictObject({
   policy: policySchema,
   budget: decimalSchema.refine((v) => BigInt(v) > 0n),
   token: addressSchema,
+  durationMinutes: z.number().int().min(15).max(10080),
   expiredAt: z.number().int().safe().positive(),
   nonce: z.string().regex(/^[a-f0-9]{64}$/),
 });

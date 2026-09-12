@@ -20,6 +20,8 @@ type Row = {
   budget: string;
   expired_at: number;
   chain_status: number | null;
+  onchainBudget: string | null;
+  refundAvailable: boolean;
 };
 
 export function JobList({ provider = false }: { provider?: boolean }) {
@@ -28,16 +30,29 @@ export function JobList({ provider = false }: { provider?: boolean }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   useEffect(() => {
+    let active = true;
     setRows([]);
     if (!account) return;
     setLoading(true);
     setError('');
     api<{ jobs: Row[] }>(`/api/jobs?role=${provider ? 'provider' : 'buyer'}`)
-      .then((r) => setRows(r.jobs))
-      .catch(() =>
-        setError('Jobs could not be loaded. Sign in again or reload to retry.'),
+      .then((r) => {
+        if (active) setRows(r.jobs);
+      })
+      .catch(
+        () =>
+          active &&
+          setError(
+            'Jobs could not be loaded. Sign in again or reload to retry.',
+          ),
       )
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, [account, provider]);
 
   return (
@@ -97,9 +112,20 @@ export function JobList({ provider = false }: { provider?: boolean }) {
                 Expires {new Date(row.expired_at * 1000).toLocaleString()}
               </p>
             </div>
-            <span>{formatUnits(BigInt(row.budget), 6)} USDC</span>
+            <span>
+              Quote: {formatUnits(BigInt(row.budget), 6)} USDC
+              <br />
+              Budget:{' '}
+              {row.onchainBudget === null
+                ? 'Not created'
+                : `${formatUnits(BigInt(row.onchainBudget), 6)} USDC`}
+            </span>
             <span className="badge">
-              {row.chain_status === null ? 'Draft' : statuses[row.chain_status]}
+              {row.refundAvailable
+                ? 'Refund available'
+                : row.chain_status === null
+                  ? 'Draft'
+                  : statuses[row.chain_status]}
             </span>
           </article>
         ))

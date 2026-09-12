@@ -8,8 +8,11 @@ interface MarketStatement extends Statement {
 
 export type MarketEnv = Omit<Bindings, 'DB'> & {
   DB: { prepare(sql: string): MarketStatement };
+  ASSETS?: { fetch(request: Request): Promise<Response> };
   JOBS_ENABLED?: string;
+  ENABLE_JOB_TEST_FIXTURES?: string;
   JOB_EVALUATOR?: string;
+  JOB_EVALUATOR_CODE_HASH?: string;
   JOB_PRICE_ATOMIC?: string;
   ESCROW_CODE_HASH?: string;
   ESCROW_IMPLEMENTATION_HASH?: string;

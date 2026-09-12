@@ -16,7 +16,7 @@ import {
   type Address,
   type Hex,
 } from 'viem';
-import { arcTestnet } from 'viem/chains';
+import { arcChain as arcTestnet } from '@private-hire/chain';
 
 type Injected = EIP1193Provider;
 
@@ -70,6 +70,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState('');
   const provider = useRef<Injected | null>(null);
   const logout = useCallback(async () => {
+    localStorage.removeItem('market-wallet');
     setAccount(null);
     await api('/api/auth/logout', {});
   }, []);
@@ -117,6 +118,39 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     };
   }, [account, logout]);
 
+  useEffect(() => {
+    let cancelled = false;
+    if (account || !wallets.length) return;
+    const selected = wallets.find(
+      (w) => w.uuid === localStorage.getItem('market-wallet'),
+    );
+    if (!selected) return;
+    const client = createWalletClient({
+      chain: arcTestnet,
+      transport: custom(selected.provider),
+    });
+    void Promise.all([
+      client.getAddresses(),
+      client.getChainId(),
+      api<{ wallet: string }>('/api/auth/session'),
+    ])
+      .then(([addresses, chainId, login]) => {
+        if (
+          !cancelled &&
+          chainId === arcTestnet.id &&
+          addresses[0]?.toLowerCase() === login.wallet
+        ) {
+          provider.current = selected.provider;
+          setAccount(login.wallet);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [wallets, account]);
+
   async function connect(id?: string) {
     setBusy(true);
     setError('');
@@ -124,6 +158,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const selected = wallets.find((w) => w.uuid === id) ?? wallets[0];
       if (!selected) throw new Error('Install a browser wallet to continue.');
       provider.current = selected.provider;
+      localStorage.setItem('market-wallet', selected.uuid);
       const client = createWalletClient({
         chain: arcTestnet,
         transport: custom(selected.provider),
@@ -204,6 +239,7 @@ export function WalletControl() {
       ) : (
         <>
           <select aria-label="Choose wallet" id="wallet-choice">
+            {w.wallets.length === 0 && <option>No browser wallet</option>}
             {w.wallets.map((wallet) => (
               <option key={wallet.uuid} value={wallet.uuid}>
                 {wallet.name}

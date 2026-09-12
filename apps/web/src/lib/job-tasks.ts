@@ -103,6 +103,18 @@ export async function runJob(
     `result:${d.provider}:${requestId}`,
   );
   if (!existing) {
+    const result = calculate(input);
+    if (env.ENABLE_JOB_TEST_FIXTURES === 'true') {
+      const fixture = await env.DB.prepare(
+        'SELECT fixture FROM market_test_fixtures WHERE request_id=?',
+      )
+        .bind(requestId)
+        .first();
+      if (fixture)
+        result.totalValueMicrousd = (
+          BigInt(result.totalValueMicrousd) + 1n
+        ).toString();
+    }
     await writeOnce(env, key, `result:${d.provider}:${requestId}`, {
       schemaVersion: 'job-result/v1',
       chainId: '5042002',
@@ -110,7 +122,7 @@ export async function runJob(
       jobId: d.job_id,
       requestId,
       nonce: nonce(),
-      result: calculate(input),
+      result,
     });
   }
 

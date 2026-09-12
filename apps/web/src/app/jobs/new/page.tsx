@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { formatUnits } from 'viem';
 import { useRouter } from 'next/navigation';
 import { inputSchema, policySchema } from '@private-hire/domain';
 import { api, useWallet } from '../../../components/wallet';
@@ -9,6 +10,13 @@ export default function NewJob() {
   const { account } = useWallet();
   const router = useRouter();
   const [busy, setBusy] = useState(false);
+  const [price, setPrice] = useState<string | null>(null);
+  useEffect(() => {
+    api<{ agents: { price: string }[] }>('/api/agents')
+      .then((r) => setPrice(r.agents[0].price))
+      .catch(() => setPrice(null));
+  }, []);
+  const [requestId] = useState(() => `job-${crypto.randomUUID()}`);
   const [error, setError] = useState('');
   const [positions, setPositions] = useState([
     {
@@ -23,7 +31,6 @@ export default function NewJob() {
     setBusy(true);
     setError('');
     try {
-      const requestId = `job-${crypto.randomUUID()}`;
       const input = inputSchema.parse({
         schemaVersion: 'portfolio-input/v1',
         requestId,
@@ -56,7 +63,9 @@ export default function NewJob() {
     <main>
       <h1>Prepare your job</h1>
       <p className="muted">
-        Portfolio Calculator · Fixed tariff: 0.01 USDC plus network gas.
+        Portfolio Calculator · Fixed tariff:{' '}
+        {price ? formatUnits(BigInt(price), 6) + ' USDC' : 'Checking…'} plus
+        network gas.
       </p>
       {!account ? (
         <p className="notice">Connect your wallet before saving a quote.</p>
