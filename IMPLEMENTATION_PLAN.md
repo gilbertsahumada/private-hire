@@ -28,7 +28,7 @@
 - [x] Broadcast both reports; verify successful receipts, decisions and artifact hashes against A2A.
 - [x] Run log-trigger simulation against the real rejection ProbeRecorded event; no additional report or transaction.
 
-Access to CRE beta is confirmed. No escrow/payments or deployed confidential workflow in this stage. Local simulations now set `writeReport:true` against the deployed receiver. Dry runs and authorized broadcasts both passed. Evidence now includes real Arc report receipts and a log-trigger simulation, using the local HTTP agent. HTTPS staging now works; its two complete report simulations now use `writeReport:true` without broadcast. Arc broadcast evidence was obtained separately through the local HTTP agent. No live TEE execution is claimed.
+Access to CRE beta is confirmed. No escrow/payments or deployed confidential workflow in this stage. Local simulations now set `writeReport:true` against the deployed receiver. Dry runs and authorized broadcasts both passed. Evidence now includes real Arc report receipts and a log-trigger simulation, using the local HTTP agent. HTTPS staging now works; its two complete report simulations now use `writeReport:true` without broadcast. Arc broadcast evidence now also covers the complete HTTPS staging workflow. No live TEE execution is claimed.
 
 ## Commits
 
@@ -36,4 +36,4 @@ Access to CRE beta is confirmed. No escrow/payments or deployed confidential wor
 - `a4d248c`: A2A service, encrypted Cloudflare storage and integration scripts.
 - Subsequent commits record CRE workflow, evidence, deployment preparation and validation fixes. See Git history for their hashes.
 
-The unified HTTPS-to-report dry run passed for both decisions. New broadcasts using those HTTPS fixtures remain pending explicit authorization. See `docs/evidence/cre-staging-report-dry-run.json`.
+The user authorized both unified HTTPS broadcasts. Acceptance and rejection are confirmed on Arc; their event hashes match recalculated commitments of artifacts recovered from HTTPS A2A. The log trigger also passed against the new rejection event. See `docs/evidence/https-arc-report-summary.json`.

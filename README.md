@@ -2,7 +2,7 @@
 
 A pnpm/Turborepo monorepo testing an A2A 1.0 portfolio agent, encrypted Cloudflare persistence and a confidential CRE workflow's report path to Arc Testnet.
 
-**Current evidence:** the Worker builds and runs in local `workerd`; D1/R2 integration and two CRE CLI simulations succeed (accept/reject with private tolerances). Arc read-only RPC confirms the forwarders and USDC decimals. The simulation-only receiver is deployed on Arc with a confirmed receipt. Both CRE report transactions and the EVM log-trigger simulation are confirmed. Cloudflare HTTPS staging is live; remote D1/R2 integration and both CRE transport/evaluation simulations pass. The CRE simulator is **not a real TEE**.
+**Current evidence:** the Worker builds and runs in local `workerd`; D1/R2 integration and two CRE CLI simulations succeed (accept/reject with private tolerances). Arc read-only RPC confirms the forwarders and USDC decimals. The simulation-only receiver is deployed on Arc with a confirmed receipt. Both CRE report transactions and the EVM log-trigger simulation are confirmed. Cloudflare HTTPS staging is live; remote D1/R2 integration and both complete CRE HTTPS report executions pass, with confirmed Arc receipts and matching artifact commitments. The CRE simulator is **not a real TEE**.
 
 There is no escrow, payment, buyer login, marketplace, or deployed CRE workflow in this stage. `ProbeReceiver` is simulation-only and holds no funds.
 

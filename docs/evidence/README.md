@@ -25,4 +25,8 @@ Do not replace these with local mock results. Once available, receipt verificati
 
 `arc-report-summary.json` compares onchain result hashes with A2A artifacts and records both fees and the post-report wallet balance. Scope: **CRE simulation + Arc testnet transaction**, with a local HTTP agent; no live TEE or remote Cloudflare proof.
 
-`cre-staging-report-dry-run.json` records the unified HTTPS report simulation, binary/config hashes and RPC checks that both new probe decisions remain zero onchain.
+`cre-staging-report-dry-run.json` records the unified HTTPS report simulation, binary/config hashes and RPC checks that both new probe decisions were zero onchain at the time of the dry run. Later authorized broadcasts are recorded separately.
+
+## Complete HTTPS report execution
+
+`https-arc-report-summary.json` records the two authorized transactions from the HTTPS staging workflow. Their receipts are `report-67397c6db229.json` (rejection) and `report-cd1ee7bcc7fc.json` (acceptance). Recalculated commitments of artifacts recovered through HTTPS match both event hashes. `cre-staging-log-no-broadcast.log` verifies the EVM trigger against the new rejection event without producing another report. Scope remains **CRE simulation + Arc testnet transaction**, not a live TEE.
