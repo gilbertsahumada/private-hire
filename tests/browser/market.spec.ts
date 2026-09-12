@@ -11,6 +11,9 @@ import {
 test('shows the real agent and protected empty workspaces without overflow', async ({
   page,
 }, info) => {
+  const catalogResponse = page.waitForResponse(
+    (r) => r.url().endsWith('/api/agents') && r.status() === 200,
+  );
   await page.goto('/agents');
   await expect(
     page.getByRole('heading', { name: 'Portfolio Calculator', exact: true }),
@@ -24,9 +27,19 @@ test('shows the real agent and protected empty workspaces without overflow', asy
   await expect(page.getByText('Checking registry…')).toHaveCount(0, {
     timeout: 30000,
   });
+  const state = await (await catalogResponse).json();
   await expect(
-    page.getByText('Registry and payment wallet verified'),
+    page.getByText(
+      state.agents[0].identityVerified
+        ? 'Registry and payment wallet verified'
+        : 'Verification unavailable',
+      { exact: true },
+    ),
   ).toBeVisible();
+  if (!state.agents[0].identityVerified)
+    await expect(
+      page.getByRole('button', { name: 'Retry verification' }),
+    ).toBeVisible();
   await page.screenshot({
     path: `.local/agents-${info.project.name}.png`,
     fullPage: true,

@@ -123,6 +123,17 @@ export default function Agents() {
             access stored data. Registry identity does not certify a live
             enclave.
           </p>
+          {agent && !agent.identityVerified && (
+            <div className="notice">
+              <p>
+                Registry verification is temporarily unavailable. Hiring stays
+                disabled until a fresh check succeeds.
+              </p>
+              <button className="secondary" onClick={load}>
+                Retry verification
+              </button>
+            </div>
+          )}
           {agent?.stale && (
             <p className="notice">
               Discovery data may be outdated. Onchain verification is shown
