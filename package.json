@@ -14,7 +14,12 @@
     "web:build": "pnpm --filter @private-hire/web build",
     "web:deploy": "pnpm --filter @private-hire/web run deploy",
     "format": "python3 scripts/format.py",
-    "format:check": "python3 scripts/format.py --check"
+    "format:check": "python3 scripts/format.py --check",
+    "jobs:compile": "python3 scripts/jobs.py compile",
+    "jobs:dispatch": "python3 scripts/jobs.py dispatch",
+    "jobs:evaluate": "python3 scripts/jobs.py evaluate",
+    "jobs:reconcile": "python3 scripts/jobs.py reconcile",
+    "market:prepare": "pnpm --filter @private-hire/cre exec tsx scripts/prepare-market.ts"
   },
   "devDependencies": {
     "@types/node": "22.19.0",
