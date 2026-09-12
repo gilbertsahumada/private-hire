@@ -12,6 +12,7 @@ type Agent = {
   stale: boolean;
   identityVerified: boolean;
   enabled: boolean;
+  availabilityReason: string;
   trustUrl: string;
 };
 
@@ -112,8 +113,9 @@ export default function Agents() {
             <>
               <button disabled>Contracting not enabled</button>
               <p className="subtle">
-                The evaluator must be deployed and verified before jobs can be
-                funded.
+                {agent?.availabilityReason === 'CONTRACTING_NOT_ENABLED'
+                  ? 'Testnet hiring has not been activated.'
+                  : 'Live network checks must succeed before you can create or fund a job.'}
               </p>
             </>
           )}
@@ -123,17 +125,20 @@ export default function Agents() {
             access stored data. Registry identity does not certify a live
             enclave.
           </p>
-          {agent && !agent.identityVerified && (
-            <div className="notice">
-              <p>
-                Registry verification is temporarily unavailable. Hiring stays
-                disabled until a fresh check succeeds.
-              </p>
-              <button className="secondary" onClick={load}>
-                Retry verification
-              </button>
-            </div>
-          )}
+          {agent &&
+            !agent.enabled &&
+            agent.availabilityReason !== 'CONTRACTING_NOT_ENABLED' && (
+              <div className="notice">
+                <p>
+                  Live identity or contract verification is temporarily
+                  unavailable. Hiring stays disabled until a fresh check
+                  succeeds.
+                </p>
+                <button className="secondary" onClick={load}>
+                  Retry verification
+                </button>
+              </div>
+            )}
           {agent?.stale && (
             <p className="notice">
               Discovery data may be outdated. Onchain verification is shown

@@ -192,6 +192,7 @@ async function main() {
       .filter((l) => l.includes('=') && !l.startsWith('#'))
       .map((l) => {
         const i = l.indexOf('=');
+
         return [l.slice(0, i), l.slice(i + 1).trim()];
       }),
   );

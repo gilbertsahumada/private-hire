@@ -19,15 +19,20 @@ test('shows the real agent and protected empty workspaces without overflow', asy
     page.getByRole('heading', { name: 'Portfolio Calculator', exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByRole('button', { name: 'Contracting not enabled' }),
-  ).toBeDisabled();
-  await expect(
     page.getByRole('img', { name: 'Portfolio Calculator avatar' }),
   ).toBeVisible();
   await expect(page.getByText('Checking registry…')).toHaveCount(0, {
     timeout: 30000,
   });
   const state = await (await catalogResponse).json();
+  if (state.agents[0].enabled)
+    await expect(
+      page.getByRole('link', { name: 'Create a job', exact: true }),
+    ).toBeVisible();
+  else
+    await expect(
+      page.getByRole('button', { name: 'Contracting not enabled' }),
+    ).toBeDisabled();
   await expect(
     page.getByText(
       state.agents[0].identityVerified

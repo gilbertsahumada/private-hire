@@ -2,6 +2,7 @@ import snapshot from './agent-snapshot.json';
 import {
   createPublicClient,
   http,
+  fallback,
   keccak256,
   parseAbi,
   type Address,
@@ -13,7 +14,13 @@ import { type MarketEnv, MarketError } from './market-env';
 
 export const chainClient = createPublicClient({
   chain: arcTestnet,
-  transport: http(ARC.rpc, { timeout: 10_000 }),
+  transport: fallback(
+    [
+      http(ARC.rpc, { timeout: 8000 }),
+      http('https://rpc.blockdaemon.testnet.arc.network', { timeout: 8000 }),
+    ],
+    { retryCount: 1, rank: false },
+  ),
 });
 
 export const same = (a: string, b: string) =>
