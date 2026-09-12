@@ -3,10 +3,32 @@
   "name": "confidential-agent-jobs-staging",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-09-01",
-  "compatibility_flags": ["nodejs_compat"],
-  "assets": {"directory": ".open-next/assets", "binding": "ASSETS"},
-  "observability": {"enabled": false},
-  "vars": {"PUBLIC_ORIGIN": "http://127.0.0.1:8787", "ENABLE_PROBE": "true"},
-  "d1_databases": [{"binding": "DB", "database_name": "confidential-agent-jobs-staging", "database_id": "00000000-0000-0000-0000-000000000001", "migrations_dir": "migrations"}],
-  "r2_buckets": [{"binding": "PRIVATE_DATA", "bucket_name": "confidential-agent-jobs-private-staging"}]
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": false
+  },
+  "vars": {
+    "PUBLIC_ORIGIN": "https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev",
+    "ENABLE_PROBE": "true"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "confidential-agent-jobs-staging",
+      "database_id": "52155584-f6b0-448c-b3f4-1c86c3e80381",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "PRIVATE_DATA",
+      "bucket_name": "confidential-agent-jobs-private-staging"
+    }
+  ]
 }

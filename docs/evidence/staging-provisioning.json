@@ -1,0 +1,24 @@
+{
+  "recordedAt": "2026-09-12T08:30:22.496694+00:00",
+  "accountId": "bc8d4adf4860284fda426b24e7377bc2",
+  "worker": "confidential-agent-jobs-staging",
+  "plannedOrigin": "https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev",
+  "databaseId": "52155584-f6b0-448c-b3f4-1c86c3e80381",
+  "migration": "0001_probes.sql applied",
+  "bucket": "confidential-agent-jobs-private-staging",
+  "storageClass": "Standard",
+  "bucketCreated": true,
+  "secretNames": [
+    "STORAGE_KEY",
+    "A2A_TOKEN",
+    "CONTEXT_TOKEN",
+    "SETUP_TOKEN"
+  ],
+  "webBuild": "passed",
+  "applicationDeployment": "failed",
+  "attempts": 2,
+  "errorCode": 10136,
+  "error": "R2 binding error: Please enable R2 through the Cloudflare Dashboard.",
+  "remoteIntegration": "pending",
+  "arcBroadcast": false
+}

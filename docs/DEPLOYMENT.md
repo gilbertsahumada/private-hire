@@ -4,15 +4,15 @@
 
 - Connected Cloudflare account: `bc8d4adf4860284fda426b24e7377bc2`.
 - Worker: `confidential-agent-jobs-staging`, on that account's workers.dev subdomain.
-- D1: `confidential-agent-jobs-staging` (not created).
-- Private R2: `confidential-agent-jobs-private-staging` (not created).
-- Cloudflare returned API error 10042: R2 must be enabled in the dashboard. User action and staging publication authorization are pending.
+- D1: `confidential-agent-jobs-staging`, UUID `52155584-f6b0-448c-b3f4-1c86c3e80381` (created and migrated).
+- Private R2: `confidential-agent-jobs-private-staging` (created, Standard class, EEUR).
+- User confirmed R2 activation and authorized staging. Listing and creating buckets succeeds. Worker secrets are installed, but publishing the application failed twice with API error 10136: R2 binding requires activation. The cause is not confirmed; no successful HTTPS application deployment is claimed.
 - Arc: chainId 5042002. The unsigned ProbeReceiver deployment is prepared under ignored `.local/receiver-deployment.json`; its review is in `docs/evidence/receiver-deployment-review.json`.
 - No wallet address/key has been selected. No transaction was signed or broadcast by the implementation.
 
-The zero UUID in local Wrangler config and `.invalid` staging origin are explicit unconfigured values, not provisioned resources. The deploy wrapper refuses them.
+Wrangler and CRE staging configs now contain the actual D1 UUID and planned origin `https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev`. The receiver remains unconfigured. Resource creation commands below are the runbook; check existing resources before re-running them.
 
-## Cloudflare (after R2 activation and explicit authorization)
+## Cloudflare (staging authorization already granted)
 
 From `apps/web`, create the named D1 and R2 resources using Wrangler. Check existing names first; never replace an unrelated resource. Keep R2 private (no r2.dev or custom domain).
 

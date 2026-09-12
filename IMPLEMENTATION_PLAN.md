@@ -17,8 +17,9 @@
 
 ## Waiting on external actions — stage NOT complete
 
-- [ ] User activates R2 (Cloudflare API returned 10042) and confirms staging authorization.
-- [ ] Provision dedicated staging resources, publish Worker and verify HTTPS/D1/private R2.
+- [x] User activated R2 and authorized staging; bucket listing/creation now succeeds.
+- [x] Dedicated D1 created and migrated; private Standard R2 bucket and Worker secrets created.
+- [ ] Publish Worker and verify HTTPS/D1/private R2. Two deployment attempts failed with Cloudflare 10136 when attaching the existing R2 bucket; activation/entitlement inconsistency remains unresolved.
 - [ ] User chooses signing method and authorizes receiver deployment/report broadcasts.
 - [ ] Verify receiver deployment, run report-writing simulations and record two Arc report receipts.
 - [ ] Run log-trigger simulation against a real confirmed ProbeRecorded event.

@@ -13,7 +13,7 @@ CRE logs include binary/config hashes and the simulator's explicit TEE disclaime
 
 ## Pending external evidence
 
-- R2 activation and authorization to provision/publish staging.
+- R2 activation and staging authorization received; resources provisioned. Application deployment still fails with binding error 10136.
 - Actual Cloudflare Worker URL, D1 and private R2 verification.
 - User-controlled receiver deployment and successful Arc receipt.
 - Report-writing simulation and two confirmed report transactions.

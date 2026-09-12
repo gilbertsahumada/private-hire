@@ -12,7 +12,7 @@
     "cre:simulate": "pnpm --filter @private-hire/cre simulate",
     "web:preview": "pnpm --filter @private-hire/web preview",
     "web:build": "pnpm --filter @private-hire/web build",
-    "web:deploy": "pnpm --filter @private-hire/web deploy"
+    "web:deploy": "pnpm --filter @private-hire/web run deploy"
   },
   "devDependencies": {
     "typescript": "5.9.3",

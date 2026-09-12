@@ -1,1 +1,6 @@
-{"origin":"https://configure-staging.invalid","allowLocalHttp":false,"receiver":"0x0000000000000000000000000000000000000000","writeReport":false}
+{
+  "origin": "https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev",
+  "allowLocalHttp": false,
+  "receiver": "0x0000000000000000000000000000000000000000",
+  "writeReport": false
+}
