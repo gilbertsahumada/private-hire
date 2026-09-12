@@ -11,7 +11,10 @@ values = {
     name: secrets.token_hex(32)
     for name in ["STORAGE_KEY", "A2A_TOKEN", "CONTEXT_TOKEN", "SETUP_TOKEN"]
 }
-web.write_text("".join(f"{k}={v}\n" for k, v in values.items()))
+web.write_text(
+    "".join(f"{k}={v}\n" for k, v in values.items())
+    + "PUBLIC_ORIGIN=http://127.0.0.1:8787\n"
+)
 web.chmod(0o600)
 cre.write_text(
     f'SECRET_A2A_TOKEN={values["A2A_TOKEN"]}\nSECRET_CONTEXT_TOKEN={values["CONTEXT_TOKEN"]}\n'
