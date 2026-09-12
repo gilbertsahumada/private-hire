@@ -1,0 +1,20 @@
+{
+  "checkedAt": "2026-09-12T16:19:27.600727+00:00",
+  "workerVersion": "a78c06b6-0e52-4dcd-bae5-224b12d80fa7",
+  "applicationTestsPassed": 31,
+  "browserTestsPassed": 6,
+  "webBuild": "passed",
+  "checks": [
+    "silent detection of authorized wallet",
+    "SIWE restore after reload",
+    "selected extension change clears private UI",
+    "accountsChanged updates visible address and invalidates login",
+    "chainChanged invalidates login and displays Arc requirement",
+    "disconnect clears visible wallet",
+    "late SIWE response cannot restore prior account",
+    "explicit disconnect clears the site state",
+    "mobile and desktop without horizontal overflow"
+  ],
+  "wallets": "ephemeral EIP-1193 test providers with genuine SIWE signatures",
+  "transactionsSigned": 0
+}

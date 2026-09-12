@@ -67,3 +67,9 @@ Rate limits can persist after retries. The profile then shows verification unava
 The buyer will perform MetaMask actions manually in Brave. No buyer private key is handled by the app or operator. The first-job setup passed the contract and identity preflight; no job transaction has been signed by these checks.
 
 The server keeps `https://rpc.testnet.arc.io` as primary and falls back to `https://rpc.blockdaemon.testnet.arc.network`, listed in the [official Arc RPC documentation](https://docs.arc.io/arc/references/rpc-endpoints). Before adding it, the fallback was checked against chain 5042002, the evaluator runtime hash and the canonical deployment block hash. This changes neither network nor escrow. Both endpoints failing still blocks hiring. The profile now explains live-check failures instead of suggesting the deployed evaluator is missing.
+
+## Reactive browser-wallet state
+
+Wallet connection is distinct from SIWE authentication. The selected EIP-6963/EIP-1193 provider is detected through a silent eth_accounts read; its address appears before any signature. Provider listeners attach before login and cover accountsChanged, chainChanged, connect and disconnect. Returning to the tab rechecks account/network without opening wallet prompts. A controlled wallet selector supports switching extensions.
+
+Account/network/provider changes immediately clear authenticated page state, invalidate the old session and require a fresh explicit SIWE signature. Private page components remount when the authenticated account changes. Auth mutations are serialized and guarded by a generation counter, so a delayed response for the old account cannot restore its session after switching. Sign out/disconnect suppresses automatic session restoration until the user reconnects. No transaction is automatically signed.
