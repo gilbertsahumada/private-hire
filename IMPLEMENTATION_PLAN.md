@@ -23,10 +23,11 @@
 - [x] User authorized a dedicated local wallet and receiver deployment capped at 0.02 test USDC. Deployment confirmed; fee 0.007855452 test USDC.
 - [ ] Obtain separate authorization for report broadcasts.
 - [x] Verify deployed receiver `0x98b1a734b54a9a02C2EB68062061e273b3D264D0`, mock forwarder and simulation-only flag.
-- [ ] Run report-writing simulations and record two Arc report receipts.
+- [x] Run both report-writing CRE simulations without broadcast (decisions 2 and 1); verify neither probe is stored onchain.
+- [ ] Broadcast authorized reports and record two Arc report receipts.
 - [ ] Run log-trigger simulation against a real confirmed ProbeRecorded event.
 
-Access to CRE beta is confirmed. No escrow/payments or deployed confidential workflow in this stage. Local simulations currently set `writeReport:false`; they establish transport/evaluation and reads, not report submission.
+Access to CRE beta is confirmed. No escrow/payments or deployed confidential workflow in this stage. Local simulations now set `writeReport:true` against the deployed receiver. Both complete without broadcast; they establish simulated report generation/write handling, not onchain report submission.
 
 ## Commits
 

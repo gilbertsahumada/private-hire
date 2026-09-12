@@ -1,0 +1,38 @@
+{
+  "recordedAt": "2026-09-12T09:32:49.231Z",
+  "mode": "CRE simulation without broadcast; local HTTP agent",
+  "chainId": 5042002,
+  "receiver": "0x98b1a734b54a9a02C2EB68062061e273b3D264D0",
+  "blockNumber": "61708673",
+  "writeReport": true,
+  "checks": [
+    {
+      "probeId": "probe-mty6r65g-reject",
+      "probeKey": "0xb60c21f321d368119abefb5de04905c784dd0bf46bd9a24fdbdd3481bfb15093",
+      "onchainDecision": 0,
+      "onchainReportHash": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "probeId": "probe-mty6r65g-accept",
+      "probeKey": "0x29ff032c91e8e9497f0f6ff46cb76886defcf24e65810299cacc3b2fc58c8bf1",
+      "onchainDecision": 0,
+      "onchainReportHash": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ],
+  "commands": [
+    "pnpm exec tsx scripts/probe-integration.ts",
+    "python3 scripts/simulate.py reject",
+    "python3 scripts/simulate.py accept"
+  ],
+  "simulationDecisions": {
+    "reject": 2,
+    "accept": 1
+  },
+  "broadcast": false,
+  "realTee": false,
+  "sha256": {
+    "apps/cre/probe/binary.wasm": "552c621a5c90ddd59f9ebfcd123291b5c26b78e727f18ad99dd1ef0bb0572eeb",
+    "apps/cre/probe/config.local.json": "66fd92ea3756663c04866125c4818d9f64f41b9f5ddb9f73ba37e02afac2414a",
+    "apps/cre/probe/workflow.ts": "c03d94c5de0fffb96bcfe89ca1cf8afcdbca0ef6ec89ff491697db86dc216aa2"
+  }
+}
