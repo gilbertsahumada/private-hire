@@ -1,0 +1,23 @@
+{
+  "recordedAt": "2026-09-12T11:46:50.241Z",
+  "origin": "https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev",
+  "workerVersion": "67b21fe9-db2a-4fe1-987b-ada1c585c3ce",
+  "databaseId": "52155584-f6b0-448c-b3f4-1c86c3e80381",
+  "bucket": "confidential-agent-jobs-private-staging",
+  "integration": "passed: HTTPS, concurrent retries, persisted tasks, credential scopes and A2A errors",
+  "checks": [
+    {
+      "kind": "context",
+      "encryptedAtRest": true,
+      "decryptionVerified": true,
+      "tamperingRejected": true
+    },
+    {
+      "kind": "result",
+      "encryptedAtRest": true,
+      "decryptionVerified": true,
+      "tamperingRejected": true
+    }
+  ],
+  "broadcast": false
+}

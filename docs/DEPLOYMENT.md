@@ -6,7 +6,7 @@
 - Worker: `confidential-agent-jobs-staging`, on that account's workers.dev subdomain.
 - D1: `confidential-agent-jobs-staging`, UUID `52155584-f6b0-448c-b3f4-1c86c3e80381` (created and migrated).
 - Private R2: `confidential-agent-jobs-private-staging` (created, Standard class, EEUR).
-- User confirmed R2 activation and authorized staging. Listing and creating buckets succeeds. Worker secrets are installed, but publishing the application failed twice with API error 10136: R2 binding requires activation. The cause is not confirmed; no successful HTTPS application deployment is claimed.
+- User confirmed R2 activation and authorized staging. Listing and creating buckets succeeds. The subsequent retry succeeded: Worker version `67b21fe9-db2a-4fe1-987b-ada1c585c3ce` is live at `https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev`. Remote D1/R2 integration, encrypted-object recovery and both CRE HTTPS simulations passed. The exact cause of the earlier 10136 error was not established.
 - Arc: chainId 5042002. The unsigned ProbeReceiver deployment is prepared under ignored `.local/receiver-deployment.json`; its review is in `docs/evidence/receiver-deployment-review.json`.
 - Dedicated wallet `0x0C68C8D018ba72C33e966498B2148dC2af454645` is configured in the ignored root `.env`. The user authorized the receiver deployment with a 0.02 test USDC gas cap.
 - Receiver `0x98b1a734b54a9a02C2EB68062061e273b3D264D0` was deployed in transaction `0x320891028abbf3a149f3a700f697c838743a2a348ffa9f7cd1203f609ad67e26`. Receipt verified: fee 0.007855452 test USDC. The user subsequently authorized both report broadcasts; acceptance and rejection are confirmed in `docs/evidence/arc-report-summary.json`.

@@ -11,10 +11,10 @@ Evidence is recorded from this repository's actual commands. The Arc simulation-
 
 CRE logs include binary/config hashes and the simulator's explicit TEE disclaimer. Secret values and private bodies are screened before logs are written. Different binary hashes reflect iterations of the workflow; the newest validation snapshot records current source hashes.
 
-## Pending external evidence
+## Integration follow-up
 
-- R2 activation and staging authorization received; resources provisioned. Application deployment still fails with binding error 10136.
-- Actual Cloudflare Worker URL, D1 and private R2 verification.
+- R2 binding now succeeds; successful deployment and remote validation are recorded in `cloudflare-staging-validation.json`.
+- HTTPS Worker, D1 and encrypted private R2 verified. Both `cre-staging-*-no-broadcast.log` runs verify HTTPS transport/evaluation and Arc reads; they do not submit reports.
 - Receiver deployment completed: `deployment-320891028abb.json` records its verified receipt and fee.
 - Report-writing dry runs and both report transactions completed; see `report-45203c0381dd.json` and `report-4b8ebf26e177.json`.
 - Log-trigger simulation completed against the actual rejection transaction: `cre-local-log-no-broadcast.log`.

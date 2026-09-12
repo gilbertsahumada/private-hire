@@ -15,11 +15,12 @@
 - [x] 17 unit tests cover domain, protocol, persistence and workflow failure handling.
 - [x] Deployment review, unsigned receiver transaction, receipt-verification and simulation scripts.
 
-## Waiting on external actions — stage NOT complete
+## Integration evidence
 
 - [x] User activated R2 and authorized staging; bucket listing/creation now succeeds.
 - [x] Dedicated D1 created and migrated; private Standard R2 bucket and Worker secrets created.
-- [ ] Publish Worker and verify HTTPS/D1/private R2. Two deployment attempts failed with Cloudflare 10136 when attaching the existing R2 bucket; activation/entitlement inconsistency remains unresolved.
+- [x] Publish Worker and verify HTTPS/D1/private R2. Retry succeeded; remote concurrency, encrypted-object recovery and AEAD tamper rejection verified.
+- [x] Two CRE simulations against HTTPS staging returned decisions 2 and 1 with Arc reads, without broadcast.
 - [x] User authorized a dedicated local wallet and receiver deployment capped at 0.02 test USDC. Deployment confirmed; fee 0.007855452 test USDC.
 - [x] User separately authorized both report broadcasts; both submitted and confirmed.
 - [x] Verify deployed receiver `0x98b1a734b54a9a02C2EB68062061e273b3D264D0`, mock forwarder and simulation-only flag.
@@ -27,7 +28,7 @@
 - [x] Broadcast both reports; verify successful receipts, decisions and artifact hashes against A2A.
 - [x] Run log-trigger simulation against the real rejection ProbeRecorded event; no additional report or transaction.
 
-Access to CRE beta is confirmed. No escrow/payments or deployed confidential workflow in this stage. Local simulations now set `writeReport:true` against the deployed receiver. Dry runs and authorized broadcasts both passed. Evidence now includes real Arc report receipts and a log-trigger simulation, using the local HTTP agent. HTTPS staging remains blocked by R2.
+Access to CRE beta is confirmed. No escrow/payments or deployed confidential workflow in this stage. Local simulations now set `writeReport:true` against the deployed receiver. Dry runs and authorized broadcasts both passed. Evidence now includes real Arc report receipts and a log-trigger simulation, using the local HTTP agent. HTTPS staging now works; its two simulations currently use `writeReport:false`. Arc broadcast evidence was obtained separately through the local HTTP agent. No live TEE execution is claimed.
 
 ## Commits
 
