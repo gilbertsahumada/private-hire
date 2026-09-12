@@ -58,6 +58,7 @@ if (mode === 'deployment') {
     .filter((l) => l.address.toLowerCase() === config.receiver.toLowerCase())
     .map((l) => ({
       index: l.logIndex,
+      receiptEventIndex: receipt.logs.indexOf(l),
       event: decodeEventLog({
         abi: probeReceiverAbi,
         data: l.data,
@@ -83,6 +84,8 @@ if (mode === 'deployment') {
     receiver: config.receiver,
     event: match.event,
     logIndex: match.index,
+    receiptEventIndex: match.receiptEventIndex,
+    probeId: expectedProbe,
     decision,
   };
 }

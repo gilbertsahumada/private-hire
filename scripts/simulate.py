@@ -1,7 +1,7 @@
 """Run CRE CLI and save only checked output; no broadcast unless explicitly requested."""
 
 from pathlib import Path
-import argparse, os, subprocess, hashlib, json
+import argparse, os, subprocess, hashlib, json, re
 
 root = Path(__file__).resolve().parents[1]
 p = argparse.ArgumentParser()
@@ -41,14 +41,28 @@ else:
     cmd += ["--http-payload", str(root / f".local/{a.scenario}.json")]
 if a.broadcast:
     cmd.append("--broadcast")
+run_env = os.environ.copy()
+signer_key = None
+if a.broadcast:
+    wallet_env = (root / ".env").read_text()
+    match = re.search(
+        r"^CRE_ETH_PRIVATE_KEY=(0x[0-9a-fA-F]{64})$", wallet_env, re.MULTILINE
+    )
+    if not match:
+        raise SystemExit("A dedicated local wallet key is required for broadcast.")
+    signer_key = match.group(1)
+    run_env["CRE_ETH_PRIVATE_KEY"] = signer_key
 result = subprocess.run(
     cmd,
     cwd=root / "apps/cre",
     stdout=subprocess.PIPE,
     stderr=subprocess.STDOUT,
     text=True,
+    env=run_env,
 )
 output = result.stdout
+if signer_key and signer_key in output:
+    raise SystemExit("Signer secret detected; refusing to publish output.")
 for file in [
     secret_env,
     root / "apps/cre/.env",
