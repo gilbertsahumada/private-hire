@@ -14,7 +14,7 @@ CRE logs include binary/config hashes and the simulator's explicit TEE disclaime
 ## Integration follow-up
 
 - R2 binding now succeeds; successful deployment and remote validation are recorded in `cloudflare-staging-validation.json`.
-- HTTPS Worker, D1 and encrypted private R2 verified. Both `cre-staging-*-no-broadcast.log` runs verify HTTPS transport/evaluation and Arc reads; they do not submit reports.
+- HTTPS Worker, D1 and encrypted private R2 verified. Both `cre-staging-*-no-broadcast.log` runs now verify HTTPS transport/evaluation, Arc reads and simulated writeReport. They do not broadcast transactions.
 - Receiver deployment completed: `deployment-320891028abb.json` records its verified receipt and fee.
 - Report-writing dry runs and both report transactions completed; see `report-45203c0381dd.json` and `report-4b8ebf26e177.json`.
 - Log-trigger simulation completed against the actual rejection transaction: `cre-local-log-no-broadcast.log`.
@@ -24,3 +24,5 @@ Do not replace these with local mock results. Once available, receipt verificati
 `cre-local-report-dry-run.json` records the probe identifiers and RPC checks showing zero stored decisions/report hashes after both simulations. The logs show `not-broadcast`; no onchain report delivery is claimed.
 
 `arc-report-summary.json` compares onchain result hashes with A2A artifacts and records both fees and the post-report wallet balance. Scope: **CRE simulation + Arc testnet transaction**, with a local HTTP agent; no live TEE or remote Cloudflare proof.
+
+`cre-staging-report-dry-run.json` records the unified HTTPS report simulation, binary/config hashes and RPC checks that both new probe decisions remain zero onchain.

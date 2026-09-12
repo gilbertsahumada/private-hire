@@ -11,7 +11,7 @@
 - Dedicated wallet `0x0C68C8D018ba72C33e966498B2148dC2af454645` is configured in the ignored root `.env`. The user authorized the receiver deployment with a 0.02 test USDC gas cap.
 - Receiver `0x98b1a734b54a9a02C2EB68062061e273b3D264D0` was deployed in transaction `0x320891028abbf3a149f3a700f697c838743a2a348ffa9f7cd1203f609ad67e26`. Receipt verified: fee 0.007855452 test USDC. The user subsequently authorized both report broadcasts; acceptance and rejection are confirmed in `docs/evidence/arc-report-summary.json`.
 
-Wrangler and CRE staging configs now contain the actual D1 UUID and planned origin `https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev`. The staging config contains the verified receiver address; `writeReport` stays false until the report test is prepared. Resource creation commands below are the runbook; check existing resources before re-running them.
+Wrangler and CRE staging configs now contain the actual D1 UUID and planned origin `https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev`. The staging config contains the verified receiver address; `writeReport` is now true; both HTTPS report dry runs passed. Broadcasting these new staging fixtures remains pending authorization. Resource creation commands below are the runbook; check existing resources before re-running them.
 
 ## Cloudflare (staging authorization already granted)
 

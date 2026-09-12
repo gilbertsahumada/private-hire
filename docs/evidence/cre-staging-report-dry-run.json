@@ -1,0 +1,29 @@
+{
+  "mode": "CRE simulation with HTTPS Cloudflare agent and writeReport; no broadcast",
+  "origin": "https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev",
+  "receiver": "0x98b1a734b54a9a02C2EB68062061e273b3D264D0",
+  "chainId": 5042002,
+  "blockNumber": "61726664",
+  "checks": [
+    {
+      "probeId": "probe-mtyc77tg-reject",
+      "probeKey": "0xe1ebd690b1b8781a3aedbf37f3dd8b9dbf439196d9f7d7ec144c18ce2c98c498",
+      "onchainDecision": 0,
+      "onchainReportHash": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "probeId": "probe-mtyc77tg-accept",
+      "probeKey": "0x123867dc4b417d7aca0618091e1aa4ee06fae9deb4267986988a97abd48f5de3",
+      "onchainDecision": 0,
+      "onchainReportHash": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ],
+  "decisions": {
+    "reject": 2,
+    "accept": 1
+  },
+  "broadcast": false,
+  "realTee": false,
+  "configSha256": "0be1af38e644d01fe68f839fb8a844a9493f40933842677349d1c3c3ee6f1b37",
+  "binarySha256": "552c621a5c90ddd59f9ebfcd123291b5c26b78e727f18ad99dd1ef0bb0572eeb"
+}

@@ -7,12 +7,12 @@ Compiling workflow...
 ✓ Simulation limits enabled
   HTTP: req=120kb resp=250kb timeout=10s | ConfHTTP: req=125kb resp=500kb timeout=1m30s | Consensus obs=25kb | ChainWrite evm_report=50kb evm_gas=10000000 solana_report=265b solana_cu=300000 | WASM binary=100mb compressed=20mb
   Binary hash: ee30f03d5d9679d3f98eb8b24ee49bb075190a71bd8d009ae6311246e6c68937
-  Config hash: 9827b11898a4bc660433b6b3c8cd96e006397708346bdedf88c27b518cfbbb37
+  Config hash: 0be1af38e644d01fe68f839fb8a844a9493f40933842677349d1c3c3ee6f1b37
 ✓ Loaded JSON from file: /Users/gilbertsahumada/projects/private-hire/.local/reject.json
 ✓ Created HTTP trigger payload with 1 fields
-2026-09-12T13:46:18Z [SIMULATION] Simulator Initialized
+2026-09-12T14:04:31Z [SIMULATION] Simulator Initialized
 
-2026-09-12T13:46:18Z [SIMULATION] Running trigger trigger=http-trigger@1.0.0-alpha
+2026-09-12T14:04:31Z [SIMULATION] Running trigger trigger=http-trigger@1.0.0-alpha
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────╮
 │ Trigger requested TEE Execution your trigger will run in one of the following Tees:                │
 │     - AWS Nitro in us-west-2                                                                       │
@@ -25,7 +25,7 @@ Compiling workflow...
 
 
 ✓ Workflow Simulation Result:
-"SIMULATION_TRANSPORT_ONLY decision=2 arcDecimals=6"
+"CRE_SIMULATION decision=2 txHash=not-broadcast"
 
-2026-09-12T13:46:20Z [SIMULATION] Execution finished signal received
-2026-09-12T13:46:20Z [SIMULATION] Skipping WorkflowEngineV2
+2026-09-12T14:04:33Z [SIMULATION] Execution finished signal received
+2026-09-12T14:04:33Z [SIMULATION] Skipping WorkflowEngineV2

@@ -28,10 +28,12 @@
 - [x] Broadcast both reports; verify successful receipts, decisions and artifact hashes against A2A.
 - [x] Run log-trigger simulation against the real rejection ProbeRecorded event; no additional report or transaction.
 
-Access to CRE beta is confirmed. No escrow/payments or deployed confidential workflow in this stage. Local simulations now set `writeReport:true` against the deployed receiver. Dry runs and authorized broadcasts both passed. Evidence now includes real Arc report receipts and a log-trigger simulation, using the local HTTP agent. HTTPS staging now works; its two simulations currently use `writeReport:false`. Arc broadcast evidence was obtained separately through the local HTTP agent. No live TEE execution is claimed.
+Access to CRE beta is confirmed. No escrow/payments or deployed confidential workflow in this stage. Local simulations now set `writeReport:true` against the deployed receiver. Dry runs and authorized broadcasts both passed. Evidence now includes real Arc report receipts and a log-trigger simulation, using the local HTTP agent. HTTPS staging now works; its two complete report simulations now use `writeReport:true` without broadcast. Arc broadcast evidence was obtained separately through the local HTTP agent. No live TEE execution is claimed.
 
 ## Commits
 
 - `a7f10a5`: monorepo foundation, deterministic domain and probe receiver.
 - `a4d248c`: A2A service, encrypted Cloudflare storage and integration scripts.
 - Subsequent commits record CRE workflow, evidence, deployment preparation and validation fixes. See Git history for their hashes.
+
+The unified HTTPS-to-report dry run passed for both decisions. New broadcasts using those HTTPS fixtures remain pending explicit authorization. See `docs/evidence/cre-staging-report-dry-run.json`.
