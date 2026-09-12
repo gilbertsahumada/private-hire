@@ -1,0 +1,61 @@
+{
+  "date": "2026-09-12",
+  "status": "implementation-published-contracting-disabled",
+  "stagingOrigin": "https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev",
+  "workerVersion": "ba8285dd-d4a1-4bf2-ac19-4270f2577949",
+  "applicationTests": 31,
+  "contractTests": 30,
+  "arcForkTestsIncluded": 2,
+  "webBuild": "passed",
+  "typecheck": "passed",
+  "jobWorkflowWasmHash": "eae2e2e807baa075ad408979888eba52e8d1d8e8480f49acc25cee6db49fa591",
+  "catalog": {
+    "identityVerified": true,
+    "stale": false,
+    "enabled": false
+  },
+  "remoteMigrations": [
+    "0002_market.sql",
+    "0003_job_fixtures.sql"
+  ],
+  "remoteAuthSmoke": {
+    "anonymousDenied": true,
+    "siweLogin": true,
+    "secureCookie": true,
+    "emptyPrivateJobs": true,
+    "replayDenied": true,
+    "csrfDenied": true,
+    "logout": true
+  },
+  "pending": [
+    "Authorized JobEvaluator deployment and runtime pin",
+    "Actual funded-job CRE simulations",
+    "Acceptance payment, rejection refund, expiry refund with browser-signed transactions"
+  ],
+  "transactionsCreatedInThisStage": [],
+  "resolvedValidationFailures": [
+    "Workers rejects fetch redirect:error; replaced by manual redirect checks",
+    "Browser test locator matched Next.js route announcer as well as wallet error; narrowed to actual error"
+  ],
+  "limitations": [
+    "Public Arc RPC can still rate-limit fresh identity reads. UI shows unavailable with retry and hiring fails closed. Browser tests verify the displayed state against the actual API response, not guaranteed RPC availability."
+  ],
+  "commands": [
+    "pnpm typecheck",
+    "pnpm test",
+    "ARC_FORK_RPC=https://rpc.testnet.arc.io pnpm contracts:test",
+    "pnpm web:build",
+    "python3 scripts/jobs.py compile",
+    "pnpm market:prepare",
+    "ALLOW_STAGING_DEPLOY=yes pnpm web:deploy",
+    "MARKET_ORIGIN=https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev MARKET_EXPECTED_ORIGIN=https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev pnpm --filter @private-hire/cre exec tsx scripts/market-smoke.ts",
+    "MARKET_ORIGIN=https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev PLAYWRIGHT_EXECUTABLE_PATH='/Users/gilbertsahumada/Library/Caches/ms-playwright/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing' pnpm exec playwright test",
+    "pnpm format:check"
+  ],
+  "browserTests": {
+    "passed": 6,
+    "desktop": 3,
+    "mobile": 3,
+    "scope": "Real HTTPS profile with matching available/unavailable identity state; empty private workspaces; ephemeral SIWE login, reload, logout; wallet absence and keyboard navigation. No transaction signing."
+  }
+}

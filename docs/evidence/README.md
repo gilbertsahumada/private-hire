@@ -30,3 +30,7 @@ Do not replace these with local mock results. Once available, receipt verificati
 ## Complete HTTPS report execution
 
 `https-arc-report-summary.json` records the two authorized transactions from the HTTPS staging workflow. Their receipts are `report-67397c6db229.json` (rejection) and `report-cd1ee7bcc7fc.json` (acceptance). Recalculated commitments of artifacts recovered through HTTPS match both event hashes. `cre-staging-log-no-broadcast.log` verifies the EVM trigger against the new rejection event without producing another report. Scope remains **CRE simulation + Arc testnet transaction**, not a live TEE.
+
+## Market application (pending onchain activation)
+
+`market-validation.json` records the application build, automated tests, published Worker and live authentication checks. `market-deployment-prepared.json` is an unsigned evaluator proposal, not a receipt. The three paid/reject/refund job journeys remain pending. Earlier probes are not market jobs.

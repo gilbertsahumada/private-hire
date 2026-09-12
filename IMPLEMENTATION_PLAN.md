@@ -42,11 +42,11 @@ The user authorized both unified HTTPS broadcasts. Acceptance and rejection are 
 
 The user superseded the proposed contract-first sequence. Integrate ERC-8004 identity first, then reuse ERC-8183 for jobs and payments. Do not start a custom escrow implementation by default.
 
-- [ ] Inspect the existing trust8004 public API using its local source at `../agent-registration`; keep that project unchanged.
+- [x] Inspect the existing trust8004 public API using its local source at `../agent-registration`; keep that project unchanged.
 - [x] Prepare the provider registration metadata and bind its A2A service to the dedicated Arc wallet. Verify existing registration before preparing a new one.
 - [x] Verify the Arc IdentityRegistry by RPC and its actual interface; record chain + registry + agentId, ownership and provider wallet separately.
 - [x] Prepare and obtain explicit registration authorization; Arc agent 894552 confirmed, owner/wallet/URI verified. trust8004 indexes the onchain registration; metadata enrichment was pending at first lookup.
-- [ ] Inspect the existing ERC-8183 deployment, verified source and ABI before integration. Record differences from the original specification and resolve them before moving funds.
+- [x] Inspect the existing ERC-8183 deployment, verified source and ABI before integration. Record differences from the original specification and resolve them before moving funds.
 - [ ] Implement only the application integration and CRE evaluator components required by the selected ERC-8183 implementation; test acceptance, rejection and expiry locally before preparing testnet transactions.
 
 Discovery sources (documentation, not yet RPC verification):
@@ -55,3 +55,14 @@ Discovery sources (documentation, not yet RPC verification):
 - [Arc ERC-8183 walkthrough](https://www.arc.io/blog/running-an-agentic-economic-flow-on-arc-with-erc-8183) lists `0x0747EEf0706327138c69792bF28Cd525089e4583`. Its `fund(uint256,bytes)` example differs from the specification's `fund(uint256,uint256,bytes)`; do not assume matching ABI or budget protection.
 
 This sequence overrides section 21's contract-first order and section 9's instruction to implement a custom JobEscrow until compatibility has been assessed. No new escrow contracts or registrations were deployed during this correction.
+
+## Application delivery
+
+- [x] Agents, SIWE, immutable quotes, private Jobs and Provider UI implemented.
+- [x] Job persistence, A2A dispatch, CRE evaluation and simulation evaluator implemented.
+- [x] Local application and receiver tests; compatibility tested against an Arc fork.
+- [x] Publish staging with hiring disabled and additive D1 migrations.
+- [ ] Authorize and deploy JobEvaluator, verify its runtime and configure readiness pins.
+- [ ] Verify three genuine testnet jobs: payment, rejection refund and expiry refund.
+
+See `docs/MARKET_IMPLEMENTATION.md` for commands, trust boundaries and pending evidence. Application code and browser login tests do not establish payment success.
