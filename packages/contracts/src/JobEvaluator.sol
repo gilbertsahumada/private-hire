@@ -62,13 +62,17 @@ contract JobEvaluator is IReceiver {
         Report memory r = abi.decode(data, (Report));
         bytes32 reportHash = keccak256(data);
         if (processed[reportHash]) revert Replay();
-        if (r.schemaVersion != 1 || r.chainId != block.chainid || r.escrow != address(escrow)
-            || r.receiver != address(this) || r.manifestHash == bytes32(0) || r.deliverableHash == bytes32(0)
-            || (r.decision != 1 && r.decision != 2) || block.timestamp >= r.validUntil) revert InvalidReport();
+        if (
+            r.schemaVersion != 1 || r.chainId != block.chainid || r.escrow != address(escrow)
+                || r.receiver != address(this) || r.manifestHash == bytes32(0) || r.deliverableHash == bytes32(0)
+                || (r.decision != 1 && r.decision != 2) || block.timestamp >= r.validUntil
+        ) revert InvalidReport();
         IArcEscrow.Job memory job = escrow.getJob(r.jobId);
-        if (job.id != r.jobId || job.status != 2 || job.evaluator != address(this) || job.budget == 0
-            || block.timestamp >= job.expiredAt || r.validUntil > job.expiredAt
-            || keccak256(bytes(job.description)) != keccak256(bytes(hexHash(r.manifestHash)))) revert InvalidReport();
+        if (
+            job.id != r.jobId || job.status != 2 || job.evaluator != address(this) || job.budget == 0
+                || block.timestamp >= job.expiredAt || r.validUntil > job.expiredAt
+                || keccak256(bytes(job.description)) != keccak256(bytes(hexHash(r.manifestHash)))
+        ) revert InvalidReport();
         processed[reportHash] = true;
         if (r.decision == 1) escrow.complete(r.jobId, reportHash, "");
         else escrow.reject(r.jobId, reportHash, "");

@@ -24,6 +24,7 @@ import { MARKET } from '../packages/chain/src/market';
 function environment() {
   const db = new DatabaseSync(':memory:');
   db.exec(readFileSync('apps/web/migrations/0002_market.sql', 'utf8'));
+  db.exec(readFileSync('apps/web/migrations/0003_job_fixtures.sql', 'utf8'));
   const objects = new Map<string, string>();
   let failReady = false;
   const env = {
@@ -156,6 +157,7 @@ async function seeded() {
   const { env, db, objects } = state;
   const m = manifestSchema.parse({
     schemaVersion: 'job-manifest/v1',
+    durationMinutes: 15,
     requestId: 'job-test',
     chainId: '5042002',
     escrow: MARKET.escrow,
@@ -287,4 +289,89 @@ it('rejects cross-user access, changed input and tampered encrypted results', as
   await expect(getDelivery(env, await draft(env, m.requestId))).rejects.toThrow(
     'INTEGRITY_PENDING',
   );
+});
+
+it('enables a committed rejection fixture only through isolated operator configuration', async () => {
+  const { env, db, m, hash } = await seeded();
+  db.prepare('INSERT INTO market_test_fixtures VALUES(?,?)').run(
+    m.requestId,
+    'plus-one',
+  );
+  env.ENABLE_JOB_TEST_FIXTURES = 'true';
+  const result = await runJob(env, m.requestId, m.input, hash);
+  expect(result.envelope.result).toMatchObject({ totalValueMicrousd: '11' });
+  expect(result.resultHash).toBe(jobCommitment('result', result.envelope));
+});
+
+it('keeps provider views free of policy and rejects unrelated participants', async () => {
+  const { env, m } = await seeded();
+  const { jobView } = await import('../apps/web/src/lib/jobs');
+  const d = await draft(env, m.requestId, m.provider);
+  expect(await jobView(env, d, m.provider)).not.toHaveProperty('policy');
+  expect(await jobView(env, d, m.buyer)).toHaveProperty('policy');
+});
+
+it('rejects funding a changed budget and actions at expiration', async () => {
+  const { env, m } = await seeded();
+  const catalog = await import('../apps/web/src/lib/catalog');
+  vi.spyOn(catalog, 'verifyMarket').mockResolvedValue(undefined);
+  const { prepareAction } = await import('../apps/web/src/lib/jobs');
+  const d = await draft(env, m.requestId);
+  const current = await catalog.chainClient.readContract({} as never);
+  vi.mocked(catalog.chainClient.readContract).mockResolvedValue({
+    ...(current as object),
+    status: 0,
+    budget: 9999n,
+  } as never);
+  await expect(prepareAction(env, d, m.buyer, 'fund')).rejects.toThrow(
+    'ACTION_UNAVAILABLE',
+  );
+  vi.spyOn(Date, 'now').mockReturnValue(m.expiredAt * 1000);
+  await expect(prepareAction(env, d, m.provider, 'budget')).rejects.toThrow(
+    'JOB_EXPIRED',
+  );
+});
+
+it('recovers a partially persisted quote only for identical requested conditions', async () => {
+  const { env, db, m, objects } = await seeded();
+  const catalog = await import('../apps/web/src/lib/catalog');
+  vi.spyOn(catalog, 'verifyMarket').mockResolvedValue(undefined);
+  vi.spyOn(catalog, 'verifyIdentity').mockResolvedValue(undefined);
+  const { createDraft } = await import('../apps/web/src/lib/jobs');
+  env.JOB_EVALUATOR = m.evaluator;
+  objects.set(
+    `jobs/${m.buyer}/${m.requestId}/manifest.json.enc`,
+    objects.get('manifest')!,
+  );
+  db.prepare('DELETE FROM market_drafts').run();
+  const body = {
+    requestId: m.requestId,
+    input: m.input,
+    policy: m.policy,
+    durationMinutes: 30,
+  };
+  await expect(createDraft(env, m.buyer, body)).rejects.toThrow('CONFLICT');
+  const recovered = await createDraft(env, m.buyer, {
+    ...body,
+    durationMinutes: 15,
+  });
+  expect(recovered.manifest_hash).toBe(jobCommitment('manifest', m));
+  expect((await manifest(env, recovered)).nonce).toBe(m.nonce);
+});
+
+it('rejects receipts signed by another wallet before recording any event', async () => {
+  const { env, m } = await seeded();
+  const { confirmTx } = await import('../apps/web/src/lib/jobs');
+  vi.spyOn(chainClient, 'getTransactionReceipt').mockResolvedValue({
+    status: 'success',
+    from: m.provider,
+  } as never);
+  await expect(
+    confirmTx(
+      env,
+      await draft(env, m.requestId),
+      m.buyer,
+      ('0x' + 'ab'.repeat(32)) as `0x${string}`,
+    ),
+  ).rejects.toThrow('WRONG_TRANSACTION');
 });

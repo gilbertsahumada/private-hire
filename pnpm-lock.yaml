@@ -11,6 +11,9 @@ importers:
 
   .:
     devDependencies:
+      '@playwright/test':
+        specifier: 1.58.2
+        version: 1.58.2
       '@types/node':
         specifier: 22.19.0
         version: 22.19.0
@@ -58,7 +61,7 @@ importers:
         version: 1.1.0(@bufbuild/protobuf@2.6.3)(express@5.2.1)
       '@opennextjs/cloudflare':
         specifier: 1.20.6
-        version: 1.20.6(next@16.3.5(@types/node@22.19.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.131.1(@types/node@22.19.0))
+        version: 1.20.6(next@16.3.5(@playwright/test@1.58.2)(@types/node@22.19.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.131.1(@types/node@22.19.0))
       '@private-hire/agent-transport':
         specifier: workspace:*
         version: link:../../packages/agent-transport
@@ -70,7 +73,7 @@ importers:
         version: link:../../packages/domain
       next:
         specifier: 16.3.5
-        version: 16.3.5(@types/node@22.19.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 16.3.5(@playwright/test@1.58.2)(@types/node@22.19.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       react:
         specifier: 19.2.4
         version: 19.2.4
@@ -1372,6 +1375,11 @@ packages:
       rclone.js:
         optional: true
 
+  '@playwright/test@1.58.2':
+    resolution: {integrity: sha512-akea+6bHYBBfA9uQqSYmlJXn61cTa+jbO87xVLCWbTqbWadRVmhxlXATaOjOgcBaWU4ePo0wB41KMFv3o35IXA==}
+    engines: {node: '>=18'}
+    hasBin: true
+
   '@poppinss/colors@4.1.6':
     resolution: {integrity: sha512-H9xkIdFswbS8n1d6vmRd8+c10t2Qe+rZITbbDHHkQixH5+2x1FDGmi/0K+WgWiqQFKPSlIYB7jlH6Kpfn6Fleg==}
 
@@ -2236,6 +2244,11 @@ packages:
   fs.realpath@1.0.0:
     resolution: {integrity: sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw==}
 
+  fsevents@2.3.2:
+    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
+    engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
+    os: [darwin]
+
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
@@ -2551,6 +2564,16 @@ packages:
   picomatch@4.0.7:
     resolution: {integrity: sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==}
     engines: {node: '>=12'}
+
+  playwright-core@1.58.2:
+    resolution: {integrity: sha512-yZkEtftgwS8CsfYo7nm0KE8jsvm6i/PTgVtB8DL726wNf6H2IMsDuxCpJj59KDaxCtSnrWan2AeDqM7JBaultg==}
+    engines: {node: '>=18'}
+    hasBin: true
+
+  playwright@1.58.2:
+    resolution: {integrity: sha512-vA30H8Nvkq/cPBnNw4Q8TWz1EJyqgpuinBcHET0YVJVFldr8JDNiU9LaWAE1KqSkRYazuaBhTpB5ZzShOezQ6A==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   postcss@8.5.23:
     resolution: {integrity: sha512-g50586zr4bZmwFiTlflMu8E0bDTb5I5gertgwAKmsdUlTQIhZtunzUlD1WSzwcVWPoAVpsrA6vlfCD7oXvRwgg==}
@@ -4148,7 +4171,7 @@ snapshots:
     dependencies:
       gzip-size: 6.0.0
 
-  '@opennextjs/aws@4.1.4(next@16.3.5(@types/node@22.19.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))':
+  '@opennextjs/aws@4.1.4(next@16.3.5(@playwright/test@1.58.2)(@types/node@22.19.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))':
     dependencies:
       '@ast-grep/napi': 0.40.5
       '@aws-sdk/client-cloudfront': 3.984.0
@@ -4164,30 +4187,34 @@ snapshots:
       cookie: 1.1.1
       esbuild: 0.25.4
       express: 5.2.1
-      next: 16.3.5(@types/node@22.19.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      next: 16.3.5(@playwright/test@1.58.2)(@types/node@22.19.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       path-to-regexp: 6.3.0
       urlpattern-polyfill: 10.1.0
       yaml: 2.9.1
     transitivePeerDependencies:
       - supports-color
 
-  '@opennextjs/cloudflare@1.20.6(next@16.3.5(@types/node@22.19.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.131.1(@types/node@22.19.0))':
+  '@opennextjs/cloudflare@1.20.6(next@16.3.5(@playwright/test@1.58.2)(@types/node@22.19.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.131.1(@types/node@22.19.0))':
     dependencies:
       '@ast-grep/napi': 0.40.5
       '@dotenvx/dotenvx': 1.31.0
-      '@opennextjs/aws': 4.1.4(next@16.3.5(@types/node@22.19.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))
+      '@opennextjs/aws': 4.1.4(next@16.3.5(@playwright/test@1.58.2)(@types/node@22.19.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))
       ci-info: 4.4.0
       cloudflare: 4.5.0
       comment-json: 4.6.2
       enquirer: 2.4.1
       glob: 12.0.0
-      next: 16.3.5(@types/node@22.19.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      next: 16.3.5(@playwright/test@1.58.2)(@types/node@22.19.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       ts-tqdm: 0.8.6
       wrangler: 4.131.1(@types/node@22.19.0)
       yargs: 18.1.0
     transitivePeerDependencies:
       - encoding
       - supports-color
+
+  '@playwright/test@1.58.2':
+    dependencies:
+      playwright: 1.58.2
 
   '@poppinss/colors@4.1.6':
     dependencies:
@@ -5123,6 +5150,9 @@ snapshots:
 
   fs.realpath@1.0.0: {}
 
+  fsevents@2.3.2:
+    optional: true
+
   fsevents@2.3.3:
     optional: true
 
@@ -5305,7 +5335,7 @@ snapshots:
     dependencies:
       content-type: 2.1.0
 
-  next@16.3.5(@types/node@22.19.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+  next@16.3.5(@playwright/test@1.58.2)(@types/node@22.19.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
     dependencies:
       '@next/env': 16.3.5
       '@swc/helpers': 0.5.23
@@ -5324,6 +5354,7 @@ snapshots:
       '@next/swc-linux-x64-musl': 16.3.5
       '@next/swc-win32-arm64-msvc': 16.3.5
       '@next/swc-win32-x64-msvc': 16.3.5
+      '@playwright/test': 1.58.2
       sharp: 0.35.4(@types/node@22.19.0)
     transitivePeerDependencies:
       - '@babel/core'
@@ -5415,6 +5446,14 @@ snapshots:
   picocolors@1.1.1: {}
 
   picomatch@4.0.7: {}
+
+  playwright-core@1.58.2: {}
+
+  playwright@1.58.2:
+    dependencies:
+      playwright-core: 1.58.2
+    optionalDependencies:
+      fsevents: 2.3.2
 
   postcss@8.5.23:
     dependencies:

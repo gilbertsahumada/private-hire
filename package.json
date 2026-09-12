@@ -22,6 +22,7 @@
     "market:prepare": "pnpm --filter @private-hire/cre exec tsx scripts/prepare-market.ts"
   },
   "devDependencies": {
+    "@playwright/test": "1.58.2",
     "@types/node": "22.19.0",
     "prettier": "3.9.6",
     "tsx": "4.20.6",
