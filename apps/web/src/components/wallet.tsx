@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  Fragment,
   useCallback,
   useContext,
   useEffect,
@@ -36,24 +37,31 @@ export async function api<T>(url: string, body?: unknown): Promise<T> {
   return result;
 }
 
-const Context = createContext<{
+type Transaction = { from: string; to: string; data: string; chainId: number };
+
+type WalletState = {
   account: string | null;
+  connectedAccount: string | null;
+  chainId: number | null;
+  selectedId: string;
   busy: boolean;
   error: string;
   wallets: WalletInfo[];
-  connect: (id?: string) => Promise<void>;
+  select: (id: string) => void;
+  connect: () => Promise<void>;
   logout: () => Promise<void>;
-  send: (tx: {
-    from: string;
-    to: string;
-    data: string;
-    chainId: number;
-  }) => Promise<Hex>;
-}>({
+  send: (tx: Transaction) => Promise<Hex>;
+};
+
+const Context = createContext<WalletState>({
   account: null,
+  connectedAccount: null,
+  chainId: null,
+  selectedId: '',
   busy: false,
   error: '',
   wallets: [],
+  select: () => {},
   connect: async () => {},
   logout: async () => {},
   send: async () => {
@@ -65,16 +73,58 @@ export const useWallet = () => useContext(Context);
 
 export function WalletProvider({ children }: { children: ReactNode }) {
   const [account, setAccount] = useState<string | null>(null);
+  const [connectedAccount, setConnectedAccount] = useState<string | null>(null);
+  const [chainId, setChainId] = useState<number | null>(null);
   const [wallets, setWallets] = useState<WalletInfo[]>([]);
+  const [selectedId, setSelectedId] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const provider = useRef<Injected | null>(null);
-  const logout = useCallback(async () => {
-    localStorage.removeItem('market-wallet');
-    setAccount(null);
-    await api('/api/auth/logout', {});
+  const epoch = useRef(0);
+  const connection = useRef<{ address: string | null; chain: number | null }>({
+    address: null,
+    chain: null,
+  });
+  const active = useRef<WalletInfo | null>(null);
+  const signedOut = useRef(false);
+  const authQueue = useRef<Promise<unknown>>(Promise.resolve());
+  const selected =
+    wallets.find((w) => w.uuid === selectedId) ??
+    wallets.find((w) => w.name === 'MetaMask') ??
+    wallets[0];
+
+  const enqueueAuth = useCallback(<T,>(work: () => Promise<T>) => {
+    const operation = authQueue.current.catch(() => {}).then(work);
+    authQueue.current = operation.catch(() => {});
+
+    return operation;
   }, []);
+
+  const invalidate = useCallback(() => {
+    epoch.current++;
+    setAccount(null);
+    setBusy(false);
+
+    return enqueueAuth(() => api('/api/auth/logout', {})).catch(() => {
+      setError(
+        'Session could not be cleared. Retry signing in before continuing.',
+      );
+    });
+  }, [enqueueAuth]);
+
+  const logout = useCallback(async () => {
+    signedOut.current = true;
+    localStorage.setItem('market-signed-out', 'true');
+    connection.current = { address: null, chain: null };
+    setConnectedAccount(null);
+    setChainId(null);
+    setError('');
+    await invalidate();
+  }, [invalidate]);
+
   useEffect(() => {
+    signedOut.current = localStorage.getItem('market-signed-out') === 'true';
+    setSelectedId(localStorage.getItem('market-wallet') ?? '');
+
     const listener = (event: Event) => {
       const detail = (
         event as CustomEvent<{
@@ -82,8 +132,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           provider: Injected;
         }>
       ).detail;
+      if (!detail?.info?.uuid || !detail.provider?.request) return;
       setWallets((current) =>
-        current.some((w) => w.uuid === detail.info.uuid)
+        current.some(
+          (w) => w.uuid === detail.info.uuid || w.provider === detail.provider,
+        )
           ? current
           : [...current, { ...detail.info, provider: detail.provider }],
       );
@@ -102,115 +155,226 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     return () =>
       window.removeEventListener('eip6963:announceProvider', listener);
   }, []);
-  useEffect(() => {
-    const current = provider.current;
-
-    const changed = () => {
-      void logout();
-    };
-
-    current?.on?.('accountsChanged', changed);
-    current?.on?.('chainChanged', changed);
-
-    return () => {
-      current?.removeListener?.('accountsChanged', changed);
-      current?.removeListener?.('chainChanged', changed);
-    };
-  }, [account, logout]);
 
   useEffect(() => {
-    let cancelled = false;
-    if (account || !wallets.length) return;
-    const selected = wallets.find(
-      (w) => w.uuid === localStorage.getItem('market-wallet'),
-    );
     if (!selected) return;
+    if (active.current && active.current.provider !== selected.provider)
+      void invalidate();
+    active.current = selected;
+    const currentEpoch = ++epoch.current;
+    let disposed = false;
+    let scan = 0;
+    setAccount(null);
+    setConnectedAccount(null);
+    setChainId(null);
+    connection.current = { address: null, chain: null };
     const client = createWalletClient({
       chain: arcTestnet,
       transport: custom(selected.provider),
     });
-    void Promise.all([
-      client.getAddresses(),
-      client.getChainId(),
-      api<{ wallet: string }>('/api/auth/session'),
-    ])
-      .then(([addresses, chainId, login]) => {
+
+    const refresh = async (restore = false) => {
+      const id = ++scan;
+      try {
+        const [addresses, network] = await Promise.all([
+          client.getAddresses(),
+          client.getChainId(),
+        ]);
+        if (disposed || id !== scan || signedOut.current) return;
+        const address = addresses[0]?.toLowerCase() ?? null;
+        const previous = connection.current;
         if (
-          !cancelled &&
-          chainId === arcTestnet.id &&
-          addresses[0]?.toLowerCase() === login.wallet
-        ) {
-          provider.current = selected.provider;
-          setAccount(login.wallet);
-        }
-      })
-      .catch(() => {});
+          previous.address !== null &&
+          (address !== previous.address || network !== previous.chain)
+        )
+          void invalidate();
+        connection.current = { address, chain: network };
+        setConnectedAccount(address);
+        setChainId(network);
+        if (!restore || !address || network !== arcTestnet.id) return;
+        await authQueue.current;
+        const session = await api<{ wallet: string }>('/api/auth/session');
+        if (
+          !disposed &&
+          id === scan &&
+          currentEpoch === epoch.current &&
+          session.wallet === address
+        )
+          setAccount(address);
+      } catch {
+        /* A locked or unavailable provider must never restore a private session. */
+      }
+    };
+
+    const accountsChanged = (value: unknown) => {
+      scan++;
+      const address =
+        Array.isArray(value) && typeof value[0] === 'string'
+          ? value[0].toLowerCase()
+          : null;
+      if (address === connection.current.address) return;
+      signedOut.current = false;
+      localStorage.removeItem('market-signed-out');
+      connection.current = { ...connection.current, address };
+      setConnectedAccount(address);
+      setError('');
+      void invalidate();
+    };
+
+    const chainChanged = (value: unknown) => {
+      const network = typeof value === 'string' ? Number(value) : null;
+      if (network === connection.current.chain) return;
+      scan++;
+      connection.current = { ...connection.current, chain: network };
+      setChainId(network);
+      setError('');
+      void invalidate();
+    };
+
+    const disconnected = () => {
+      scan++;
+      connection.current = { address: null, chain: null };
+      setConnectedAccount(null);
+      setChainId(null);
+      void invalidate();
+    };
+
+    const connected = () => {
+      signedOut.current = false;
+      localStorage.removeItem('market-signed-out');
+      void refresh();
+    };
+
+    const resumed = () => {
+      if (document.visibilityState === 'visible') void refresh();
+    };
+
+    selected.provider.on('accountsChanged', accountsChanged);
+    selected.provider.on('chainChanged', chainChanged);
+    selected.provider.on('disconnect', disconnected);
+    selected.provider.on('connect', connected);
+    window.addEventListener('focus', resumed);
+    document.addEventListener('visibilitychange', resumed);
+    void refresh(true);
 
     return () => {
-      cancelled = true;
+      disposed = true;
+      epoch.current++;
+      selected.provider.removeListener('accountsChanged', accountsChanged);
+      selected.provider.removeListener('chainChanged', chainChanged);
+      selected.provider.removeListener('disconnect', disconnected);
+      selected.provider.removeListener('connect', connected);
+      window.removeEventListener('focus', resumed);
+      document.removeEventListener('visibilitychange', resumed);
     };
-  }, [wallets, account]);
+  }, [selected, invalidate]);
 
-  async function connect(id?: string) {
+  function select(id: string) {
+    if (id === selected?.uuid) return;
+    void invalidate();
+    setConnectedAccount(null);
+    setChainId(null);
+    signedOut.current = false;
+    localStorage.removeItem('market-signed-out');
+    localStorage.setItem('market-wallet', id);
+    setSelectedId(id);
+    setError('');
+  }
+
+  async function connect() {
+    if (busy) return;
     setBusy(true);
     setError('');
+    let loginEpoch = epoch.current;
     try {
-      const selected = wallets.find((w) => w.uuid === id) ?? wallets[0];
-      if (!selected) throw new Error('Install a browser wallet to continue.');
-      provider.current = selected.provider;
-      localStorage.setItem('market-wallet', selected.uuid);
+      const target = active.current;
+      if (!target) throw new Error('No wallet');
+      signedOut.current = false;
+      localStorage.removeItem('market-signed-out');
+      localStorage.setItem('market-wallet', target.uuid);
       const client = createWalletClient({
         chain: arcTestnet,
-        transport: custom(selected.provider),
+        transport: custom(target.provider),
       });
-      const [address] = await client.requestAddresses();
+      await client.requestAddresses();
       await client.switchChain({ id: arcTestnet.id });
+      const [address] = await client.getAddresses();
+      if (!address || active.current !== target)
+        throw new Error('Wallet changed');
+      connection.current = {
+        address: address.toLowerCase(),
+        chain: arcTestnet.id,
+      };
+      setConnectedAccount(address.toLowerCase());
+      setChainId(arcTestnet.id);
+      loginEpoch = epoch.current;
+      setBusy(true);
       const challenge = await api<{ nonce: string; message: string }>(
         '/api/auth/nonce',
         { wallet: address },
       );
+      if (loginEpoch !== epoch.current) return;
       const signature = await client.signMessage({
         account: address,
         message: challenge.message,
       });
-      const verified = await api<{ wallet: string }>('/api/auth/verify', {
-        nonce: challenge.nonce,
-        signature,
+      if (loginEpoch !== epoch.current) return;
+      await enqueueAuth(async () => {
+        if (loginEpoch !== epoch.current) return;
+        const verified = await api<{ wallet: string }>('/api/auth/verify', {
+          nonce: challenge.nonce,
+          signature,
+        });
+        if (loginEpoch !== epoch.current) {
+          await api('/api/auth/logout', {});
+
+          return;
+        }
+        if (verified.wallet !== address.toLowerCase())
+          throw new Error('Session mismatch');
+        setAccount(verified.wallet);
       });
-      setAccount(verified.wallet);
     } catch {
-      setAccount(null);
-      setError(
-        'Connection or sign-in was not completed. Check your wallet and select Arc Testnet.',
-      );
+      if (loginEpoch === epoch.current) {
+        setAccount(null);
+        setError(
+          'Connection or sign-in was not completed. Check your wallet and select Arc Testnet.',
+        );
+      }
     } finally {
-      setBusy(false);
+      if (loginEpoch === epoch.current) setBusy(false);
     }
   }
 
-  async function send(tx: {
-    from: string;
-    to: string;
-    data: string;
-    chainId: number;
-  }) {
-    if (!provider.current || !account || tx.from.toLowerCase() !== account)
-      throw new Error('Connect the wallet assigned to this action.');
+  async function send(tx: Transaction) {
+    const target = active.current;
+    const version = epoch.current;
+    if (
+      !target ||
+      !account ||
+      tx.from.toLowerCase() !== account ||
+      tx.chainId !== arcTestnet.id
+    )
+      throw new Error('Sign in with the wallet assigned to this action.');
     const client = createWalletClient({
       chain: arcTestnet,
-      transport: custom(provider.current),
+      transport: custom(target.provider),
     });
-    const [address] = await client.getAddresses();
+    const [addresses, network] = await Promise.all([
+      client.getAddresses(),
+      client.getChainId(),
+    ]);
     if (
-      address?.toLowerCase() !== account ||
-      (await client.getChainId()) !== tx.chainId
+      version !== epoch.current ||
+      addresses[0]?.toLowerCase() !== account ||
+      network !== arcTestnet.id
     ) {
-      await logout();
+      await invalidate();
       throw new Error('Wallet or network changed. Sign in again.');
     }
 
     return client.sendTransaction({
-      account: address as Address,
+      account: addresses[0] as Address,
       to: tx.to as Address,
       data: tx.data as Hex,
       value: 0n,
@@ -220,9 +384,21 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   return (
     <Context.Provider
-      value={{ account, busy, error, wallets, connect, logout, send }}
+      value={{
+        account,
+        connectedAccount,
+        chainId,
+        selectedId: selected?.uuid ?? '',
+        busy,
+        error,
+        wallets,
+        select,
+        connect,
+        logout,
+        send,
+      }}
     >
-      {children}
+      <Fragment key={account ?? 'signed-out'}>{children}</Fragment>
     </Context.Provider>
   );
 }
@@ -232,32 +408,41 @@ export function WalletControl() {
 
   return (
     <div className="wallet-control">
-      {w.account ? (
-        <button className="secondary" onClick={() => void w.logout()}>
-          {w.account.slice(0, 6)}…{w.account.slice(-4)} · Sign out
+      <select
+        aria-label="Choose wallet"
+        value={w.selectedId}
+        onChange={(e) => w.select(e.target.value)}
+      >
+        {!w.wallets.length && <option value="">No wallet</option>}
+        {w.wallets.map((wallet) => (
+          <option key={wallet.uuid} value={wallet.uuid}>
+            {wallet.name}
+          </option>
+        ))}
+      </select>
+      {w.connectedAccount && (
+        <span role="status" aria-label="Connected wallet">
+          {w.connectedAccount.slice(0, 6)}…{w.connectedAccount.slice(-4)}
+          {w.chainId !== arcTestnet.id
+            ? ' · Switch to Arc Testnet'
+            : w.account
+              ? ' · Signed in'
+              : ' · Sign-in required'}
+        </span>
+      )}
+      {!w.account && (
+        <button disabled={w.busy} onClick={() => void w.connect()}>
+          {w.busy
+            ? 'Connecting…'
+            : w.connectedAccount
+              ? 'Sign in'
+              : 'Connect wallet'}
         </button>
-      ) : (
-        <>
-          <select aria-label="Choose wallet" id="wallet-choice">
-            {w.wallets.length === 0 && <option>No browser wallet</option>}
-            {w.wallets.map((wallet) => (
-              <option key={wallet.uuid} value={wallet.uuid}>
-                {wallet.name}
-              </option>
-            ))}
-          </select>
-          <button
-            disabled={w.busy}
-            onClick={() =>
-              void w.connect(
-                (document.getElementById('wallet-choice') as HTMLSelectElement)
-                  ?.value,
-              )
-            }
-          >
-            {w.busy ? 'Connecting…' : 'Connect wallet'}
-          </button>
-        </>
+      )}
+      {w.connectedAccount && (
+        <button className="secondary" onClick={() => void w.logout()}>
+          {w.account ? 'Sign out' : 'Disconnect'}
+        </button>
       )}
       {w.error && <p role="alert">{w.error}</p>}
     </div>
