@@ -11,6 +11,7 @@ import {
   limitedJson,
 } from '../../../../lib/http';
 import { startTask, getTask } from '../../../../lib/service';
+
 export async function POST(request: Request) {
   const env = bindings();
   if (env.ENABLE_PROBE !== 'true')
@@ -40,6 +41,7 @@ export async function POST(request: Request) {
           error: { code: -32602, message: 'Invalid params' },
         });
       const { probeId, input } = params.data.message.parts[0].data;
+
       return json({
         jsonrpc: '2.0',
         id,
@@ -54,12 +56,14 @@ export async function POST(request: Request) {
           id,
           error: { code: -32602, message: 'Invalid params' },
         });
+
       return json({
         jsonrpc: '2.0',
         id,
         result: await getTask(env, params.data.id),
       });
     }
+
     return json({
       jsonrpc: '2.0',
       id,
@@ -67,6 +71,7 @@ export async function POST(request: Request) {
     });
   } catch (e) {
     const code = errorCode(e);
+
     return json({
       jsonrpc: '2.0',
       id,

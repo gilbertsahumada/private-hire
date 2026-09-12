@@ -32,13 +32,16 @@ import {
   getAgentTask,
 } from '@private-hire/agent-transport/tee';
 import { ARC, encodeReport } from '@private-hire/chain';
+
 export const configSchema = z.strictObject({
   origin: z.string(),
   allowLocalHttp: z.boolean(),
   receiver: z.string().regex(/^0x[0-9a-fA-F]{40}$/),
   writeReport: z.boolean(),
 });
+
 type Config = z.infer<typeof configSchema>;
+
 export function onProbe(
   runtime: TeeRuntime<Config>,
   payload: HTTPPayload,
@@ -134,6 +137,7 @@ export function onProbe(
         EVM_PB.ReceiverContractExecutionStatus.REVERTED
     )
       throw new Error('REPORT_PENDING');
+
     return `CRE_SIMULATION decision=${decision} txHash=${written.txHash ? bytesToHex(written.txHash) : 'not-broadcast'}`;
   } catch {
     // Never propagate HTTP bodies, credentials, schema inputs or private criteria.
@@ -142,6 +146,7 @@ export function onProbe(
     );
   }
 }
+
 export function onLog(runtime: Runtime<Config>, log: EVMLog): string {
   if (
     log.removed ||
@@ -152,11 +157,14 @@ export function onLog(runtime: Runtime<Config>, log: EVMLog): string {
       runtime.config.receiver.toLowerCase()
   )
     throw new Error('UNEXPECTED_LOG');
+
   return `CRE_SIMULATION_LOG_RECEIVED txHash=${bytesToHex(log.txHash)}`;
 }
+
 export function initWorkflow(config: Config) {
   const http = new cre.capabilities.HTTPCapability();
   const evm = new cre.capabilities.EVMClient(BigInt(ARC.selector));
+
   return [
     cre.handlerInTee(http.trigger({ authorizedKeys: [] }), onProbe, [
       { tee: 'nitro', regions: ['us-west-2'] },

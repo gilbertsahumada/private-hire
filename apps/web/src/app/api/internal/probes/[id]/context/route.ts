@@ -5,6 +5,7 @@ import {
   json,
 } from '../../../../../../lib/http';
 import { getContext } from '../../../../../../lib/service';
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> },

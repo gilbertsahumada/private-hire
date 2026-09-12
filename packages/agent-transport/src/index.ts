@@ -4,13 +4,16 @@ import {
   type PortfolioInput,
 } from '@private-hire/domain';
 import { z } from 'zod';
+
 export const A2A_VERSION = '1.0';
+
 export const rpcSchema = z.strictObject({
   jsonrpc: z.literal('2.0'),
   id: z.union([z.string().min(1).max(128), z.number().int().safe()]),
   method: z.string(),
   params: z.unknown(),
 });
+
 export const sendSchema = z.strictObject({
   message: z.strictObject({
     messageId: z.string().min(1).max(128),
@@ -31,7 +34,9 @@ export const sendSchema = z.strictObject({
     })
     .optional(),
 });
+
 export const getSchema = z.strictObject({ id: probeIdSchema });
+
 export function sendRequest(probeId: string, input: PortfolioInput) {
   return {
     jsonrpc: '2.0' as const,
@@ -57,6 +62,7 @@ export function sendRequest(probeId: string, input: PortfolioInput) {
     },
   };
 }
+
 export function getRequest(taskId: string) {
   return {
     jsonrpc: '2.0' as const,
@@ -83,6 +89,7 @@ export function rpcResult(raw: unknown, id: string): unknown {
     response.result === undefined
   )
     throw new Error('A2A_RPC_PENDING');
+
   return response.result;
 }
 
@@ -113,5 +120,6 @@ export function completedTask(raw: unknown, taskId: string) {
   const task = taskSchema.parse(raw);
   if (task.id !== taskId || task.contextId !== taskId)
     throw new Error('A2A_TASK_PENDING');
+
   return task.artifacts[0].parts[0].data;
 }

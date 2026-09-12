@@ -2,10 +2,14 @@ import { z } from 'zod';
 import { keccak256, toHex, type Hex } from 'viem';
 
 export const PROJECT_NAME = 'Confidential Agent Jobs';
+
 export const probeIdSchema = z.string().regex(/^[a-z0-9][a-z0-9-]{0,63}$/);
+
 const integer = (digits: number) =>
   z.string().regex(new RegExp(`^(0|[1-9][0-9]{0,${digits - 1}})$`));
+
 const asset = z.string().min(1).max(128);
+
 export const inputSchema = z
   .strictObject({
     schemaVersion: z.literal('portfolio-input/v1'),
@@ -36,11 +40,13 @@ export const inputSchema = z
     )
       ctx.addIssue({ code: 'custom', message: 'Zero total' });
   });
+
 export const policySchema = z.strictObject({
   schemaVersion: z.literal('portfolio-policy/v1'),
   valueToleranceMicrousd: integer(78),
   weightToleranceBps: z.number().int().min(0).max(10000),
 });
+
 export const resultSchema = z.strictObject({
   schemaVersion: z.literal('portfolio-result/v1'),
   requestId: probeIdSchema,
@@ -58,9 +64,13 @@ export const resultSchema = z.strictObject({
   concentrationBps: z.number().int().min(0).max(10000),
   executionMode: z.literal('deterministic'),
 });
+
 export type PortfolioInput = z.infer<typeof inputSchema>;
+
 export type Policy = z.infer<typeof policySchema>;
+
 export type PortfolioResult = z.infer<typeof resultSchema>;
+
 export const envelopeSchema = z.strictObject({
   schemaVersion: z.literal('probe-result/v1'),
   probeId: probeIdSchema,
@@ -68,7 +78,9 @@ export const envelopeSchema = z.strictObject({
   nonce: z.string().regex(/^[0-9a-f]{64}$/),
   result: z.unknown(),
 });
+
 export type Envelope = z.infer<typeof envelopeSchema>;
+
 export const contextSchema = z.strictObject({
   probeId: probeIdSchema,
   input: inputSchema,
@@ -76,6 +88,7 @@ export const contextSchema = z.strictObject({
   validUntil: z.number().int().positive(),
   inputHash: z.string().regex(/^0x[0-9a-f]{64}$/),
 });
+
 export type ProbeContext = z.infer<typeof contextSchema>;
 
 export function calculate(input: PortfolioInput): PortfolioResult {
@@ -91,6 +104,7 @@ export function calculate(input: PortfolioInput): PortfolioResult {
     valueMicrousd: values[i].toString(),
     weightBps: Number((values[i] * 10000n) / total),
   }));
+
   return {
     schemaVersion: 'portfolio-result/v1',
     requestId: parsed.requestId,
@@ -100,6 +114,7 @@ export function calculate(input: PortfolioInput): PortfolioResult {
     executionMode: 'deterministic',
   };
 }
+
 export function evaluate(
   input: PortfolioInput,
   policy: Policy,
@@ -117,10 +132,13 @@ export function evaluate(
       result.positions.length
   )
     return 2;
+
   const within = (a: string, b: string) => {
     const d = BigInt(a) - BigInt(b);
+
     return (d < 0n ? -d : d) <= BigInt(policy.valueToleranceMicrousd);
   };
+
   if (
     !within(result.totalValueMicrousd, expected.totalValueMicrousd) ||
     Math.abs(result.concentrationBps - expected.concentrationBps) >
@@ -136,8 +154,10 @@ export function evaluate(
     )
       return 2;
   }
+
   return 1;
 }
+
 // Deliberately small JSON canonicalizer: lexical object keys; arrays retain their order.
 export function canonical(value: unknown): string {
   if (value === null || typeof value === 'boolean' || typeof value === 'string')
@@ -169,6 +189,7 @@ export function canonical(value: unknown): string {
     );
   throw new Error('NON_CANONICAL_JSON');
 }
+
 export function commitment(
   domain: 'input' | 'result' | 'context',
   value: unknown,
@@ -177,9 +198,11 @@ export function commitment(
     toHex(`confidential-agent-jobs:probe:${domain}:v1\n${canonical(value)}`),
   );
 }
+
 export function probeKey(id: string): Hex {
   return keccak256(toHex(probeIdSchema.parse(id)));
 }
+
 export function verifyEnvelope(
   raw: unknown,
   probeId: string,
@@ -193,5 +216,6 @@ export function verifyEnvelope(
     commitment('result', e) !== hash
   )
     throw new Error('INTEGRITY_PENDING');
+
   return e;
 }

@@ -1,8 +1,10 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import type { Bindings } from './storage';
+
 export function bindings(): Bindings {
   return getCloudflareContext().env as unknown as Bindings;
 }
+
 export function json(data: unknown, status = 200) {
   return Response.json(data, {
     status,
@@ -13,6 +15,7 @@ export function json(data: unknown, status = 200) {
     },
   });
 }
+
 export async function authorized(
   request: Request,
   secret: string,
@@ -28,8 +31,10 @@ export async function authorized(
     y = new Uint8Array(b);
   let difference = 0;
   for (let i = 0; i < x.length; i++) difference |= x[i] ^ y[i];
+
   return difference === 0;
 }
+
 export async function limitedJson(request: Request): Promise<unknown> {
   if (
     !request.headers
@@ -68,6 +73,7 @@ export async function limitedJson(request: Request): Promise<unknown> {
     throw new Error('INVALID_JSON');
   }
 }
+
 export function errorCode(e: unknown): string {
   const allowed = [
     'CONFLICT',
@@ -80,6 +86,7 @@ export function errorCode(e: unknown): string {
     'INVALID_JSON',
     'UNSUPPORTED_MEDIA_TYPE',
   ];
+
   return e instanceof Error && allowed.includes(e.message)
     ? e.message
     : 'OPERATION_PENDING';

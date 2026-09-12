@@ -28,11 +28,13 @@ function environment() {
     PRIVATE_DATA: {
       async get(key) {
         const body = objects.get(key);
+
         return body === undefined ? null : { text: async () => body };
       },
       async put(key, body) {
         if (objects.has(key)) return null;
         objects.set(key, body);
+
         return {};
       },
     },
@@ -42,6 +44,7 @@ function environment() {
         const stmt: Statement = {
           bind(...values) {
             args = values;
+
             return stmt;
           },
           async first<T>() {
@@ -85,13 +88,16 @@ function environment() {
                 task.result_hash = args[0];
               }
             }
+
             return {};
           },
         };
+
         return stmt;
       },
     },
   };
+
   return {
     env,
     objects,
@@ -100,7 +106,9 @@ function environment() {
     },
   };
 }
+
 const id = 'probe-storage';
+
 const input = {
   schemaVersion: 'portfolio-input/v1' as const,
   requestId: id,
@@ -113,6 +121,7 @@ const input = {
     },
   ],
 };
+
 const setup = {
   probeId: id,
   input,
@@ -124,6 +133,7 @@ const setup = {
   validUntil: 4102444800,
   fixture: 'plus-one',
 };
+
 describe('encrypted persistence and fault recovery', () => {
   it('encrypts with fresh IVs and rejects tamper, wrong key and AAD', async () => {
     const a = await encrypt('ab'.repeat(32), 'context:a', input),

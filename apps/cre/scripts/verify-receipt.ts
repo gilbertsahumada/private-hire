@@ -8,7 +8,9 @@ import {
 import { ARC, probeReceiverAbi } from '@private-hire/chain';
 import { probeKey } from '@private-hire/domain';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+
 const [mode, hash, expectedProbe] = process.argv.slice(2);
+
 if (
   !['deployment', 'report'].includes(mode) ||
   !/^0x[0-9a-fA-F]{64}$/.test(hash ?? '')
@@ -16,11 +18,17 @@ if (
   throw new Error(
     'Usage: verify-receipt.ts deployment|report <txHash> [probeId]',
   );
+
 const client = createPublicClient({ transport: http(ARC.rpc) });
+
 if ((await client.getChainId()) !== ARC.id) throw new Error('Wrong chain');
+
 const receipt = await client.getTransactionReceipt({ hash: hash as Hex });
+
 if (receipt.status !== 'success') throw new Error('Transaction failed');
+
 let evidence: Record<string, unknown>;
+
 if (mode === 'deployment') {
   const receiver = receipt.contractAddress;
   if (!receiver || !(await client.getCode({ address: receiver })))
@@ -78,6 +86,7 @@ if (mode === 'deployment') {
     decision,
   };
 }
+
 evidence = {
   ...evidence,
   mode:
@@ -92,7 +101,9 @@ evidence = {
   effectiveGasPriceWei: receipt.effectiveGasPrice.toString(),
   transactionFeeWei: (receipt.gasUsed * receipt.effectiveGasPrice).toString(),
 };
+
 mkdirSync('../../docs/evidence', { recursive: true });
+
 writeFileSync(
   `../../docs/evidence/${mode}-${hash.slice(2, 14)}.json`,
   JSON.stringify(
@@ -101,6 +112,7 @@ writeFileSync(
     2,
   ) + '\n',
 );
+
 console.log(
   JSON.stringify(evidence, (_, v) =>
     typeof v === 'bigint' ? v.toString() : v,

@@ -9,6 +9,7 @@ import {
   type PortfolioInput,
   type Policy,
 } from '../packages/domain/src/index';
+
 const input: PortfolioInput = {
   schemaVersion: 'portfolio-input/v1',
   requestId: 'probe-test',
@@ -27,11 +28,13 @@ const input: PortfolioInput = {
     },
   ],
 };
+
 const policy: Policy = {
   schemaVersion: 'portfolio-policy/v1',
   valueToleranceMicrousd: '0',
   weightToleranceBps: 0,
 };
+
 describe('independent arithmetic and canonical commitments', () => {
   it('truncates positions before summing and does not adjust weights', () => {
     expect(calculate(input)).toEqual({

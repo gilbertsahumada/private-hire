@@ -15,6 +15,7 @@ export function endpoint(config: EndpointConfig, path: string): string {
     /^http:\/\/(localhost|127\.0\.0\.1):[0-9]+$/.test(config.origin);
   if ((!secure && !local) || !path.startsWith('/') || path.includes('..'))
     throw new Error('ENDPOINT_NOT_ALLOWED');
+
   return config.origin + path;
 }
 
@@ -52,6 +53,7 @@ export function requestJson(
   }
   if (response.statusCode !== 200 || response.body.length > 100_000)
     throw new Error('HTTP_RESPONSE_PENDING');
+
   const header = (name: string) =>
     Object.entries(response.multiHeaders).find(
       ([k]) => k.toLowerCase() === name,
@@ -59,6 +61,7 @@ export function requestJson(
     Object.entries(response.headers).find(
       ([k]) => k.toLowerCase() === name,
     )?.[1];
+
   if (!header('content-type')?.toLowerCase().startsWith('application/json'))
     throw new Error('HTTP_MEDIA_TYPE_PENDING');
   if (path === '/api/agent/a2a' && header('a2a-version') !== '1.0')
@@ -85,6 +88,7 @@ export function sendAgentMessage(
   if (!result || typeof result !== 'object' || !('task' in result))
     throw new Error('A2A_TASK_PENDING');
   completedTask(result.task, probeId);
+
   return probeId;
 }
 
@@ -95,6 +99,7 @@ export function getAgentTask(
   taskId: string,
 ) {
   const req = getRequest(taskId);
+
   return completedTask(
     rpcResult(
       requestJson(runtime, config, '/api/agent/a2a', token, req),

@@ -1,6 +1,8 @@
 import type { NextConfig } from 'next';
 import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
+
 initOpenNextCloudflareForDev();
+
 const config: NextConfig = {
   transpilePackages: [
     '@private-hire/domain',
@@ -8,4 +10,5 @@ const config: NextConfig = {
     '@private-hire/chain',
   ],
 };
+
 export default config;

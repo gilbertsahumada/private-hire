@@ -7,8 +7,11 @@ import {
 import { onProbe, type configSchema } from '../apps/cre/probe/workflow';
 import { calculate, commitment } from '../packages/domain/src/index';
 import { z } from '../apps/cre/node_modules/zod';
+
 afterEach(() => vi.restoreAllMocks());
+
 const probeId = 'probe-workflow';
+
 const input = {
   schemaVersion: 'portfolio-input/v1' as const,
   requestId: probeId,
@@ -21,7 +24,9 @@ const input = {
     },
   ],
 };
+
 const inputHash = commitment('input', input);
+
 const context = {
   probeId,
   input,
@@ -33,6 +38,7 @@ const context = {
   },
   validUntil: 4102444800,
 };
+
 const envelope = {
   schemaVersion: 'probe-result/v1',
   probeId,
@@ -40,6 +46,7 @@ const envelope = {
   nonce: '00'.repeat(32),
   result: calculate(input),
 };
+
 const task = {
   id: probeId,
   contextId: probeId,
@@ -53,12 +60,15 @@ const task = {
     },
   ],
 };
+
 const payload = {
   input: new TextEncoder().encode(JSON.stringify({ probeId })),
 } as HTTPPayload;
+
 function runtime() {
   const report = vi.fn(() => ({ result: () => ({}) }));
   const don = { report };
+
   return {
     report,
     runtime: {
@@ -74,6 +84,7 @@ function runtime() {
     } as unknown as TeeRuntime<z.infer<typeof configSchema>>,
   };
 }
+
 function mockHttp(status = 200) {
   vi.spyOn(
     cre.capabilities.HTTPClient.prototype,
@@ -94,6 +105,7 @@ function mockHttp(status = 200) {
               result: request.method === 'SendMessage' ? { task } : task,
             };
           }
+
           return {
             statusCode: status,
             body: new TextEncoder().encode(JSON.stringify(body)),
@@ -107,12 +119,14 @@ function mockHttp(status = 200) {
       }) as never,
   );
 }
+
 it('does not report rejection when infrastructure returns 401', () => {
   const r = runtime();
   mockHttp(401);
   expect(() => onProbe(r.runtime, payload)).toThrow('PROBE_PENDING');
   expect(r.report).not.toHaveBeenCalled();
 });
+
 it('emits only the ABI public report and rejects failed chain writes', () => {
   const r = runtime();
   mockHttp();

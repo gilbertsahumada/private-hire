@@ -30,6 +30,7 @@ async function main() {
       .filter((line) => line.includes('=') && !line.trim().startsWith('#'))
       .map((line) => {
         const separator = line.indexOf('=');
+
         return [
           line.slice(0, separator).trim(),
           line.slice(separator + 1).trim(),

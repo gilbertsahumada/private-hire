@@ -1,4 +1,5 @@
 import { PROJECT_NAME } from '@private-hire/domain';
+
 export default function Page() {
   return (
     <main style={{ maxWidth: 760, margin: '12vh auto', padding: 32 }}>

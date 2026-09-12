@@ -4,6 +4,7 @@ import {
   type Address,
   type Hex,
 } from 'viem';
+
 export const ARC = {
   id: 5042002,
   selector: '3034092155422581607',
@@ -12,9 +13,11 @@ export const ARC = {
   forwarder: '0x76c9cf548b4179F8901cda1f8623568b58215E62',
   mockForwarder: '0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1',
 } as const;
+
 export const reportParams = parseAbiParameters(
   'uint256 schemaVersion, uint256 chainId, address receiver, bytes32 probeId, bytes32 resultHash, uint8 decision, uint256 validUntil',
 );
+
 export function encodeReport(r: {
   receiver: Address;
   probeId: Hex;
@@ -32,4 +35,5 @@ export function encodeReport(r: {
     r.validUntil,
   ]);
 }
+
 export { probeReceiverAbi } from './probe-abi.js';

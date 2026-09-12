@@ -1,5 +1,6 @@
 import { AgentCard } from '@a2a-js/sdk';
 import { bindings } from '../../../lib/http';
+
 export function GET() {
   const origin = bindings().PUBLIC_ORIGIN;
   const card = AgentCard.fromJSON({
@@ -30,6 +31,7 @@ export function GET() {
       },
     ],
   });
+
   return Response.json(AgentCard.toJSON(card), {
     headers: { 'Cache-Control': 'no-store' },
   });

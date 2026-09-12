@@ -10,6 +10,7 @@ import {
   rpcResult,
   completedTask,
 } from '../packages/agent-transport/src/index';
+
 const input = {
   schemaVersion: 'portfolio-input/v1' as const,
   requestId: 'probe-wire',
@@ -22,6 +23,7 @@ const input = {
     },
   ],
 };
+
 it('matches official A2A 1.0 request serialization', () => {
   const req = sendRequest('probe-wire', input);
   const official = SendMessageRequest.toJSON(
@@ -30,6 +32,7 @@ it('matches official A2A 1.0 request serialization', () => {
   expect(official).toEqual(req.params);
   expect(sendSchema.safeParse(official).success).toBe(true);
 });
+
 it('matches official completed task serialization', () => {
   const task = {
     id: 'probe-wire',
@@ -50,6 +53,7 @@ it('matches official completed task serialization', () => {
   expect(Task.toJSON(Task.fromJSON(task))).toEqual(task);
   expect(completedTask(task, 'probe-wire')).toHaveProperty('envelope');
 });
+
 it('rejects mismatched IDs, JSON-RPC errors and incomplete tasks', () => {
   expect(() =>
     rpcResult({ jsonrpc: '2.0', id: 'wrong', result: {} }, 'right'),

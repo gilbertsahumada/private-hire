@@ -13,6 +13,7 @@ import {
   commitment,
   type PortfolioInput,
 } from '../packages/domain/src/index';
+
 const env = Object.fromEntries(
   readFileSync(
     resolve(process.env.PROBE_CREDENTIALS_FILE ?? 'apps/web/.dev.vars'),
@@ -22,11 +23,15 @@ const env = Object.fromEntries(
     .split('\n')
     .map((l) => {
       const i = l.indexOf('=');
+
       return [l.slice(0, i), l.slice(i + 1)];
     }),
 );
+
 const origin = process.env.PROBE_ORIGIN ?? 'http://127.0.0.1:8787';
+
 const run = process.env.PROBE_RUN ?? Date.now().toString(36);
+
 async function request(
   path: string,
   token: string,
@@ -44,19 +49,28 @@ async function request(
     ...(data === undefined ? {} : { body: JSON.stringify(data) }),
   });
 }
+
 const home = await fetch(origin, { redirect: 'error' });
+
 assert.equal(home.status, 200);
+
 assert.ok((await home.text()).includes('INTEGRATION PROBE'));
+
 const card = (await (
   await fetch(origin + '/.well-known/agent-card.json')
 ).json()) as {
   supportedInterfaces: Array<{ protocolVersion: string; url: string }>;
   securitySchemes: unknown;
 };
+
 assert.equal(card.supportedInterfaces[0].protocolVersion, '1.0');
+
 assert.equal(card.supportedInterfaces[0].url, origin + '/api/agent/a2a');
+
 assert.ok(card.securitySchemes);
+
 const probes: string[] = [];
+
 for (const [label, tolerance, decision] of [
   ['reject', '0', 2],
   ['accept', '1', 1],
@@ -99,6 +113,7 @@ for (const [label, tolerance, decision] of [
     Array.from({ length: 3 }, async () => {
       const response = await request('/api/agent/a2a', env.A2A_TOKEN, send);
       assert.equal(response.headers.get('cache-control'), 'no-store');
+
       return await response.json();
     }),
   );
@@ -143,17 +158,23 @@ for (const [label, tolerance, decision] of [
     `${label}: persisted task, concurrent retries, private scopes and decision ${decision} verified`,
   );
 }
+
 const unknown = (await (
   await request('/api/agent/a2a', env.A2A_TOKEN, getRequest('unknown-task'))
 ).json()) as { error?: { code: number } };
+
 assert.equal(unknown.error?.code, -32001);
+
 mkdirSync('.local', { recursive: true });
+
 for (let i = 0; i < probes.length; i++)
   writeFileSync(
     `.local/${i === 0 ? 'reject' : 'accept'}.json`,
     JSON.stringify({ probeId: probes[i] }),
   );
+
 writeFileSync('.local/probes.json', JSON.stringify({ origin, probes }));
+
 console.log(
   'Integration passed. Public CRE trigger payloads saved in .local/.',
 );
@@ -167,20 +188,24 @@ const malformed = await fetch(origin + '/api/agent/a2a', {
   },
   body: '{',
 });
+
 assert.equal(
   ((await malformed.json()) as { error: { code: number } }).error.code,
   -32700,
 );
+
 const method = await request('/api/agent/a2a', env.A2A_TOKEN, {
   jsonrpc: '2.0',
   id: 'unknown-method',
   method: 'Unknown',
   params: {},
 });
+
 assert.equal(
   ((await method.json()) as { error: { code: number } }).error.code,
   -32601,
 );
+
 console.log(
   'Status page, Agent Card, malformed JSON and unknown method verified.',
 );

@@ -11,6 +11,7 @@ import {
   type PortfolioInput,
 } from '@private-hire/domain';
 import { readObject, writeOnce, nonce, type Bindings } from './storage';
+
 interface ProbeRow {
   probe_id: string;
   context_hash: string;
@@ -18,6 +19,7 @@ interface ProbeRow {
   context_key: string;
   fixture: 'correct' | 'plus-one';
 }
+
 interface TaskRow {
   probe_id: string;
   request_hash: string;
@@ -25,7 +27,9 @@ interface TaskRow {
   result_hash: string | null;
   state: 'reserved' | 'ready';
 }
+
 const aad = (kind: string, id: string) => `probe:v1:${kind}:staging:${id}`;
+
 export async function setupProbe(env: Bindings, raw: unknown) {
   if (env.ENABLE_PROBE !== 'true') throw new Error('PROBE_DISABLED');
   if (!raw || typeof raw !== 'object') throw new Error('INVALID_SETUP');
@@ -67,15 +71,19 @@ export async function setupProbe(env: Bindings, raw: unknown) {
   const persisted = await writeOnce(env, key, aad('context', probeId), context);
   if (commitment('context', persisted) !== contextHash)
     throw new Error('INTEGRITY_PENDING');
+
   return { probeId, contextHash };
 }
+
 async function probeRow(env: Bindings, id: string) {
   const row = await env.DB.prepare('SELECT * FROM probes WHERE probe_id = ?')
     .bind(probeIdSchema.parse(id))
     .first<ProbeRow>();
   if (!row) throw new Error('PROBE_NOT_FOUND');
+
   return row;
 }
+
 export async function getContext(
   env: Bindings,
   id: string,
@@ -92,8 +100,10 @@ export async function getContext(
     commitment('input', context.input) !== context.inputHash
   )
     throw new Error('INTEGRITY_PENDING');
+
   return context;
 }
+
 export async function startTask(
   env: Bindings,
   id: string,
@@ -143,8 +153,10 @@ export async function startTask(
   )
     .bind(hash, id)
     .run();
+
   return getTask(env, id);
 }
+
 export async function getTask(env: Bindings, id: string) {
   probeIdSchema.parse(id);
   const row = await env.DB.prepare(
@@ -161,6 +173,7 @@ export async function getTask(env: Bindings, id: string) {
     row.request_hash,
     row.result_hash,
   );
+
   return {
     id,
     contextId: id,

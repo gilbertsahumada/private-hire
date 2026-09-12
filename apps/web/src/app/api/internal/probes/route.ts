@@ -6,6 +6,7 @@ import {
   limitedJson,
 } from '../../../../lib/http';
 import { setupProbe } from '../../../../lib/service';
+
 export async function POST(request: Request) {
   const env = bindings();
   if (!(await authorized(request, env.SETUP_TOKEN)))
