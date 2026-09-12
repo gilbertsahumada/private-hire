@@ -24,6 +24,9 @@ test('shows the real agent and protected empty workspaces without overflow', asy
   await expect(page.getByText('Checking registry…')).toHaveCount(0, {
     timeout: 30000,
   });
+  await expect(
+    page.getByText('Registry and payment wallet verified'),
+  ).toBeVisible();
   await page.screenshot({
     path: `.local/agents-${info.project.name}.png`,
     fullPage: true,

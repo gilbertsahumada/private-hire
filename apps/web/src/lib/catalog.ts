@@ -134,7 +134,7 @@ export async function verifyIdentity(env?: MarketEnv) {
     ? await env.ASSETS.fetch(new Request(uri))
     : await fetch(uri, {
         signal: AbortSignal.timeout(8000),
-        redirect: 'error',
+        redirect: 'manual',
         cache: 'no-store',
       });
   if (!metadata.ok)
@@ -159,7 +159,7 @@ export async function catalog(env: MarketEnv) {
   try {
     const response = await fetch(
       'https://trust8004.xyz/api/v1/catalog/agents/5042002:894552',
-      { signal: AbortSignal.timeout(6000), redirect: 'error' },
+      { signal: AbortSignal.timeout(6000), redirect: 'manual' },
     );
     if (!response.ok)
       throw new MarketError(`DISCOVERY_HTTP_${response.status}`, 503);
