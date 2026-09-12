@@ -104,26 +104,33 @@ export async function verifyMarket(env: MarketEnv) {
 
 export async function verifyIdentity(env?: MarketEnv) {
   const args = [BigInt(MARKET.agentId)] as const;
-  const [owner, wallet, uri] = await Promise.all([
-    chainClient.readContract({
-      address: MARKET.registry,
-      abi: identityAbi,
-      functionName: 'ownerOf',
-      args,
-    }),
-    chainClient.readContract({
-      address: MARKET.registry,
-      abi: identityAbi,
-      functionName: 'getAgentWallet',
-      args,
-    }),
-    chainClient.readContract({
-      address: MARKET.registry,
-      abi: identityAbi,
-      functionName: 'tokenURI',
-      args,
-    }),
-  ]);
+
+  async function readIdentity(
+    functionName: 'ownerOf' | 'getAgentWallet' | 'tokenURI',
+  ) {
+    for (let attempt = 0; ; attempt++) {
+      try {
+        return await chainClient.readContract({
+          address: MARKET.registry,
+          abi: identityAbi,
+          functionName,
+          args,
+        });
+      } catch (error) {
+        if (
+          attempt >= 3 ||
+          !(error instanceof Error) ||
+          !/rate limit|defined limit/i.test(error.message)
+        )
+          throw error;
+        await new Promise((resolve) => setTimeout(resolve, 500 * 2 ** attempt));
+      }
+    }
+  }
+
+  const owner = await readIdentity('ownerOf');
+  const wallet = await readIdentity('getAgentWallet');
+  const uri = await readIdentity('tokenURI');
   if (
     !same(owner, MARKET.provider) ||
     !same(wallet, MARKET.provider) ||
@@ -198,7 +205,20 @@ export async function catalog(env: MarketEnv) {
   let enabled = false;
   let availabilityReason = '';
   try {
-    await verifyIdentity(env);
+    // Display-only cache. Every draft/create/fund still performs a fresh registry check.
+    const verified = await env.DB.prepare(
+      'SELECT verified_at FROM public_agent_cache WHERE id=?',
+    )
+      .bind('identity:894552')
+      .first<{ verified_at: number }>();
+    if (!verified || Date.now() - verified.verified_at > 30000) {
+      await verifyIdentity(env);
+      await env.DB.prepare(
+        'INSERT INTO public_agent_cache(id,body,verified_at) VALUES(?,?,?) ON CONFLICT(id) DO UPDATE SET verified_at=excluded.verified_at',
+      )
+        .bind('identity:894552', '{}', Date.now())
+        .run();
+    }
     identityVerified = true;
     await verifyMarket(env);
     enabled = true;
