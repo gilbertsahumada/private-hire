@@ -1,6 +1,6 @@
 # PrivateHire — guía final para grabar de una
 
-**Duración: 2–3 minutos. No abras la terminal, no ejecutes comandos y no firmes más transacciones.**
+**Duración: 2–3 minutos. Solo abrirás la terminal en el paso 6 para mostrar un log real guardado. No ejecutas otra simulación ni firmas más transacciones.**
 
 Vas a mostrar una solicitud nueva que espera confirmación del precio y después una solicitud real que ya completamos. Di claramente cuándo cambias de una a otra. Puedes leer la narración en inglés tal como está escrita.
 
@@ -66,19 +66,35 @@ Empieza en Home. No necesitas crear otra solicitud. Los 25 dólares son el valor
 >
 > “Here is the result: twenty-five dollars in total, with one hundred percent in this single holding.”
 
-## 6. Chainlink CRE — explica cómo se comprobó
+## 6. Chainlink CRE — muestra la ejecución guardada
 
-**Haz:** baja hasta **Report verification**, donde aparece **Accepted · CRE simulation**. Quédate en la web; no necesitas abrir VS Code.
+**Decisión para esta grabación: NO vuelvas a ejecutar CRE.** La solicitud ya está completada. Muestra el log auténtico de la ejecución que la aceptó; esto no transmite nada ni cobra gas.
+
+**Haz:** en la web, baja a **Report verification → Accepted · CRE simulation**.
 
 **Di:**
 
-> “Chainlink CRE checks the result. It gets the report through A2A, checks that it matches what the agent submitted, and applies the buyer’s private rules.”
+> “This is where Chainlink CRE checks the result. It gets the agent’s report through A2A, checks that it matches the submitted work, and applies the buyer’s private rules.”
 >
-> “Our evaluator is built as a Confidential Workflow. We hit an enclave setup issue with the deployed version, so we used CRE simulation for this demo. This tests the workflow, but it does not give us enclave protection.”
->
-> “The inputs, the full report and the checking rules stay offchain. We also saved the CRE logs in our repo so the judges can check the execution.”
+> “We already ran CRE for this completed request. Let me show you the actual execution log.”
 
-No digas que estás ejecutando CRE en vivo: estás mostrando el resultado de la ejecución real que ya guardamos.
+**Haz:** abre la terminal de VS Code en la carpeta del proyecto. Copia esta única línea completa:
+
+```bash
+cat /Users/gilbertsahumada/projects/private-hire/docs/evidence/job-job-cfee1d05-d90d-46a7-b858-50206699f8d2-evaluate-broadcast-06798d94-9a2d-4f13-8ce7-71b7c7a584af.log
+```
+
+Deja visible **Workflow Simulation Result**, **decision=1** y el **txHash**. El comando `cat` solo muestra el archivo; no ejecuta CRE.
+
+**Di:**
+
+> “Here, CRE returned acceptance and sent the report to Arc Testnet. This is the transaction hash.”
+>
+> “We hit an enclave setup issue with the deployed workflow, so we used CRE simulation. The simulation does not provide enclave protection, but the transaction on Arc Testnet is real.”
+>
+> “The inputs, full report and private checking rules stay offchain. These logs are saved in our GitHub repo.”
+
+**Haz:** vuelve a la web y sigue al paso 7. No digas “I’m running CRE now”: estás mostrando una ejecución anterior.
 
 ## 7. Arc — muestra la transacción y el pago
 
@@ -104,7 +120,7 @@ No digas que estás ejecutando CRE en vivo: estás mostrando el resultado de la 
 
 ## Recordatorio final
 
-- No Python, no terminal, no comandos y no firmas nuevas.
+- No Python ni firmas nuevas. El único comando es `cat` en el paso 6: muestra un log auténtico, sin repetir la evaluación ni el broadcast.
 - #186298 es la solicitud nueva que espera confirmación del precio.
 - #186296 es la solicitud completada anteriormente, con pago y evaluación verificados.
 - No presentar la simulación como un enclave desplegado.
