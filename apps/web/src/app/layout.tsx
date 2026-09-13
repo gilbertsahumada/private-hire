@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { WalletControl, WalletProvider } from '../components/wallet';
+import '@rainbow-me/rainbowkit/styles.css';
 import './globals.css';
 
 export const metadata = {
