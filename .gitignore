@@ -24,3 +24,5 @@ __pycache__/
 *.pyc
 playwright-report/
 test-results/
+
+*.wasm.br.b64

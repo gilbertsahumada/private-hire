@@ -1,0 +1,91 @@
+{
+  "workflowId": "0009208cf3b07ce8e8f98ef8b12392e0519bbd6838b158ce872be3b7aa984a02",
+  "registry": "private",
+  "deployment": "confirmed",
+  "confidentialExecution": "not verified: detailed execution errors despite SUCCESS summary",
+  "registryFinalState": "PAUSED",
+  "onchainTransactions": 0,
+  "secret": "Isolated random test secret; no application credentials",
+  "vaultCaveat": "CLI reported gateway validation skipped; encryption key and response signatures not independently verified against the gateway.",
+  "evidence": {
+    "deployment-probe-execution-status.json": {
+      "uuid": "aacd735a-96a5-421e-9191-fb7beac069b3",
+      "workflowUUID": "e3fc8366-88f9-4283-9234-a2cb561649b6",
+      "workflowName": "private-hire-confidential-deployment-probe",
+      "status": "SUCCESS",
+      "startedAt": "2026-09-13T12:08:03Z",
+      "finishedAt": "2026-09-13T12:08:13Z",
+      "duration": "10s",
+      "creditUsed": "0",
+      "errors": [
+        {
+          "error": "confidential-workflows capability execution failed: [13]Internal: failed after 2 retries: failed to get enclave params: enclave config validation failed for request dea00824ed1daa8a5a42db9599daadca22bc97d5a92a9a48bd73d61799ca3312: cannot validate enclave config: DON members not set\nfailed to get enclave params: enclave config validation failed for request dea00824ed1daa8a5a42db9599daadca22bc97d5a92a9a48bd73d61799ca3312: cannot validate enclave config: DON members not set",
+          "count": 1
+        }
+      ]
+    },
+    "deployment-probe-clean-status.json": {
+      "uuid": "5f81ffc5-7262-4694-b1cb-8e2e4b8eb147",
+      "workflowUUID": "e3fc8366-88f9-4283-9234-a2cb561649b6",
+      "workflowName": "private-hire-confidential-deployment-probe",
+      "status": "SUCCESS",
+      "startedAt": "2026-09-13T12:09:01Z",
+      "finishedAt": "2026-09-13T12:09:10Z",
+      "duration": "9s",
+      "creditUsed": "0",
+      "errors": [
+        {
+          "error": "confidential-workflows capability execution failed: [13]Internal: failed after 2 retries: failed to get enclave params: enclave config validation failed for request 090c2fb7e52a435a23c83db6f06f668d5ccc38332035162c350fb99c858a255f: cannot validate enclave config: DON members not set\nfailed to get enclave params: enclave config validation failed for request 090c2fb7e52a435a23c83db6f06f668d5ccc38332035162c350fb99c858a255f: cannot validate enclave config: DON members not set",
+          "count": 1
+        }
+      ]
+    },
+    "deployment-probe-events.json": [
+      {
+        "capabilityID": "trigger",
+        "status": "success",
+        "startedAt": "2026-09-13T12:08:00Z",
+        "finishedAt": "2026-09-13T12:08:00Z",
+        "duration": "0ms"
+      },
+      {
+        "capabilityID": "http-actions@1.0.0-alpha",
+        "status": "success",
+        "method": "SendRequest",
+        "startedAt": "2026-09-13T12:08:13Z",
+        "finishedAt": "2026-09-13T12:08:13Z",
+        "duration": "0ms"
+      }
+    ],
+    "deployment-probe-clean-events.json": [
+      {
+        "capabilityID": "trigger",
+        "status": "success",
+        "startedAt": "2026-09-13T12:09:00Z",
+        "finishedAt": "2026-09-13T12:09:00Z",
+        "duration": "0ms"
+      },
+      {
+        "capabilityID": "http-actions@1.0.0-alpha",
+        "status": "success",
+        "method": "SendRequest",
+        "startedAt": "2026-09-13T12:09:10Z",
+        "finishedAt": "2026-09-13T12:09:10Z",
+        "duration": "0ms"
+      }
+    ],
+    "deployment-probe-registry-final.json": [
+      {
+        "name": "private-hire-confidential-deployment-probe",
+        "workflowId": "0009208cf3b07ce8e8f98ef8b12392e0519bbd6838b158ce872be3b7aa984a02",
+        "ownerAddress": "ed592e27d18678dbbbff7268a55736d4dcda5ba9",
+        "status": "PAUSED",
+        "registry": "private"
+      }
+    ]
+  },
+  "simulationControl": {
+    "result": "PRIVATEHIRE_DEPLOY_PROBE_OK",
+    "meaning": "Local simulation only; not evidence of deployed enclave execution."
+  }
+}
