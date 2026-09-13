@@ -375,3 +375,22 @@ it('rejects receipts signed by another wallet before recording any event', async
     ),
   ).rejects.toThrow('WRONG_TRANSACTION');
 });
+
+it('projects provider work without exposing policy or manifest nonce', async () => {
+  const { env, m } = await seeded();
+  const { providerWork } = await import('../apps/web/src/lib/provider');
+  const view = await providerWork(env, m.requestId);
+  expect(view.input).toEqual(m.input);
+  expect(view.budget).toBe(m.budget);
+  expect(view).not.toHaveProperty('policy');
+  expect(view).not.toHaveProperty('nonce');
+  expect(view).not.toHaveProperty('manifest');
+  expect(JSON.stringify(view)).not.toContain('valueToleranceMicrousd');
+});
+
+it('does not expose another provider through the service projection', async () => {
+  const { env, db, m } = await seeded();
+  db.prepare('UPDATE market_drafts SET provider=?').run(account.address);
+  const { providerWork } = await import('../apps/web/src/lib/provider');
+  await expect(providerWork(env, m.requestId)).rejects.toThrow();
+});

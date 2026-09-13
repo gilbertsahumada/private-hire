@@ -18,6 +18,8 @@ export type MarketEnv = Omit<Bindings, 'DB'> & {
   ESCROW_IMPLEMENTATION_HASH?: string;
   JOB_CONTEXT_TOKEN?: string;
   JOB_OPERATOR_TOKEN?: string;
+  PROVIDER_SERVICE_TOKEN?: string;
+  PROVIDER_AUTOMATION_ENABLED?: string;
 };
 
 export const marketEnv = () => bindings() as MarketEnv;

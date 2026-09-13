@@ -19,7 +19,9 @@
     "jobs:dispatch": "python3 scripts/jobs.py dispatch",
     "jobs:evaluate": "python3 scripts/jobs.py evaluate",
     "jobs:reconcile": "python3 scripts/jobs.py reconcile",
-    "market:prepare": "pnpm --filter @private-hire/cre exec tsx scripts/prepare-market.ts"
+    "market:prepare": "pnpm --filter @private-hire/cre exec tsx scripts/prepare-market.ts",
+    "provider:check": "python3 scripts/provider.py",
+    "provider:watch": "python3 scripts/provider.py --watch"
   },
   "devDependencies": {
     "@playwright/test": "1.58.2",
