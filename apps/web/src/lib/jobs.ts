@@ -217,6 +217,7 @@ export async function jobView(env: MarketEnv, d: Draft, wallet: string) {
     ...d,
     chain_status: job?.status ?? null,
     onchainBudget: job?.budget.toString() ?? null,
+    providerAutomationEnabled: env.PROVIDER_AUTOMATION_ENABLED === 'true',
     task,
     events: events.results,
     attempts: attempts.results,

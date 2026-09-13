@@ -29,6 +29,7 @@ const eventLabels: Record<string, string> = {
 };
 
 type Job = {
+  providerAutomationEnabled?: boolean;
   request_id: string;
   job_id: string | null;
   buyer: string;
@@ -316,6 +317,13 @@ export default function JobDetail({
               transaction confirms.
             </p>
           )}
+          {provider && job.chain_status !== null && job.chain_status < 2 && (
+            <p className="notice">
+              {job.providerAutomationEnabled
+                ? 'The provider service handles price confirmation and report delivery. No seller wallet action is needed here.'
+                : 'Automatic signing is not activated yet. This workspace is for monitoring; the provider service will confirm prices and deliver reports.'}
+            </p>
+          )}
           <div className="actions">
             {buyer &&
               job.chain_status === null &&
@@ -325,11 +333,6 @@ export default function JobDetail({
                   <Icon name="check" /> Confirm analysis request
                 </button>
               )}
-            {provider && job.chain_status === 0 && !expired && (
-              <button disabled={busy} onClick={() => void prepare('budget')}>
-                <Icon name="check" /> Confirm price
-              </button>
-            )}
             {buyer &&
               job.chain_status === 0 &&
               job.onchainBudget === job.budget &&
@@ -345,14 +348,6 @@ export default function JobDetail({
                     <Icon name="wallet" /> Review payment
                   </button>
                 </>
-              )}
-            {provider &&
-              job.chain_status === 1 &&
-              job.task?.state === 'ready' &&
-              !expired && (
-                <button disabled={busy} onClick={() => void prepare('submit')}>
-                  Review report delivery
-                </button>
               )}
             {buyer && job.refundAvailable && (
               <button disabled={busy} onClick={() => void prepare('refund')}>

@@ -1,0 +1,42 @@
+{
+  "date": "2026-09-13",
+  "scope": "Local autonomous provider preparation; not live signing evidence",
+  "serviceCommit": "e2c31ba",
+  "checks": {
+    "typecheck": "passed (8 tasks)",
+    "unitTests": "47 passed in 9 files",
+    "workerBuild": "OpenNext build complete",
+    "browser": "4 passed: draft and report presentation on desktop/mobile; browser fixtures, no real transactions",
+    "localWorkersAPI": {
+      "authorizedList": 200,
+      "requests": 0,
+      "noStore": true,
+      "missingTokenRejected": true,
+      "contextRouteRejectedProviderToken": true,
+      "a2aTokenRejectedProviderRoute": true
+    },
+    "readOnlyRunner": {
+      "origin": "http://127.0.0.1:8788",
+      "exitCode": 0,
+      "scanned": 0,
+      "mode": "read-only"
+    }
+  },
+  "commands": [
+    "pnpm typecheck",
+    "pnpm test",
+    "pnpm web:build",
+    "MARKET_ORIGIN=http://127.0.0.1:8787 pnpm exec playwright test --grep 'saved draft|presents a report'",
+    "PROVIDER_ORIGIN=http://127.0.0.1:8788 pnpm provider:check"
+  ],
+  "workerSha256": "d05223bf4d44c84108a102ab62aa3bc9c5568f0c3ac2064c37be5cc65c64bc45",
+  "pending": [
+    "Specific approval to store PROVIDER_SERVICE_TOKEN in confidential-agent-jobs-staging: automatic approval review rejected upload; credential was not sent",
+    "Publish new provider routes and monitoring UI after credential approval",
+    "Authorize bounded signing separately; no provider key loaded and no transactions sent",
+    "Provision durable remote host for independent continuous service",
+    "Validate actual budget confirmation and submission on funded jobs",
+    "CRE confidential workflow remains paused; DON members not set error unresolved",
+    "Acceptance, rejection and expiration journeys remain unverified"
+  ]
+}

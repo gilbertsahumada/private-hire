@@ -4,7 +4,7 @@
 
 The application and simulation evaluator are implemented. The evaluator is deployed and its runtime code hash is configured. The user authorized starting the first browser-wallet job journey; staging contracting is enabled only when the live checks succeed. No paid job or income is fabricated from the earlier probes. The three real acceptance/rejection/expiry journeys remain pending; this stage is not complete.
 
-The English interface provides Agents, private Jobs and Provider workspaces, browser wallet discovery, SIWE login, immutable quotes, reviewed transactions, private results and receipt recovery. Browser wallets sign buyer/provider transactions; no provider key is stored in Workers. The operator runs CRE explicitly.
+The English interface provides Agents, private Jobs and Provider workspaces, browser wallet discovery, SIWE login, immutable quotes, reviewed transactions, private results and receipt recovery. Buyer transactions use the browser wallet. The isolated autonomous provider service prepares provider transactions; its signing activation is pending. No provider key is stored in Workers. The operator runs CRE explicitly.
 
 ## Configuration and authorization
 
@@ -12,7 +12,7 @@ Use the existing Arc ERC-8183 proxy `0x0747EEf0706327138c69792bF28Cd525089e4583`
 
 `JOBS_ENABLED=true` additionally requires `JOB_EVALUATOR`, `JOB_EVALUATOR_CODE_HASH`, `ESCROW_CODE_HASH`, and `ESCROW_IMPLEMENTATION_HASH`. Readiness checks the evaluator's forwarder, escrow and simulation flag and the escrow's implementation, payment token and zero fees. Obtain the runtime hash only from a confirmed deployment. Do not enable hiring before that gate.
 
-`JOB_CONTEXT_TOKEN` and `JOB_OPERATOR_TOKEN` are distinct service credentials, separate from `A2A_TOKEN`. Keep them in Worker secrets and an ignored operator environment file. Never put private keys in public environment variables. A provider must import its wallet into its own browser extension outside this application.
+`JOB_CONTEXT_TOKEN` and `JOB_OPERATOR_TOKEN` are distinct service credentials, separate from `A2A_TOKEN`. Keep them in Worker secrets and an ignored operator environment file. Never put private keys in public environment variables. The provider does not need a browser extension: its key belongs to the isolated provider service. See AUTONOMOUS_PROVIDER.md for activation and recovery.
 
 The unsigned deployment proposal is `docs/evidence/market-deployment-prepared.json`. It targets Arc chain 5042002, constructor mock forwarder `0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1` and the existing escrow. The user authorized only evaluator deployment with a 0.02 test-USDC gas ceiling. It is confirmed at `0x391579ce844b95fc871fa9ce0af1ac8208418962`, transaction `0x554943e013274a96dd66d45e33b2febb5cad1dc8805c17f3ed205735c2de6178`, fee 0.015319722 test USDC. Runtime bytecode (including verified immutable getters), destination and canonical receipt were checked; see `docs/evidence/job-evaluator-deployment.json`. Subsequent job spending and report broadcasts require separate approval.
 
@@ -121,3 +121,7 @@ Repeat with another 24-hour request for rejection. Before task reservation, temp
 Use a third request with a 15-minute deadline for expiry. Fund it without dispatching. Check Refund available at the boundary, sign the refund manually and verify its receipt before marking Expired.
 
 Refresh balance snapshots before each journey. The published readiness snapshot is not proof of payment. Browser fixtures and sign-in tests are not funded jobs. Reconciliation must be repeated to confirm recovery and idempotence after the real transactions; never resolve a terminal job again.
+
+## Autonomous provider preparation
+
+The provider service and scoped API are implemented and tested locally. Signing is disabled and no private key has been loaded by the service. A staging token upload was blocked by automatic approval review pending explicit authorization for PROVIDER_SERVICE_TOKEN on confidential-agent-jobs-staging. No provider credential was sent remotely, no provider route release was published, and no real job or transaction was created in these checks. See AUTONOMOUS_PROVIDER.md.
