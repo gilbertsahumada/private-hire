@@ -82,28 +82,32 @@ test('shows the real agent and protected empty workspaces without overflow', asy
   ).toBeVisible();
 });
 
-test('detects wallet immediately and updates restored login on account chain and disconnect events', async ({
-  page,
-}, info) => {
+type WalletMode = 'success' | 'reject' | 'silent';
+
+async function installWallet(
+  page: import('@playwright/test').Page,
+  mode: WalletMode = 'success',
+) {
   const account = privateKeyToAccount(generatePrivateKey());
-  await page.exposeFunction('testSignMessage', async (hex: string) =>
+  await page.exposeFunction('testSignMessage', (hex: string) =>
     account.signMessage({ message: hexToString(hex as Hex) }),
   );
   await page.addInitScript(
-    ({ address }) => {
-      const listeners: Record<string, ((value: unknown) => void)[]> = {};
+    ({ address, mode }) => {
       let currentAddress = address;
-      let currentChain = '0x' + (5042002).toString(16);
-      (
-        window as unknown as {
-          walletEvent: (event: string, value: unknown) => void;
-        }
-      ).walletEvent = (event, value) => {
-        if (event === 'accountsChanged')
+      let chain = '0x4cef52';
+      const listeners: Record<string, ((value: unknown) => void)[]> = {};
+      const state = window as unknown as {
+        walletEvent: (name: string, value: unknown) => void;
+        finishWallet: () => void;
+        testSignMessage: (hex: string) => Promise<string>;
+      };
+      state.walletEvent = (name, value) => {
+        if (name === 'accountsChanged')
           currentAddress = (value as string[])[0] ?? '';
-        if (event === 'chainChanged') currentChain = String(value);
-        if (event === 'disconnect') currentAddress = '';
-        for (const listener of listeners[event] ?? []) listener(value);
+        if (name === 'chainChanged') chain = String(value);
+        if (name === 'disconnect') currentAddress = '';
+        for (const listener of listeners[name] ?? []) listener(value);
       };
       const provider = {
         async request({
@@ -113,314 +117,278 @@ test('detects wallet immediately and updates restored login on account chain and
           method: string;
           params?: unknown[];
         }) {
-          if (method === 'eth_accounts' || method === 'eth_requestAccounts')
-            return currentAddress ? [currentAddress] : [];
-          if (method === 'eth_chainId') return currentChain;
-          if (method === 'wallet_switchEthereumChain') return null;
+          if (method === 'eth_accounts')
+            return localStorage.getItem('test-authorized') && currentAddress
+              ? [currentAddress]
+              : [];
+          if (method === 'eth_chainId') return chain;
+          if (
+            method === 'eth_requestAccounts' ||
+            method === 'wallet_requestPermissions'
+          ) {
+            if (mode === 'reject')
+              throw { code: 4001, message: 'User rejected request' };
+            if (mode === 'silent')
+              return new Promise((resolve) => {
+                state.finishWallet = () => resolve([currentAddress]);
+              });
+            localStorage.setItem('test-authorized', 'true');
+            return method === 'wallet_requestPermissions'
+              ? [
+                  {
+                    parentCapability: 'eth_accounts',
+                    caveats: [
+                      {
+                        type: 'restrictReturnedAccounts',
+                        value: [currentAddress],
+                      },
+                    ],
+                  },
+                ]
+              : [currentAddress];
+          }
+          if (method === 'wallet_requestPermissions')
+            return [
+              {
+                parentCapability: 'eth_accounts',
+                caveats: [
+                  { type: 'restrictReturnedAccounts', value: [currentAddress] },
+                ],
+              },
+            ];
+          if (method === 'wallet_revokePermissions') return null;
+          if (method === 'wallet_switchEthereumChain') {
+            chain = '0x4cef52';
+            state.walletEvent('chainChanged', chain);
+            return null;
+          }
           if (method === 'personal_sign')
-            return (
-              window as unknown as {
-                testSignMessage: (hex: string) => Promise<string>;
-              }
-            ).testSignMessage(String(params?.[0]));
-          throw new Error('Unsupported test wallet method');
+            return state.testSignMessage(String(params?.[0]));
+          throw new Error(`Unsupported test wallet method: ${method}`);
         },
-        on(event: string, listener: (value: unknown) => void) {
-          (listeners[event] ??= []).push(listener);
+        on(name: string, listener: (value: unknown) => void) {
+          (listeners[name] ??= []).push(listener);
         },
-        removeListener(event: string, listener: (value: unknown) => void) {
-          listeners[event] = (listeners[event] ?? []).filter(
+        removeListener(name: string, listener: (value: unknown) => void) {
+          listeners[name] = (listeners[name] ?? []).filter(
             (v) => v !== listener,
           );
         },
       };
-
-      const announce = () =>
+      window.addEventListener('eip6963:requestProvider', () =>
         window.dispatchEvent(
           new CustomEvent('eip6963:announceProvider', {
             detail: {
-              info: { name: 'Ephemeral test wallet', uuid: 'test-wallet' },
+              info: {
+                name: 'MetaMask',
+                uuid: '350670db-19fa-4704-a166-e52e178b59d2',
+                rdns: 'io.metamask',
+                icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><rect width="32" height="32" fill="orange"/></svg>',
+              },
               provider,
             },
           }),
-        );
-
-      window.addEventListener('eip6963:requestProvider', announce);
+        ),
+      );
     },
-    { address: account.address },
+    { address: account.address, mode },
   );
-  await page.goto('/jobs');
-  await expect(page.getByLabel('Connected wallet')).toContainText(
-    'Sign-in required',
-  );
+  return account;
+}
+
+async function openWallet(page: import('@playwright/test').Page) {
   await page
-    .getByRole('button', { name: /^(Connect wallet|Sign in)$/ })
+    .getByRole('button', { name: 'Connect wallet', exact: true })
     .click();
+  await page
+    .getByRole('button', { name: 'MetaMask', exact: true })
+    .click({ timeout: 10000 })
+    .catch(async (error) => {
+      // A connection can finish while the modal replaces its wallet list with SIWE.
+      if (
+        !(await page
+          .getByRole('button', { name: 'Sign message', exact: true })
+          .isVisible())
+      )
+        throw error;
+    });
+}
+
+test('connects through the standard modal, restores SIWE and clears private data on account changes', async ({
+  page,
+}, info) => {
+  await installWallet(page);
+  await page.goto('/jobs');
+  await openWallet(page);
+  await page.getByRole('button', { name: 'Sign message', exact: true }).click();
   await expect(
     page.getByRole('heading', { name: 'Your first job starts here' }),
-  ).toBeVisible({ timeout: 30000 });
+  ).toBeVisible();
   await page.reload();
   await expect(
     page.getByRole('heading', { name: 'Your first job starts here' }),
-  ).toBeVisible({ timeout: 30000 });
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= window.innerWidth,
-    ),
-  ).toBeTruthy();
-  await page.screenshot({
-    path: `.local/wallet-${info.project.name}.png`,
-    fullPage: true,
-  });
-  const second = '0x2222222222222222222222222222222222222222';
-
-  await page.evaluate(
-    (address) =>
-      (
-        window as unknown as {
-          walletEvent: (event: string, value: unknown) => void;
-        }
-      ).walletEvent('accountsChanged', [address]),
-    second,
-  );
-  await expect(page.getByLabel('Connected wallet')).toContainText(
-    '0x2222…2222',
+  ).toBeVisible();
+  await page.evaluate(() =>
+    (
+      window as unknown as {
+        walletEvent: (event: string, value: unknown) => void;
+      }
+    ).walletEvent('accountsChanged', [
+      '0x2222222222222222222222222222222222222222',
+    ]),
   );
   await expect(
     page.getByRole('heading', { name: 'Connect your wallet' }),
   ).toBeVisible();
   await expect(
-    page.getByRole('button', { name: 'Sign in', exact: true }),
-  ).toBeVisible();
-  await page.evaluate(() =>
-    (
-      window as unknown as {
-        walletEvent: (event: string, value: unknown) => void;
-      }
-    ).walletEvent('chainChanged', '0x1'),
-  );
-  await expect(page.getByLabel('Connected wallet')).toContainText(
-    'Switch to Arc Testnet',
-  );
-  await page.evaluate(() =>
-    (
-      window as unknown as {
-        walletEvent: (event: string, value: unknown) => void;
-      }
-    ).walletEvent('disconnect', {}),
-  );
-  await expect(page.getByLabel('Connected wallet')).toHaveCount(0);
+    page.getByRole('button', { name: 'Cancel connection' }),
+  ).toHaveCount(0);
+  await page.screenshot({
+    path: `.local/rainbowkit-${info.project.name}.png`,
+    fullPage: true,
+  });
+});
+
+test('uses a dismissible connection modal when the extension never responds', async ({
+  page,
+}, info) => {
+  await installWallet(page, 'silent');
+  await page.goto('/agents');
+  await openWallet(page);
+  await page.screenshot({
+    path: `.local/rainbowkit-pending-${info.project.name}.png`,
+    fullPage: true,
+  });
+  await page.getByRole('button', { name: 'Close', exact: true }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(
     page.getByRole('button', { name: 'Connect wallet', exact: true }),
+  ).toBeEnabled();
+  await expect(
+    page.getByRole('button', { name: 'Cancel connection' }),
+  ).toHaveCount(0);
+  await page
+    .getByRole('button', { name: 'Connect wallet', exact: true })
+    .click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+});
+
+test('shows rejected requests inside the standard connection flow', async ({
+  page,
+}) => {
+  await installWallet(page, 'reject');
+  await page.goto('/agents');
+  await openWallet(page);
+  await expect(
+    page.getByRole('alert').filter({ hasText: 'Request canceled' }),
   ).toBeVisible();
-  // Hold a genuine SIWE response while the selected account changes.
-  let release!: () => void;
-  let responseReady!: () => void;
-  const held = new Promise<void>((resolve) => {
-    release = resolve;
+  await page.getByRole('button', { name: 'Close', exact: true }).click();
+  await expect(
+    page.getByRole('button', { name: 'Connect wallet', exact: true }),
+  ).toBeEnabled();
+});
+
+for (const event of ['chainChanged', 'disconnect']) {
+  test(`clears authenticated pages on ${event}`, async ({ page }) => {
+    await installWallet(page);
+    await page.goto('/jobs');
+    await openWallet(page);
+    await page
+      .getByRole('button', { name: 'Sign message', exact: true })
+      .click();
+    await expect(
+      page.getByRole('heading', { name: 'Your first job starts here' }),
+    ).toBeVisible();
+    await page.evaluate(
+      (event) =>
+        (
+          window as unknown as {
+            walletEvent: (event: string, value: unknown) => void;
+          }
+        ).walletEvent(event, event === 'chainChanged' ? '0x1' : { code: 4900 }),
+      event,
+    );
+    await expect(
+      page.getByRole('heading', { name: 'Connect your wallet' }),
+    ).toBeVisible();
+    await expect
+      .poll(async () => (await page.request.get('/api/auth/session')).status())
+      .toBe(401);
   });
-  const ready = new Promise<void>((resolve) => {
-    responseReady = resolve;
+}
+
+test('does not restore a late verified session after switching accounts', async ({
+  page,
+}) => {
+  await installWallet(page);
+  let release!: () => void;
+  let ready!: () => void;
+  const responseReady = new Promise<void>((resolve) => {
+    ready = resolve;
+  });
+  const resume = new Promise<void>((resolve) => {
+    release = resolve;
   });
   await page.route('**/api/auth/verify', async (route) => {
     const response = await route.fetch();
-    responseReady();
-    await held;
+    ready();
+    await resume;
     await route.fulfill({ response });
   });
-  await page.evaluate((address) => {
-    const w = window as unknown as {
-      walletEvent: (event: string, value: unknown) => void;
-    };
-    w.walletEvent('accountsChanged', [address]);
-    w.walletEvent('chainChanged', '0x' + (5042002).toString(16));
-  }, account.address);
-  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await ready;
-  await page.evaluate(
-    (address) =>
-      (
-        window as unknown as {
-          walletEvent: (event: string, value: unknown) => void;
-        }
-      ).walletEvent('accountsChanged', [address]),
-    second,
+  await page.goto('/jobs');
+  await openWallet(page);
+  await page.getByRole('button', { name: 'Sign message', exact: true }).click();
+  await responseReady;
+  await page.evaluate(() =>
+    (
+      window as unknown as {
+        walletEvent: (event: string, value: unknown) => void;
+      }
+    ).walletEvent('accountsChanged', [
+      '0x2222222222222222222222222222222222222222',
+    ]),
   );
   const cleared = page.waitForResponse(
     (r) => r.url().endsWith('/api/auth/logout') && r.status() === 200,
   );
   release();
   await cleared;
-  await expect(page.getByLabel('Connected wallet')).toContainText(
-    '0x2222…2222',
-  );
   await expect(
     page.getByRole('heading', { name: 'Connect your wallet' }),
   ).toBeVisible();
+  await expect
+    .poll(async () => (await page.request.get('/api/auth/session')).status())
+    .toBe(401);
   await expect(
-    page.getByRole('button', { name: 'Sign out', exact: true }),
+    page.getByRole('heading', { name: 'Your first job starts here' }),
   ).toHaveCount(0);
-  await page.getByRole('button', { name: 'Disconnect', exact: true }).click();
-  await expect(page.getByLabel('Connected wallet')).toHaveCount(0);
-
-  await expect(
-    page.getByRole('heading', { name: 'Connect your wallet' }),
-  ).toBeVisible();
 });
 
-test('wallet absence is actionable and navigation works with the keyboard', async ({
+test('waits for initial session status before opening the wallet dialog', async ({
   page,
 }) => {
-  await page.goto('/agents');
-  await page
-    .getByRole('button', { name: 'Connect wallet', exact: true })
-    .click();
+  await installWallet(page, 'silent');
+  let release!: () => void;
+  const pending = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route('**/api/auth/session', async (route) => {
+    await pending;
+    await route.fulfill({
+      status: 401,
+      contentType: 'application/json',
+      body: '{"error":"SIGN_IN_REQUIRED"}',
+    });
+  });
+  await page.goto('/jobs');
   await expect(
-    page.getByRole('alert').filter({ hasText: 'No wallet detected' }),
-  ).toContainText('No wallet detected');
-  const jobs = page
-    .getByRole('navigation')
-    .getByRole('link', { name: 'Jobs', exact: true });
-  await jobs.focus();
-  await page.keyboard.press('Enter');
-  await expect(page).toHaveURL(/\/jobs$/);
+    page.getByRole('button', { name: 'Connect wallet', exact: true }),
+  ).toBeDisabled();
+  release();
+  await openWallet(page);
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.getByRole('button', { name: 'Close', exact: true }).click();
   await expect(
-    page.getByRole('heading', { name: 'Connect your wallet' }),
-  ).toBeVisible();
+    page.getByRole('button', { name: 'Connect wallet', exact: true }),
+  ).toBeEnabled();
 });
-
-for (const scenario of [
-  {
-    method: 'eth_requestAccounts',
-    code: 4001,
-    message: 'Wallet connection canceled',
-  },
-  {
-    method: 'wallet_switchEthereumChain',
-    code: 4001,
-    message: 'Network change canceled',
-  },
-  { method: 'personal_sign', code: 4001, message: 'Sign-in canceled' },
-  {
-    method: 'eth_requestAccounts',
-    code: -32002,
-    message: 'A request is already open',
-  },
-]) {
-  test(`explains ${scenario.method} failure ${scenario.code} and allows retry`, async ({
-    page,
-  }) => {
-    await page.addInitScript(({ method: rejectedMethod, code }) => {
-      const provider = {
-        async request({ method }: { method: string }) {
-          if (method === rejectedMethod)
-            throw { code, message: 'User rejected or pending request' };
-          if (method === 'eth_accounts' || method === 'eth_requestAccounts')
-            return ['0x2222222222222222222222222222222222222222'];
-          if (method === 'eth_chainId') return '0x4cef52';
-          if (method === 'wallet_switchEthereumChain') return null;
-          throw new Error('Unexpected test method');
-        },
-        on() {},
-        removeListener() {},
-      };
-      window.addEventListener('eip6963:requestProvider', () =>
-        window.dispatchEvent(
-          new CustomEvent('eip6963:announceProvider', {
-            detail: {
-              info: { name: 'MetaMask', uuid: 'cancellation-test' },
-              provider,
-            },
-          }),
-        ),
-      );
-    }, scenario);
-    await page.goto('/jobs');
-    await expect(page.getByLabel('Connected wallet')).toBeVisible();
-    const button = page.getByRole('button', { name: 'Sign in', exact: true });
-    await button.click();
-    await expect(
-      page.getByRole('alert').filter({ hasText: scenario.message }),
-    ).toBeVisible();
-    await expect(button).toBeEnabled();
-    await expect(
-      page.getByRole('button', { name: 'Sign out', exact: true }),
-    ).toHaveCount(0);
-    await button.click();
-    await expect(
-      page.getByRole('alert').filter({ hasText: scenario.message }),
-    ).toBeVisible();
-    await expect(button).toBeEnabled();
-  });
-}
-
-for (const recovery of ['cancel', 'timeout']) {
-  test(`recovers a silent wallet using ${recovery} and ignores its late response`, async ({
-    page,
-  }) => {
-    await page.clock.install();
-    await page.addInitScript(() => {
-      const provider = {
-        request({ method }: { method: string }) {
-          if (method === 'eth_accounts') return Promise.resolve([]);
-          if (method === 'eth_chainId') return Promise.resolve('0x4cef52');
-          if (method === 'eth_requestAccounts')
-            return new Promise((resolve) => {
-              (window as unknown as { finishWallet: () => void }).finishWallet =
-                () => resolve(['0x2222222222222222222222222222222222222222']);
-            });
-          throw new Error('An abandoned request must not advance');
-        },
-        on() {},
-        removeListener() {},
-      };
-      window.addEventListener('eip6963:requestProvider', () =>
-        window.dispatchEvent(
-          new CustomEvent('eip6963:announceProvider', {
-            detail: {
-              info: { name: 'MetaMask', uuid: 'silent-test' },
-              provider,
-            },
-          }),
-        ),
-      );
-    });
-    await page.goto('/jobs');
-    const connect = page.getByRole('button', {
-      name: 'Connect wallet',
-      exact: true,
-    });
-    await connect.click();
-    await expect(
-      page.getByText('Open your wallet to approve the connection.'),
-    ).toBeVisible();
-    if (recovery === 'cancel')
-      await page
-        .getByRole('button', { name: 'Cancel connection', exact: true })
-        .click();
-    else await page.clock.fastForward(61000);
-    await expect(
-      page.locator('.wallet-control').getByRole('alert'),
-    ).toContainText(
-      recovery === 'cancel'
-        ? 'Connection canceled'
-        : 'Your wallet did not respond',
-    );
-    await expect(connect).toBeEnabled();
-    await page.evaluate(() =>
-      (window as unknown as { finishWallet: () => void }).finishWallet(),
-    );
-    await expect(connect).toBeEnabled();
-    await expect(
-      page.getByText('Confirm Arc Testnet in your wallet.'),
-    ).toHaveCount(0);
-    await connect.click();
-    await expect(
-      page.getByText('Open your wallet to approve the connection.'),
-    ).toBeVisible();
-    await page
-      .getByRole('button', { name: 'Cancel connection', exact: true })
-      .click();
-    await expect(connect).toBeEnabled();
-  });
-}

@@ -36,12 +36,17 @@ import { parseSiweMessage } from 'viem/siwe';
 import type { Address, Hex } from 'viem';
 import { arcChain } from '@private-hire/chain';
 
-export async function api<T>(url: string, body?: unknown): Promise<T> {
+export async function api<T>(
+  url: string,
+  body?: unknown,
+  signal?: AbortSignal,
+): Promise<T> {
   const response = await fetch(url, {
     method: body === undefined ? 'GET' : 'POST',
     headers: body === undefined ? {} : { 'Content-Type': 'application/json' },
     body: body === undefined ? undefined : JSON.stringify(body),
     cache: 'no-store',
+    signal,
   });
   const result = await response.json();
   if (!response.ok)
@@ -68,10 +73,12 @@ function makeConfig() {
 
 type Transaction = { from: string; to: string; data: string; chainId: number };
 type WalletState = {
+  ready: boolean;
   account: string | null;
   send: (tx: Transaction) => Promise<Hex>;
 };
 const Context = createContext<WalletState>({
+  ready: false,
   account: null,
   send: async () => {
     throw new Error('Sign in first.');
@@ -209,7 +216,11 @@ function SessionProvider({ children }: { children: ReactNode }) {
       },
     });
     const version = epoch.current;
-    void api<{ wallet: string }>('/api/auth/session')
+    void api<{ wallet: string }>(
+      '/api/auth/session',
+      undefined,
+      AbortSignal.timeout(10000),
+    )
       .then((result) => {
         if (!disposed && version === epoch.current) setSession(result.wallet);
       })
@@ -303,7 +314,7 @@ function SessionProvider({ children }: { children: ReactNode }) {
         })}
         appInfo={{ appName: 'Confidential Agent Jobs' }}
       >
-        <Context.Provider value={{ account, send }}>
+        <Context.Provider value={{ account, send, ready: !loading }}>
           <Fragment key={account ?? 'signed-out'}>{children}</Fragment>
           {notice && (
             <div className="wallet-notice" role="alert">
@@ -317,6 +328,14 @@ function SessionProvider({ children }: { children: ReactNode }) {
 }
 
 export function WalletControl() {
+  const { ready } = useWallet();
+  if (!ready)
+    return (
+      <div className="wallet-control">
+        <button disabled>Connect wallet</button>
+      </div>
+    );
+
   return (
     <div className="wallet-control">
       <ConnectButton
