@@ -91,3 +91,9 @@ The holding form accepts plain decimal quantities and USD prices, converted exac
 ## Platform landing
 
 The root route introduces the platform independently of the first agent. It links to the current catalog, features Portfolio Calculator as the only available agent, and describes bringing your own agent as a future capability with registration explicitly closed. Navigation uses My requests so it can cover services beyond portfolio analysis; the current analysis screens remain specific to the available service. This landing is available in the local development preview for review.
+
+### Explicit inputs and draft review
+
+The request form now starts empty. Example holdings require an explicit action and never replace entered values. Native required fields and the existing schema validation prevent a blank request from being submitted. The saved draft page shows human-readable quantities and prices and explains the separate request, provider confirmation, and payment steps. Existing drafts are preserved.
+
+Agent name, image and description on the profile and landing come directly from the published registration metadata file; request screens reuse its name. The metadata content itself has not been rewritten. Its legacy probe-only availability wording still needs a deliberate metadata update to reflect current staging capabilities.

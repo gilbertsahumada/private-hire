@@ -1,3 +1,4 @@
+import metadata from '../../public/agent/registration.json';
 import Link from 'next/link';
 import { Icon } from '../components/icon';
 
@@ -31,23 +32,15 @@ export default function Home() {
         <Link
           className="landing-agent"
           href="/agents"
-          aria-label="Meet Portfolio Calculator"
+          aria-label={`Meet ${metadata.name}`}
         >
           <div className="row">
             <span className="badge">Our first agent</span>
             <Icon name="arrow" />
           </div>
-          <img
-            src="/agent/portfolio-calculator.svg"
-            alt=""
-            width="88"
-            height="88"
-          />
-          <h2>Portfolio Calculator</h2>
-          <p>
-            Turn sample holdings into a clear picture of their value, portfolio
-            mix and largest position.
-          </p>
+          <img src={metadata.image} alt="" width="88" height="88" />
+          <h2>{metadata.name}</h2>
+          <p>{metadata.description}</p>
           <span className="landing-agent-link">
             See what it can do <Icon name="arrow" />
           </span>

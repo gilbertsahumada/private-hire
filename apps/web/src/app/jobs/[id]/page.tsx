@@ -5,6 +5,9 @@ import { formatEther, formatUnits } from 'viem';
 import { api, useWallet } from '../../../components/wallet';
 import { Icon } from '../../../components/icon';
 import { PortfolioReport } from '../../../components/portfolio-report';
+import { inputSchema } from '@private-hire/domain';
+import metadata from '../../../../public/agent/registration.json';
+import Link from 'next/link';
 import { statuses } from '../../../components/job-list';
 
 const actionLabels: Record<string, string> = {
@@ -168,11 +171,13 @@ export default function JobDetail({
   const provider = job?.provider === wallet.account;
   const expired = !!job && Date.now() / 1000 >= job.expired_at;
 
+  const holdings = inputSchema.safeParse(job?.input);
+
   return (
     <main>
       <h1>{job?.job_id ? `Analysis #${job.job_id}` : 'Review your quote'}</h1>
       <p className="muted">
-        Portfolio Calculator · Follow your request, payment and report here.
+        {metadata.name} · Follow your request, payment and report here.
       </p>
       {error && (
         <p role="status" className="notice error">
@@ -187,6 +192,59 @@ export default function JobDetail({
         <button onClick={() => void refresh()}>Retry loading</button>
       ) : (
         <>
+          {job.chain_status === null && (
+            <section className="panel">
+              <h2>
+                <Icon name="report" /> Your draft is saved
+              </h2>
+              <p>
+                Saving this draft does not send a payment or start the analysis.
+              </p>
+              <p>
+                {job.pending_tx
+                  ? 'Your request transaction is awaiting verification. Check it before signing again.'
+                  : expired
+                    ? 'This draft’s deadline has passed. Start a new request to choose a new deadline.'
+                    : 'Review your holdings below, then confirm the request in your wallet. This first transaction has a network fee. After the provider confirms the price, you can make the analysis payment.'}
+              </p>
+              <Link href="/jobs/new">
+                Start a new request with different details
+              </Link>
+            </section>
+          )}
+          {holdings.success && (
+            <section className="panel">
+              <h2>Your requested holdings</h2>
+              <div className="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Asset</th>
+                      <th>Quantity</th>
+                      <th>Price per unit (USD)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {holdings.data.positions.map((p) => (
+                      <tr key={p.assetId}>
+                        <td>{p.assetId}</td>
+                        <td>
+                          {formatUnits(
+                            BigInt(p.quantityAtomic),
+                            p.quantityDecimals,
+                          )}
+                        </td>
+                        <td>${formatUnits(BigInt(p.unitPriceMicrousd), 6)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="subtle">
+                These are the inputs you supplied, not a completed report.
+              </p>
+            </section>
+          )}
           <ol className="timeline">
             {[
               'Draft',
@@ -242,7 +300,9 @@ export default function JobDetail({
                             ? 'Waiting for the operator to start the analysis'
                             : job.chain_status === 2
                               ? 'Waiting for the operator to check the report'
-                              : 'No analysis in progress'}
+                              : job.chain_status === null
+                                ? 'Review your draft and confirm the request in your wallet.'
+                                : 'Waiting for the provider to confirm the price.'}
             </dd>
           </dl>
           {job.chain_status === 0 && job.onchainBudget === '0' && (
@@ -257,11 +317,14 @@ export default function JobDetail({
             </p>
           )}
           <div className="actions">
-            {buyer && job.chain_status === null && !job.pending_tx && (
-              <button disabled={busy} onClick={() => void prepare('create')}>
-                <Icon name="check" /> Confirm analysis request
-              </button>
-            )}
+            {buyer &&
+              job.chain_status === null &&
+              !job.pending_tx &&
+              !expired && (
+                <button disabled={busy} onClick={() => void prepare('create')}>
+                  <Icon name="check" /> Confirm analysis request
+                </button>
+              )}
             {provider && job.chain_status === 0 && !expired && (
               <button disabled={busy} onClick={() => void prepare('budget')}>
                 <Icon name="check" /> Confirm price

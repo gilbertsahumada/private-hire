@@ -17,12 +17,12 @@ test('shows the real agent and protected empty workspaces without overflow', asy
   await page.goto('/agents');
   await expect(
     page.getByRole('heading', {
-      name: 'Understand your portfolio.',
+      name: 'Portfolio Calculator',
       exact: true,
     }),
   ).toBeVisible();
   await expect(
-    page.getByRole('img', { name: 'Portfolio Calculator avatar' }),
+    page.getByRole('img', { name: 'Portfolio Calculator', exact: true }),
   ).toBeVisible();
   await expect(page.getByText('Checking registry…')).toHaveCount(0, {
     timeout: 30000,
@@ -409,6 +409,18 @@ test('lets a customer enter ordinary quantities and prices without a payment', a
   await expect(
     page.getByLabel('Asset 1 quantity', { exact: true }),
   ).toBeVisible();
+  await expect(page.getByLabel('Asset 1 name', { exact: true })).toHaveValue(
+    '',
+  );
+  await page
+    .getByRole('button', { name: 'Review my analysis', exact: true })
+    .click();
+  await expect(page).toHaveURL(/\/jobs\/new$/);
+  await expect(page.locator('input:invalid').first()).toBeFocused();
+  await page.getByRole('button', { name: 'Use example holdings' }).click();
+  await expect(page.getByLabel('Asset 1 name', { exact: true })).toHaveValue(
+    'sample-usdc',
+  );
   await page.getByLabel('Asset 1 quantity', { exact: true }).fill('2.5');
   await page.getByLabel('Asset 1 price in USD', { exact: true }).fill('10');
   await expect(page.getByText('Atomic quantity', { exact: true })).toHaveCount(
@@ -508,4 +520,63 @@ test('presents a report in dollars and percentages with technical data secondary
   await expect(
     page.locator('pre').filter({ hasText: 'portfolio-result/v1' }),
   ).not.toBeVisible();
+});
+
+test('explains a saved draft and displays supplied holdings before a wallet transaction', async ({
+  page,
+}) => {
+  const account = await installWallet(page);
+  await page.route('**/api/jobs/draft-preview', (route) =>
+    route.fulfill({
+      json: {
+        request_id: 'draft-preview',
+        job_id: null,
+        buyer: account.address.toLowerCase(),
+        provider: '0x2222222222222222222222222222222222222222',
+        budget: '10000',
+        onchainBudget: null,
+        expired_at: 4102444800,
+        chain_status: null,
+        manifest_hash: '0x' + '11'.repeat(32),
+        pending_tx: null,
+        refundAvailable: false,
+        task: null,
+        events: [],
+        input: {
+          schemaVersion: 'portfolio-input/v1',
+          requestId: 'draft-preview',
+          positions: [
+            {
+              assetId: 'Example asset',
+              quantityAtomic: '25',
+              quantityDecimals: 1,
+              unitPriceMicrousd: '10000000',
+            },
+          ],
+        },
+        reports: [],
+        attempts: [],
+      },
+    }),
+  );
+  await page.goto('/jobs/draft-preview');
+  await openWallet(page);
+  await page.getByRole('button', { name: 'Sign message', exact: true }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Your draft is saved' }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(
+      'Saving this draft does not send a payment or start the analysis.',
+    ),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('cell', { name: 'Example asset', exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('cell', { name: '2.5', exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Confirm analysis request', exact: true }),
+  ).toBeVisible();
 });

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { formatUnits } from 'viem';
 import { useRouter } from 'next/navigation';
 import { inputSchema, policySchema } from '@private-hire/domain';
+import metadata from '../../../../public/agent/registration.json';
 import { Icon } from '../../../components/icon';
 import { portfolioPositions, type Holding } from '../../../lib/portfolio-form';
 import { api, useWallet } from '../../../components/wallet';
@@ -21,7 +22,7 @@ export default function NewJob() {
   const [requestId] = useState(() => `job-${crypto.randomUUID()}`);
   const [error, setError] = useState('');
   const [positions, setPositions] = useState<Holding[]>([
-    { assetId: 'sample-usdc', quantity: '1', price: '1' },
+    { assetId: '', quantity: '', price: '' },
   ]);
 
   async function submit(form: FormData) {
@@ -60,7 +61,7 @@ export default function NewJob() {
 
   return (
     <main>
-      <p className="eyebrow">Portfolio Calculator</p>
+      <p className="eyebrow">{metadata.name}</p>
       <h1>What’s in your portfolio?</h1>
       <p className="muted">
         Add sample holdings to see their total value and how your portfolio is
@@ -85,6 +86,18 @@ export default function NewJob() {
             Use up to ten assets. For example, 2.5 units at $10 each have a
             value of $25.
           </p>
+          <button
+            type="button"
+            className="secondary"
+            disabled={positions.some((p) => p.assetId || p.quantity || p.price)}
+            onClick={() =>
+              setPositions([
+                { assetId: 'sample-usdc', quantity: '2.5', price: '10' },
+              ])
+            }
+          >
+            Use example holdings
+          </button>
           <div className="positions">
             {positions.map((position, i) => (
               <div className="position" key={i}>
@@ -160,7 +173,7 @@ export default function NewJob() {
               onClick={() =>
                 setPositions((ps) => [
                   ...ps,
-                  { assetId: '', quantity: '1', price: '1' },
+                  { assetId: '', quantity: '', price: '' },
                 ])
               }
             >

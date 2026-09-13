@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { formatUnits } from 'viem';
+import metadata from '../../../public/agent/registration.json';
 import { Icon } from '../../components/icon';
 import { api } from '../../components/wallet';
 
@@ -44,14 +45,9 @@ export default function Agents() {
       <div className="agent-layout">
         <section>
           <div className="agent-heading">
-            <img
-              className="avatar"
-              src="/agent/portfolio-calculator.svg"
-              alt="Portfolio Calculator avatar"
-            />
+            <img className="avatar" src={metadata.image} alt={metadata.name} />
             <div>
-              <p className="eyebrow">Portfolio Calculator</p>
-              <h1>Understand your portfolio.</h1>
+              <h1>{metadata.name}</h1>
               <a
                 href="https://trust8004.xyz/agents/5042002:894552"
                 target="_blank"
@@ -61,12 +57,7 @@ export default function Agents() {
               </a>
             </div>
           </div>
-          <p className="muted">
-            See the value of your holdings, how much each asset contributes, and
-            where your portfolio is most concentrated. Try it with sample
-            holdings and prices you provide—no access to your investments
-            needed.
-          </p>
+          <p className="muted">{metadata.description}</p>
           <div className="features">
             <div>
               <h3>
