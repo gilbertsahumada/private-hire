@@ -1,0 +1,18 @@
+{
+  "attemptId": "06798d94-9a2d-4f13-8ce7-71b7c7a584af",
+  "requestId": "job-cfee1d05-d90d-46a7-b858-50206699f8d2",
+  "phase": "evaluate",
+  "mode": "CRE simulation + Arc testnet transaction",
+  "startedAt": "2026-09-13T15:25:59.102100+00:00",
+  "finishedAt": "2026-09-13T15:26:18.620609+00:00",
+  "exitCode": 0,
+  "trigger": {
+    "requestId": "job-cfee1d05-d90d-46a7-b858-50206699f8d2",
+    "phase": "evaluate",
+    "submitTx": "0xb14564db8d7a0d040f103dd0ae2354d6a6a0d6b80d6c59b6c10c7f0bb2676fd6"
+  },
+  "target": "staging-broadcast",
+  "sourceCommit": "fbfda95f91548e1d5d40e0d6d137865a93435cc1",
+  "logFile": "job-job-cfee1d05-d90d-46a7-b858-50206699f8d2-evaluate-broadcast-06798d94-9a2d-4f13-8ce7-71b7c7a584af.log",
+  "logSha256": "65fed44566e0ce5e41fd31a4c0a224056c1ad9de7d8f84ea07504d634324c700"
+}

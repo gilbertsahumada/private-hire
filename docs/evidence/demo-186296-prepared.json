@@ -1,0 +1,29 @@
+{
+  "jobId": "186296",
+  "status": 2,
+  "receiver": "0x391579ce844b95fc871fa9ce0af1ac8208418962",
+  "forwarder": "0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1",
+  "escrow": "0x0747EEf0706327138c69792bF28Cd525089e4583",
+  "manifestHash": "0x3a4b7729d8d96e2f673087e2d423e8c742e1367d9acbdee689fae085097ce870",
+  "deliverableHash": "0xcd68f56e94a9c6939d8d486d666c0c3b241484e68b80b265d883023b6a37984c",
+  "reportHash": "0x80079b8ac2538280311ea5dfe0a53547e1292121b6acf0e957942cdf56aa31da",
+  "decision": 1,
+  "validUntil": "1789396176",
+  "receiverGas": "164113",
+  "configuredReportGas": "400000",
+  "gasPriceWei": "21000000000",
+  "configuredReportGasCostUsdc": "0.0084",
+  "balances": {
+    "buyer": "18.98115081",
+    "provider": "0.959708307"
+  },
+  "requestId": "job-cfee1d05-d90d-46a7-b858-50206699f8d2",
+  "mode": "CRE simulation + Arc testnet transaction",
+  "settlement": "confirmed; see demo-186296-settlement.json",
+  "transactions": {
+    "create": "0x751e9f8b0f01e7116f74b060d6415b20561d845650a40ce3a2a90499e3153961",
+    "budget": "0xb345a54a72aeca2bf1db6d1c5b1be79b5dc7d3a0157395cfce349ed87f7b35d7",
+    "fund": "0x3fe866793693cbe09d1468fcc70ff4beac3da1c913c8f106793e52096950c729",
+    "submit": "0xb14564db8d7a0d040f103dd0ae2354d6a6a0d6b80d6c59b6c10c7f0bb2676fd6"
+  }
+}

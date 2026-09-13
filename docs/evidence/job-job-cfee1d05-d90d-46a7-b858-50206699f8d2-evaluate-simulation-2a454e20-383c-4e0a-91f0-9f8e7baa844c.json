@@ -1,0 +1,18 @@
+{
+  "attemptId": "2a454e20-383c-4e0a-91f0-9f8e7baa844c",
+  "requestId": "job-cfee1d05-d90d-46a7-b858-50206699f8d2",
+  "phase": "evaluate",
+  "mode": "CRE simulation",
+  "startedAt": "2026-09-13T15:19:07.633270+00:00",
+  "finishedAt": "2026-09-13T15:19:21.853273+00:00",
+  "exitCode": 1,
+  "trigger": {
+    "requestId": "job-cfee1d05-d90d-46a7-b858-50206699f8d2",
+    "phase": "evaluate",
+    "submitTx": "0xb14564db8d7a0d040f103dd0ae2354d6a6a0d6b80d6c59b6c10c7f0bb2676fd6"
+  },
+  "target": "staging",
+  "sourceCommit": "30b668a868f20a7ba4a399c509587d8d1f26b06b",
+  "logFile": "job-job-cfee1d05-d90d-46a7-b858-50206699f8d2-evaluate-simulation-2a454e20-383c-4e0a-91f0-9f8e7baa844c.log",
+  "logSha256": "22ed0b1253ede89a7a70a359b9ac147c8b02f955c6e60d585f866c307954931e"
+}

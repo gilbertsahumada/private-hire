@@ -1,0 +1,8 @@
+Initializing...
+Loading settings...
+✗ no RPC URLs found for target "staging-broadcast"                                               
+                                                                                                 
+To fix:                                                                                          
+  • Check that your project.yaml has an 'rpcs' section under the target "staging-broadcast"      
+  • Ensure chain names are valid (run 'cre workflow supported-chains' to see all supported names)
+  • Verify the correct target is selected via --target or CRE_TARGET                             
