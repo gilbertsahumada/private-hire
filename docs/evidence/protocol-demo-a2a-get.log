@@ -1,0 +1,31 @@
+Initializing...
+Loading settings...
+! Using default private key for chain write simulation. To use your own key, set CRE_ETH_PRIVATE_KEY in your .env file or system environment.
+Checking RPC connectivity...
+Compiling workflow...
+✓ Workflow compiled
+✓ Simulation limits enabled
+  HTTP: req=120kb resp=250kb timeout=10s | ConfHTTP: req=125kb resp=500kb timeout=1m30s | Consensus obs=25kb | ChainWrite evm_report=50kb evm_gas=10000000 solana_report=265b solana_cu=300000 | WASM binary=100mb compressed=20mb
+  Binary hash: a3033993b5a88c7937f59118e20f5373b8c3fe90fdef9be4084d5e6b53efcceb
+  Config hash: 1b3ecaf5e1d445a9519aa446e5d6e2cf80b48fb846fc00c88f49db8f66b218f2
+✓ Loaded JSON from file: /private/tmp/private-hire-cre-protocol-adapters/.local/protocol-demo/payload.json
+✓ Created HTTP trigger payload with 0 fields
+2026-09-13T15:19:04Z [SIMULATION] Simulator Initialized
+
+2026-09-13T15:19:04Z [SIMULATION] Running trigger trigger=http-trigger@1.0.0-alpha
+╭────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ Trigger requested TEE Execution your trigger will run in one of the following Tees:                │
+│     - AWS Nitro in us-west-2                                                                       │
+│ The simulator is not a real TEE, and is meant to debug.                                            │
+│ Do not use it for sensitive information.                                                           │
+│ During real execution, user logs for this trigger will not be visible, and will not leave the TEE. │
+│ They are presented in the simulator for debugging only.                                            │
+│                                                                                                    │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+
+✓ Workflow Simulation Result:
+"PROTOCOL_DEMO_RESULT={\"task\":{\"id\":\"server-a7af2ece94ce4cb7\",\"contextId\":\"context-server-a7af2ece94ce4cb7\",\"status\":{\"state\":\"TASK_STATE_COMPLETED\"},\"artifacts\":[{\"artifactId\":\"sum\",\"parts\":[{\"data\":{\"sum\":42},\"mediaType\":\"application/json\"}]}]},\"phase\":\"completed\"}"
+
+2026-09-13T15:19:04Z [SIMULATION] Execution finished signal received
+2026-09-13T15:19:04Z [SIMULATION] Skipping WorkflowEngineV2
