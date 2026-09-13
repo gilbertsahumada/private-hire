@@ -47,6 +47,19 @@ export default function Home() {
         </Link>
       </section>
 
+      <div className="infrastructure-logos" aria-label="Infrastructure">
+        <a href="https://chain.link/cre" target="_blank" rel="noreferrer">
+          <img
+            src="/brands/chainlink-white.svg"
+            alt="Chainlink"
+            className="chainlink-logo"
+          />
+        </a>
+        <a href="https://www.arc.io/" target="_blank" rel="noreferrer">
+          <img src="/brands/arc-white.svg" alt="Arc" className="arc-logo" />
+        </a>
+      </div>
+
       <section className="landing-principles" aria-label="How it works">
         <div>
           <Icon name="agent" />

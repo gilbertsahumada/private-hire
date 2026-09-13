@@ -1,7 +1,7 @@
 # Official infrastructure marks
 
 Downloaded 2026-09-13. Original white SVG files, unmodified; no tinting filters.
-These logos describe infrastructure use, not endorsement. UI labels explicitly identify CRE simulation and Arc Testnet.
+These logos describe infrastructure use, not endorsement. The landing explains CRE simulation and Arc Testnet separately; the logo strip contains no visible captions.
 
 - Chainlink brand kit: https://chain.link/brand-assets
 - Chainlink white SVG: https://drive.usercontent.google.com/download?id=164HBHkPMBxruB2AtDYH6P7JkspikDtzk&export=download
