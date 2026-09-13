@@ -440,23 +440,24 @@ td {
 }
 
 .landing {
-  padding-top: 76px;
+  padding: clamp(32px, 5vw, 76px) clamp(16px, 3vw, 32px) clamp(40px, 6vw, 80px);
+  overflow-wrap: anywhere;
 }
 .landing-hero {
   display: grid;
-  grid-template-columns: 1.35fr 1fr;
-  gap: 64px;
-  align-items: center;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(28px, 4vw, 56px);
+  align-items: start;
 }
 .landing-hero h1 {
-  font-size: clamp(40px, 4.8vw, 68px);
+  font-size: clamp(2rem, 5.2vw, 4.25rem);
   line-height: 1.08;
   letter-spacing: -0.04em;
   margin: 20px 0 24px;
 }
 .landing-intro {
   color: var(--muted);
-  font-size: 19px;
+  font-size: clamp(1rem, 1.6vw, 1.1875rem);
   max-width: 520px;
 }
 .landing-agent {
@@ -465,7 +466,8 @@ td {
   background: var(--panel);
   border: 1px solid var(--edge);
   border-radius: 20px;
-  padding: 28px;
+  padding: clamp(20px, 3vw, 32px);
+  min-width: 0;
   color: var(--ink);
 }
 .landing-agent:hover {
@@ -490,9 +492,9 @@ td {
 }
 .landing-principles {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 36px;
-  margin: 72px 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(20px, 3vw, 36px);
+  margin: clamp(32px, 5vw, 64px) 0;
   padding-top: 36px;
   border-top: 1px solid var(--edge);
 }
@@ -549,9 +551,9 @@ td {
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 1rem 3rem;
-  padding: 2rem 0;
-  margin-top: 2rem;
+  gap: 8px clamp(8px, 3vw, 48px);
+  padding: clamp(16px, 3vw, 32px) 0;
+  margin-top: clamp(20px, 4vw, 48px);
 }
 .infrastructure-logos a {
   display: block;
@@ -567,4 +569,44 @@ td {
 }
 .infrastructure-logos .arc-logo {
   width: 147px;
+}
+
+/* Keep long agent metadata readable before two columns become cramped. */
+@media (max-width: 1000px) {
+  .landing-hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+  .landing-intro {
+    max-width: 65ch;
+  }
+}
+@media (max-width: 600px) {
+  .landing .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .landing .actions > a {
+    min-height: 48px;
+    width: 100%;
+  }
+  .landing-builders {
+    flex-direction: column;
+  }
+  .landing-builders h2 {
+    font-size: clamp(24px, 6vw, 28px);
+  }
+  header {
+    padding: 16px;
+    gap: 16px;
+  }
+  header nav {
+    width: 100%;
+    flex-wrap: wrap;
+    column-gap: 16px;
+    row-gap: 4px;
+  }
+  header nav a {
+    min-height: 44px;
+  }
 }
