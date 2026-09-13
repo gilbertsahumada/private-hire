@@ -70,6 +70,7 @@ export default function JobDetail({
   const job = loadedFor === wallet.account ? loadedJob : null;
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState('');
   const [prepared, setPrepared] = useState<Prepared | null>(null);
   const [result, setResult] = useState<unknown>(null);
 
@@ -100,6 +101,11 @@ export default function JobDetail({
     setBusy(true);
     setError('');
     try {
+      const pending = localStorage.getItem(`job-tx:${id}`) ?? job?.pending_tx;
+      if (pending) {
+        setProgress('Checking your previous transaction…');
+        await confirm(pending);
+      }
       setPrepared(await api<Prepared>(`/api/jobs/${id}/prepare`, { action }));
     } catch (e) {
       setError(
@@ -107,6 +113,7 @@ export default function JobDetail({
       );
     } finally {
       setBusy(false);
+      setProgress('');
     }
   }
 
@@ -130,6 +137,7 @@ export default function JobDetail({
     }
     setBusy(true);
     setError('');
+    setProgress('Checking payment details…');
     try {
       // Refresh the reviewed action immediately before wallet submission.
       const latest = await api<Prepared>(`/api/jobs/${id}/prepare`, {
@@ -137,6 +145,7 @@ export default function JobDetail({
       });
       if (latest.data !== prepared.data || latest.to !== prepared.to)
         throw new Error('Terms changed. Review the action again.');
+      setProgress('Open MetaMask to review and confirm the transaction.');
       const hash = await wallet.send(latest);
       localStorage.setItem(`job-tx:${id}`, hash);
       if (prepared.action === 'create')
@@ -149,6 +158,7 @@ export default function JobDetail({
       );
     } finally {
       setBusy(false);
+      setProgress('');
     }
   }
 
@@ -303,7 +313,9 @@ export default function JobDetail({
                               ? 'Waiting for the operator to check the report'
                               : job.chain_status === null
                                 ? 'Review your draft and confirm the request in your wallet.'
-                                : 'Waiting for the provider to confirm the price.'}
+                                : job.onchainBudget === job.budget
+                                  ? 'The price is confirmed. Review and deposit your payment.'
+                                  : 'Waiting for the provider to confirm the price.'}
             </dd>
           </dl>
           {job.chain_status === 0 && job.onchainBudget === '0' && (
@@ -362,9 +374,19 @@ export default function JobDetail({
               <Icon name="refresh" /> Check transaction
             </button>
           </div>
+          {busy && progress && (
+            <p role="status" className="notice">
+              {progress}
+            </p>
+          )}
           {prepared && (
             <section className="panel">
               <h2>{actionLabels[prepared.action] ?? 'Review transaction'}</h2>
+              {error && (
+                <p role="status" className="notice error">
+                  {error}
+                </p>
+              )}
               <p>
                 Estimated network fee:{' '}
                 {formatEther(BigInt(prepared.estimatedFeeWei))} USDC. Your
