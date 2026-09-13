@@ -26,7 +26,7 @@ cd /Users/gilbertsahumada/projects/private-hire
 
 **Di:**
 
-> “PrivateHire lets you hire agents for private work with verifiable onchain payments. We use ERC-8004 for agent identity and ERC-8183 for job coordination and payment settlement on Arc. Request inputs, evaluation policies and reports stay offchain.”
+> “PrivateHire lets you hire agents for private work, using Chainlink CRE to evaluate results and Arc to settle payments. We use ERC-8004 for agent identity and ERC-8183 for job coordination and settlement. Your task inputs, evaluation rules and full report stay offchain; the blockchain records commitments and payment outcomes.”
 
 ## 2. Agents — identidad y servicio
 
@@ -34,7 +34,7 @@ cd /Users/gilbertsahumada/projects/private-hire
 
 **Di:**
 
-> “Our first agent is Portfolio Calculator. It analyzes synthetic portfolios for 0.01 test USDC, with gas charged separately. The agent receives the inputs, but not the buyer’s private evaluation policy.”
+> “Our first agent is Portfolio Calculator. It analyzes synthetic portfolios for 0.01 test USDC, with gas charged separately. The agent receives the inputs it needs to do the work, but not the buyer’s private evaluation rules. Those rules are used by the evaluator, not published onchain.”
 
 ## 3. Conectar la wallet
 
@@ -183,9 +183,9 @@ pnpm jobs:evaluate --request-id "$DEMO_REQUEST_ID" --submit-tx "$DEMO_SUBMIT_TX"
 
 **Di mientras corre:**
 
-> “CRE retrieves the private evaluation context, gets the agent’s delivery through A2A, verifies its commitment against the onchain submission, and evaluates the result.”
+> “Chainlink CRE is our evaluator. It retrieves the private evaluation rules, gets the agent’s report through A2A, and verifies that the report matches the commitment submitted onchain. It then checks the result against the buyer’s rules. Only a report containing commitments and the decision is sent to the settlement contract—not the full task, result or private rules.”
 
-> “We encountered an enclave configuration error with the deployed confidential workflow, so this demo uses CRE simulation. The simulation validates the workflow logic; it does not provide enclave confidentiality guarantees.”
+> “The evaluator is implemented as a Chainlink Confidential Workflow, designed to run these checks inside a trusted execution environment. We encountered an enclave configuration error in the deployed environment, so this demo uses CRE simulation. The inputs and rules still stay offchain, but the simulation itself does not provide enclave confidentiality.”
 
 **Resultado exigido:** `JOB_EVALUATED jobId=N decision=1 broadcast=false` y salida exitosa. Si devuelve `JOB_PENDING`, no es aceptación ni rechazo: deja la evaluación pendiente y revisa el fallo. No pases al broadcast.
 
@@ -229,11 +229,17 @@ Repite únicamente la reconciliación si devuelve `caughtUp: false`, hasta `caug
 
 **Di:**
 
-> “The confirmed transaction accepted the report and released exactly 0.01 USDC to the provider. The blockchain records commitments and payment outcomes, while the full inputs, report and evaluation policy remain offchain.”
+> “The confirmed transaction accepted the report and released exactly 0.01 USDC to the provider. Arc makes the settlement verifiable without publishing the task inputs, full report or evaluation rules. Participants, payment amounts and transaction activity are still public.”
 
 **Cierre:**
 
-> “PrivateHire connects private agent work with verifiable settlement. Today we demonstrate one agent, with reusable A2A and MCP adapters providing a foundation for broader integrations.”
+> “PrivateHire combines Chainlink CRE evaluation with verifiable settlement on Arc, keeping the content of the work offchain. Today we demonstrate one agent, with reusable A2A and MCP adapters providing a foundation for broader integrations.”
+
+## Si preguntan “what exactly stays private?”
+
+> “The task inputs, full report and evaluation rules are stored encrypted offchain and accessed through authenticated routes. The agent receives the inputs it needs, but not the evaluation policy. Wallet addresses, payment amounts, commitments and settlement outcomes are public. The backend operator is trusted and can access the private data.”
+
+Para una demo corta, explica la separación agente/evaluador durante el perfil y muestra la participación de Chainlink CRE en el paso 10. No llames al agente “100% private”, no afirmes que el proveedor desconoce la entrada, ni que el simulador es un enclave.
 
 ## Qué se guarda automáticamente y qué no afirmar
 
