@@ -577,6 +577,7 @@ test('recovers a pending transaction after reload and updates payment without a 
   );
   const hash = '0x' + 'ab'.repeat(32);
   let confirmed = false;
+  let submitted = false;
   let checks = 0;
   // Isolated UI fixture: no transaction is signed or broadcast.
   await page.route('**/api/jobs/payment-progress', (route) =>
@@ -589,11 +590,13 @@ test('recovers a pending transaction after reload and updates payment without a 
         budget: '10000',
         onchainBudget: '10000',
         expired_at: 4102444800,
-        chain_status: confirmed ? 1 : 0,
+        chain_status: submitted ? 2 : confirmed ? 1 : 0,
         manifest_hash: '0x' + '11'.repeat(32),
         pending_tx: null,
         refundAvailable: false,
-        task: null,
+        task: submitted
+          ? { state: 'ready', result_hash: '0x' + '22'.repeat(32) }
+          : null,
         events: [],
         input: {},
         reports: [],
@@ -640,5 +643,24 @@ test('recovers a pending transaction after reload and updates payment without a 
   ).toBeNull();
   await expect(
     page.getByRole('button', { name: 'Review payment', exact: true }),
+  ).toHaveCount(0);
+  submitted = true;
+  await page.reload();
+  await expect(
+    page.getByRole('heading', {
+      name: 'Your report is waiting for evaluation',
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'View portfolio report', exact: true }),
+  ).toBeEnabled();
+  await expect(
+    page.getByRole('button', { name: 'Evaluation pending', exact: true }),
+  ).toBeDisabled();
+  await expect(
+    page.getByRole('button', { name: 'Review payment', exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByText('Report prepared for delivery', { exact: true }),
   ).toHaveCount(0);
 });

@@ -362,6 +362,49 @@ function JobDetailView({ id }: { id: string }) {
               </Link>
             </section>
           )}
+          {job.chain_status !== null && job.chain_status >= 1 && (
+            <section className="panel" aria-label="Next step">
+              <h2>
+                {job.refundAvailable
+                  ? 'Your refund is available'
+                  : job.chain_status === 2
+                    ? 'Your report is waiting for evaluation'
+                    : job.chain_status === 1
+                      ? 'Your payment is confirmed'
+                      : 'Your analysis is finished'}
+              </h2>
+              <p>
+                {job.refundAvailable
+                  ? 'The deadline has passed. Use Request refund below to return your payment.'
+                  : job.chain_status === 2
+                    ? 'The agent delivered your report. The operator will run the evaluation and confirm the outcome. You do not need to sign or pay again.'
+                    : job.chain_status === 1
+                      ? 'Your payment is held in the contract. The agent will prepare and deliver your report. No wallet action is needed now.'
+                      : 'Review your report and the confirmed outcome below.'}
+              </p>
+              <div className="actions">
+                <button
+                  disabled={loadingReport || job.task?.state !== 'ready'}
+                  onClick={() => void loadReport()}
+                >
+                  {loadingReport ? <Spinner /> : <Icon name="report" />}{' '}
+                  {loadingReport
+                    ? 'Loading report…'
+                    : job.task?.state === 'ready'
+                      ? 'View portfolio report'
+                      : 'Report not ready yet'}
+                </button>
+                {job.chain_status < 3 && !job.refundAvailable && (
+                  <button className="secondary" disabled>
+                    {job.chain_status === 2
+                      ? 'Evaluation pending'
+                      : 'Waiting for agent delivery'}
+                  </button>
+                )}
+              </div>
+              {result !== null && <PortfolioReport value={result} />}
+            </section>
+          )}
           {holdings.success && (
             <section className="panel">
               <h2>Your requested holdings</h2>
@@ -440,16 +483,16 @@ function JobDetailView({ id }: { id: string }) {
                     ? 'Your payment was returned after the deadline.'
                     : job.refundAvailable
                       ? 'The deadline has passed. You can request your refund.'
-                      : job.attempts?.[0]?.state === 'running'
-                        ? job.attempts[0].phase === 'dispatch'
-                          ? 'Calculating your portfolio'
-                          : 'Checking the report · CRE simulation'
-                        : job.task?.state === 'ready'
-                          ? 'Report prepared for delivery'
-                          : job.chain_status === 1
-                            ? 'Waiting for the operator to start the analysis'
-                            : job.chain_status === 2
-                              ? 'Waiting for the operator to check the report'
+                      : job.chain_status === 2
+                        ? 'Your report has been delivered. Evaluation is pending; no wallet action is needed.'
+                        : job.attempts?.[0]?.state === 'running'
+                          ? job.attempts[0].phase === 'dispatch'
+                            ? 'Calculating your portfolio'
+                            : 'Checking the report · CRE simulation'
+                          : job.task?.state === 'ready'
+                            ? 'Report prepared for delivery'
+                            : job.chain_status === 1
+                              ? 'Waiting for the operator to start the analysis'
                               : job.chain_status === null
                                 ? 'Review your draft and confirm the request in your wallet.'
                                 : job.onchainBudget === job.budget
@@ -480,7 +523,10 @@ function JobDetailView({ id }: { id: string }) {
               job.chain_status === null &&
               !job.pending_tx &&
               !expired && (
-                <button disabled={busy} onClick={() => void prepare('create')}>
+                <button
+                  disabled={busy || !!pendingHash || !!job.pending_tx}
+                  onClick={() => void prepare('create')}
+                >
                   <Icon name="check" /> Confirm analysis request
                 </button>
               )}
@@ -490,7 +536,7 @@ function JobDetailView({ id }: { id: string }) {
               !expired && (
                 <>
                   <button
-                    disabled={busy}
+                    disabled={busy || !!pendingHash || !!job.pending_tx}
                     onClick={() => void prepare('approve')}
                   >
                     Allow this payment amount
@@ -504,16 +550,22 @@ function JobDetailView({ id }: { id: string }) {
                 </>
               )}
             {buyer && job.refundAvailable && (
-              <button disabled={busy} onClick={() => void prepare('refund')}>
+              <button
+                disabled={busy || !!pendingHash || !!job.pending_tx}
+                onClick={() => void prepare('refund')}
+              >
                 <Icon name="wallet" /> Request refund
               </button>
             )}
             <button
               className="secondary"
-              disabled={busy}
+              disabled={busy || isFetching}
               onClick={() => void recover()}
             >
-              <Icon name="refresh" /> Check transaction
+              <Icon name="refresh" />{' '}
+              {pendingHash || job.pending_tx
+                ? 'Check transaction'
+                : 'Refresh status'}
             </button>
           </div>
           {transactionNotice && (
@@ -570,7 +622,10 @@ function JobDetailView({ id }: { id: string }) {
                 <summary>Transaction details</summary>
                 <p className="subtle">Contract address: {prepared.to}</p>
               </details>
-              <button disabled={busy} onClick={() => void sign()}>
+              <button
+                disabled={busy || !!pendingHash || !!job.pending_tx}
+                onClick={() => void sign()}
+              >
                 <Icon name="wallet" /> Confirm in wallet
               </button>
               <button className="secondary" onClick={() => setPrepared(null)}>
@@ -595,24 +650,6 @@ function JobDetailView({ id }: { id: string }) {
               <summary>Your private calculation checks</summary>
               <pre>{JSON.stringify(job.policy, null, 2)}</pre>
             </details>
-          )}
-          {job.task?.state === 'ready' && (
-            <>
-              <button
-                className="secondary"
-                disabled={loadingReport}
-                aria-busy={loadingReport}
-                onClick={() => void loadReport()}
-              >
-                {loadingReport ? <Spinner /> : <Icon name="report" />}{' '}
-                {loadingReport
-                  ? 'Loading report…'
-                  : result !== null
-                    ? 'Refresh portfolio report'
-                    : 'View portfolio report'}
-              </button>
-              {result !== null && <PortfolioReport value={result} />}
-            </>
           )}
           {!!job.reports?.length && (
             <section className="panel">
