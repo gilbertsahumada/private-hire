@@ -1,0 +1,133 @@
+{
+  "recordedAt": "2026-09-13T13:19:13.367790+00:00",
+  "command": "python3 scripts/protocol-demo.py",
+  "mode": "CRE CLI simulation, local synthetic HTTP provider",
+  "liveTEE": false,
+  "broadcast": false,
+  "cli": "CRE CLI version v1.33.0",
+  "sdk": "1.20.1",
+  "mcp": "2026-07-28 JSON-only limited profile",
+  "a2a": "1.0 bounded JSON-RPC",
+  "results": [
+    {
+      "operation": "mcp-call",
+      "endpointPath": "/mcp",
+      "result": {
+        "resultType": "complete",
+        "content": [
+          {
+            "type": "text",
+            "text": "42"
+          }
+        ],
+        "structuredContent": {
+          "sum": 42
+        },
+        "isError": false
+      },
+      "log": "protocol-demo-mcp-call.log",
+      "logSha256": "fa5e74393a2c56a1e1bda6abf04d8ed495fdafa5b43704e47758a6101eda471b"
+    },
+    {
+      "operation": "mcp-list",
+      "endpointPath": "/mcp",
+      "result": {
+        "resultType": "complete",
+        "tools": [
+          {
+            "name": "sum",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "a": {
+                  "type": "integer"
+                },
+                "b": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "a",
+                "b"
+              ]
+            },
+            "description": "Add two safe integers"
+          }
+        ]
+      },
+      "log": "protocol-demo-mcp-list.log",
+      "logSha256": "756445f9fe001b4b7478456bd53c58acae1ac02adbf60793ae4a12ed046a3f0d"
+    },
+    {
+      "operation": "mcp-call",
+      "endpointPath": "/mcp-alt",
+      "result": {
+        "resultType": "complete",
+        "content": [
+          {
+            "type": "text",
+            "text": "42"
+          }
+        ],
+        "structuredContent": {
+          "sum": 42
+        },
+        "isError": false
+      },
+      "log": "protocol-demo-mcp-call-alternate.log",
+      "logSha256": "9929ba5abc08e26b4b7f894f4b21a8863d58c7c4d92633730af4324fbcdd94b2"
+    },
+    {
+      "operation": "a2a-send",
+      "endpointPath": "/a2a",
+      "result": {
+        "task": {
+          "id": "server-a7af2ece94ce4cb7",
+          "contextId": "context-server-a7af2ece94ce4cb7",
+          "status": {
+            "state": "TASK_STATE_WORKING"
+          }
+        }
+      },
+      "log": "protocol-demo-a2a-send.log",
+      "logSha256": "4ef614c6f1f81891f502dc5b506803d01b430fb39b87c48d4bfc16d18ce19e21"
+    },
+    {
+      "operation": "a2a-get",
+      "endpointPath": "/a2a",
+      "result": {
+        "task": {
+          "id": "server-a7af2ece94ce4cb7",
+          "contextId": "context-server-a7af2ece94ce4cb7",
+          "status": {
+            "state": "TASK_STATE_COMPLETED"
+          },
+          "artifacts": [
+            {
+              "artifactId": "sum",
+              "parts": [
+                {
+                  "data": {
+                    "sum": 42
+                  },
+                  "mediaType": "application/json"
+                }
+              ]
+            }
+          ]
+        },
+        "phase": "completed"
+      },
+      "log": "protocol-demo-a2a-get.log",
+      "logSha256": "728846dad48c833dea57110f4c860bfd1bc53dffdf0e3d46909db9499f305ace"
+    },
+    {
+      "operation": "mcp-call",
+      "endpointPath": "/mcp-redirect",
+      "expectedError": "HTTP_TRANSPORT_FAILED",
+      "passed": true,
+      "log": "protocol-demo-redirect.log",
+      "logSha256": "e8b6e2c563c291c7a004a0783a703babc3450270e670e1a596d12f66e4feb5dd"
+    }
+  ]
+}

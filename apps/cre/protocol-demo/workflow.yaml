@@ -1,0 +1,7 @@
+local:
+  user-workflow:
+    workflow-name: private-hire-protocol-demo
+  workflow-artifacts:
+    workflow-path: ./main.ts
+    config-path: ../../../.local/protocol-demo/config.json
+    secrets-path: ./secrets.yaml

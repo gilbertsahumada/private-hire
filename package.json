@@ -21,7 +21,8 @@
     "jobs:reconcile": "python3 scripts/jobs.py reconcile",
     "market:prepare": "pnpm --filter @private-hire/cre exec tsx scripts/prepare-market.ts",
     "provider:check": "python3 scripts/provider.py",
-    "provider:watch": "python3 scripts/provider.py --watch"
+    "provider:watch": "python3 scripts/provider.py --watch",
+    "protocols:demo": "python3 scripts/protocol-demo.py"
   },
   "devDependencies": {
     "@playwright/test": "1.58.2",

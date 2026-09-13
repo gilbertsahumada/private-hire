@@ -1,0 +1,28 @@
+{
+  "mode": "CRE CLI simulation, local synthetic HTTP provider",
+  "liveTEE": false,
+  "broadcast": false,
+  "cli": "CRE CLI version v1.33.0",
+  "sdk": "1.20.1",
+  "mcp": "2026-07-28 JSON-only limited profile",
+  "a2a": "1.0 bounded JSON-RPC",
+  "results": [
+    {
+      "operation": "mcp-call",
+      "endpointPath": "/mcp",
+      "result": {
+        "resultType": "complete",
+        "content": [
+          {
+            "type": "text",
+            "text": "42"
+          }
+        ],
+        "structuredContent": {
+          "sum": 42
+        },
+        "isError": false
+      }
+    }
+  ]
+}
