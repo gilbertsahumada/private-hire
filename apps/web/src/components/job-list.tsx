@@ -3,15 +3,16 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { formatUnits } from 'viem';
+import { Icon } from './icon';
 import { api, useWallet } from './wallet';
 
 export const statuses = [
-  'Created',
-  'Funded',
-  'Submitted',
-  'Completed',
-  'Rejected',
-  'Expired',
+  'Requested',
+  'Payment held',
+  'Delivered for review',
+  'Accepted',
+  'Not accepted',
+  'Refunded after expiry',
 ];
 
 type Row = {
@@ -43,7 +44,7 @@ export function JobList({ provider = false }: { provider?: boolean }) {
         () =>
           active &&
           setError(
-            'Jobs could not be loaded. Sign in again or reload to retry.',
+            'Your analyses could not be loaded. Sign in again or reload to retry.',
           ),
       )
       .finally(() => {
@@ -59,16 +60,16 @@ export function JobList({ provider = false }: { provider?: boolean }) {
     <main>
       <div className="row">
         <div>
-          <h1>{provider ? 'Provider workspace' : 'Your jobs'}</h1>
+          <h1>{provider ? 'Provider workspace' : 'My analyses'}</h1>
           <p className="muted">
             {provider
-              ? 'Confirm the fixed budget, review prepared results and sign your deliveries.'
-              : 'Your quotes, funded work and completed deliveries.'}
+              ? 'Confirm prices, review reports and deliver analyses to your customers.'
+              : 'Track your requests, payments and portfolio reports.'}
           </p>
         </div>
         {!provider && (
           <Link className="button" href="/jobs/new">
-            Create a job
+            <Icon name="plus" /> Analyze a portfolio
           </Link>
         )}
       </div>
@@ -78,25 +79,27 @@ export function JobList({ provider = false }: { provider?: boolean }) {
         </p>
       )}
       {loading ? (
-        <p role="status">Loading jobs…</p>
+        <p role="status">Loading analyses…</p>
       ) : !account ? (
         <div className="empty">
+          <Icon name="wallet" className="empty-icon" />
           <h2>Connect your wallet</h2>
-          <p>Sign in to view the jobs assigned to your account.</p>
+          <p>Sign in to see your analysis requests and private reports.</p>
         </div>
       ) : !rows.length ? (
         <div className="empty">
+          <Icon name="report" className="empty-icon" />
           <h2>
-            {provider ? 'No assigned jobs yet' : 'Your first job starts here'}
+            {provider ? 'No requests yet' : 'Your first analysis starts here'}
           </h2>
           <p>
             {provider
-              ? 'Buyer requests will appear here when created onchain.'
-              : 'Choose Portfolio Calculator to prepare a private portfolio calculation.'}
+              ? 'Customer requests will appear here once they confirm them.'
+              : 'Add sample holdings to see their value, portfolio share and largest position.'}
           </p>
           {!provider && (
             <Link className="button" href="/agents">
-              View agent
+              Meet Portfolio Calculator
             </Link>
           )}
         </div>
@@ -105,19 +108,19 @@ export function JobList({ provider = false }: { provider?: boolean }) {
           <article className="row" key={row.request_id}>
             <div>
               <Link href={`/jobs/${row.request_id}`}>
-                {row.job_id ? `Job #${row.job_id}` : 'Draft quote'} · Portfolio
-                Calculator
+                {row.job_id ? `Analysis #${row.job_id}` : 'Draft analysis'} ·
+                Portfolio Calculator
               </Link>
               <p className="subtle">
-                Expires {new Date(row.expired_at * 1000).toLocaleString()}
+                Deadline: {new Date(row.expired_at * 1000).toLocaleString()}
               </p>
             </div>
             <span>
-              Quote: {formatUnits(BigInt(row.budget), 6)} USDC
+              Agreed price: {formatUnits(BigInt(row.budget), 6)} USDC
               <br />
-              Budget:{' '}
-              {row.onchainBudget === null
-                ? 'Not created'
+              Confirmed price:{' '}
+              {row.onchainBudget === null || row.onchainBudget === '0'
+                ? 'Not confirmed'
                 : `${formatUnits(BigInt(row.onchainBudget), 6)} USDC`}
             </span>
             <span className="badge">

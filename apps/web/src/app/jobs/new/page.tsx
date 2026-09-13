@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { formatUnits } from 'viem';
 import { useRouter } from 'next/navigation';
 import { inputSchema, policySchema } from '@private-hire/domain';
+import { Icon } from '../../../components/icon';
+import { portfolioPositions, type Holding } from '../../../lib/portfolio-form';
 import { api, useWallet } from '../../../components/wallet';
 
 export default function NewJob() {
@@ -18,13 +20,8 @@ export default function NewJob() {
   }, []);
   const [requestId] = useState(() => `job-${crypto.randomUUID()}`);
   const [error, setError] = useState('');
-  const [positions, setPositions] = useState([
-    {
-      assetId: 'synthetic-usdc',
-      quantityAtomic: '1000000',
-      quantityDecimals: 6,
-      unitPriceMicrousd: '1000000',
-    },
+  const [positions, setPositions] = useState<Holding[]>([
+    { assetId: 'sample-usdc', quantity: '1', price: '1' },
   ]);
 
   async function submit(form: FormData) {
@@ -34,7 +31,7 @@ export default function NewJob() {
       const input = inputSchema.parse({
         schemaVersion: 'portfolio-input/v1',
         requestId,
-        positions,
+        positions: portfolioPositions(positions),
       });
       const policy = policySchema.parse({
         schemaVersion: 'portfolio-policy/v1',
@@ -51,8 +48,10 @@ export default function NewJob() {
     } catch (e) {
       setError(
         e instanceof Error && e.message === 'CONTRACTING_NOT_ENABLED'
-          ? 'Contracting is not enabled yet. Your wallet has not been charged.'
-          : 'The quote could not be saved. Check quantities, duplicate assets and tolerances, then retry.',
+          ? 'Analysis is unavailable right now. Your wallet has not been charged.'
+          : e instanceof Error && e.message.startsWith('Asset ')
+            ? e.message
+            : 'Your analysis could not be saved. Check that each asset has a different name and all amounts are valid, then retry.',
       );
     } finally {
       setBusy(false);
@@ -61,25 +60,40 @@ export default function NewJob() {
 
   return (
     <main>
-      <h1>Prepare your job</h1>
+      <p className="eyebrow">Portfolio Calculator</p>
+      <h1>What’s in your portfolio?</h1>
       <p className="muted">
-        Portfolio Calculator · Fixed tariff:{' '}
-        {price ? formatUnits(BigInt(price), 6) + ' USDC' : 'Checking…'} plus
-        network gas.
+        Add sample holdings to see their total value and how your portfolio is
+        divided. Prices are supplied by you, not fetched from a market.
+      </p>
+      <p>
+        <Icon name="report" /> One report:{' '}
+        {price ? formatUnits(BigInt(price), 6) + ' USDC' : 'Checking price…'} in
+        test USDC, plus network fees.
       </p>
       {!account ? (
-        <p className="notice">Connect your wallet before saving a quote.</p>
+        <div className="notice">
+          <Icon name="wallet" /> Connect your wallet and sign in to save your
+          analysis. Signing in does not make a payment.
+        </div>
       ) : (
         <form action={submit}>
-          <h2>Synthetic portfolio</h2>
+          <h2>
+            <Icon name="chart" /> Your holdings
+          </h2>
+          <p className="subtle">
+            Use up to ten assets. For example, 2.5 units at $10 each have a
+            value of $25.
+          </p>
           <div className="positions">
-            {positions.map((p, i) => (
+            {positions.map((position, i) => (
               <div className="position" key={i}>
                 <label>
-                  Asset
+                  Asset name
                   <input
                     required
-                    value={p.assetId}
+                    aria-label={`Asset ${i + 1} name`}
+                    value={position.assetId}
                     maxLength={128}
                     onChange={(e) =>
                       setPositions((ps) =>
@@ -91,52 +105,34 @@ export default function NewJob() {
                   />
                 </label>
                 <label>
-                  Atomic quantity
+                  Quantity
                   <input
                     required
-                    value={p.quantityAtomic}
-                    pattern="0|[1-9][0-9]{0,77}"
+                    aria-label={`Asset ${i + 1} quantity`}
+                    inputMode="decimal"
+                    value={position.quantity}
+                    maxLength={98}
                     onChange={(e) =>
                       setPositions((ps) =>
                         ps.map((v, j) =>
-                          i === j
-                            ? { ...v, quantityAtomic: e.target.value }
-                            : v,
+                          i === j ? { ...v, quantity: e.target.value } : v,
                         ),
                       )
                     }
                   />
                 </label>
                 <label>
-                  Decimals
-                  <input
-                    type="number"
-                    min="0"
-                    max="18"
-                    value={p.quantityDecimals}
-                    onChange={(e) =>
-                      setPositions((ps) =>
-                        ps.map((v, j) =>
-                          i === j
-                            ? { ...v, quantityDecimals: Number(e.target.value) }
-                            : v,
-                        ),
-                      )
-                    }
-                  />
-                </label>
-                <label>
-                  Price (micro-USD)
+                  Price per unit (USD)
                   <input
                     required
-                    value={p.unitPriceMicrousd}
-                    pattern="0|[1-9][0-9]{0,77}"
+                    aria-label={`Asset ${i + 1} price in USD`}
+                    inputMode="decimal"
+                    value={position.price}
+                    maxLength={98}
                     onChange={(e) =>
                       setPositions((ps) =>
                         ps.map((v, j) =>
-                          i === j
-                            ? { ...v, unitPriceMicrousd: e.target.value }
-                            : v,
+                          i === j ? { ...v, price: e.target.value } : v,
                         ),
                       )
                     }
@@ -145,13 +141,13 @@ export default function NewJob() {
                 <button
                   type="button"
                   className="secondary"
-                  aria-label={`Remove position ${i + 1}`}
+                  aria-label={`Remove asset ${i + 1}`}
                   disabled={positions.length === 1}
                   onClick={() =>
                     setPositions((ps) => ps.filter((_, j) => j !== i))
                   }
                 >
-                  Remove
+                  <Icon name="trash" /> Remove
                 </button>
               </div>
             ))}
@@ -164,67 +160,90 @@ export default function NewJob() {
               onClick={() =>
                 setPositions((ps) => [
                   ...ps,
-                  {
-                    assetId: '',
-                    quantityAtomic: '1',
-                    quantityDecimals: 0,
-                    unitPriceMicrousd: '1',
-                  },
+                  { assetId: '', quantity: '1', price: '1' },
                 ])
               }
             >
-              Add position
+              <Icon name="plus" /> Add an asset
             </button>
           </div>
-          <h2>Private evaluation criteria</h2>
-          <div className="form-grid">
-            <label>
-              Value tolerance (micro-USD)
-              <input
-                name="valueTolerance"
-                defaultValue="0"
-                required
-                pattern="0|[1-9][0-9]{0,77}"
-              />
-            </label>
-            <label>
-              Weight tolerance (basis points)
-              <input
-                name="weightTolerance"
-                type="number"
-                min="0"
-                max="10000"
-                defaultValue="0"
-                required
-              />
-            </label>
-            <label>
-              Time to complete
-              <select name="duration" defaultValue="1440">
-                <option value="15">15 minutes</option>
-                <option value="60">1 hour</option>
-                <option value="1440">24 hours</option>
-                <option value="10080">7 days</option>
-              </select>
-            </label>
-          </div>
-          <p className="notice">
-            The provider receives portfolio input. Evaluation tolerances stay
-            private to the evaluation route. Price, participants, deadline and
-            commitments become public onchain. The backend operator can access
-            stored private data.
+          <h2>
+            <Icon name="clock" /> Choose a deadline
+          </h2>
+          <label>
+            How long can the provider take?
+            <select name="duration" defaultValue="1440">
+              <option value="15">15 minutes</option>
+              <option value="60">1 hour</option>
+              <option value="1440">24 hours</option>
+              <option value="10080">7 days</option>
+            </select>
+          </label>
+          <p className="subtle">
+            The demo is run by an operator, so delivery is not instant. If
+            funded work is still unfinished at the deadline, you can request a
+            refund.
           </p>
+          <details>
+            <summary>Advanced: calculation checks</summary>
+            <p>
+              By default, the report must match the recalculated values exactly.
+              These optional tolerances allow small differences. They are hidden
+              from the provider, but visible to the app operator.
+            </p>
+            <div className="form-grid">
+              <label>
+                Allowed value difference (micro-USD)
+                <input
+                  name="valueTolerance"
+                  defaultValue="0"
+                  required
+                  pattern="0|[1-9][0-9]{0,77}"
+                />
+                <span className="subtle">
+                  1 micro-USD = $0.000001. Leave at 0 for an exact match.
+                </span>
+              </label>
+              <label>
+                Allowed share difference (basis points)
+                <input
+                  name="weightTolerance"
+                  type="number"
+                  min="0"
+                  max="10000"
+                  defaultValue="0"
+                  required
+                />
+                <span className="subtle">
+                  100 basis points = one percentage point. Leave at 0 for an
+                  exact match.
+                </span>
+              </label>
+            </div>
+          </details>
+          <div className="notice">
+            <strong>
+              <Icon name="lock" /> What is shared?
+            </strong>
+            <p>
+              The provider receives your holdings and prices. The payment
+              amount, wallet addresses, deadline and proof hashes are public.
+              Your holdings, report and checking criteria are stored encrypted;
+              the app operator can access them.
+            </p>
+          </div>
           {error && (
             <p role="alert" className="notice error">
               {error}
             </p>
           )}
           <button disabled={busy}>
-            {busy ? 'Saving…' : 'Save and review quote'}
+            <Icon name="report" />{' '}
+            {busy ? 'Saving your analysis…' : 'Review my analysis'}
           </button>
           <p className="subtle">
-            Saving freezes these terms. It does not transfer funds. Changed
-            terms require a new quote.
+            This saves your request and price for review. No funds are
+            transferred. To change the details later, start a new request.
           </p>
         </form>
       )}

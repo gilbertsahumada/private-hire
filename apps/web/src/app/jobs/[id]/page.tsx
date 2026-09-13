@@ -3,7 +3,27 @@
 import { use, useEffect, useState } from 'react';
 import { formatEther, formatUnits } from 'viem';
 import { api, useWallet } from '../../../components/wallet';
+import { Icon } from '../../../components/icon';
+import { PortfolioReport } from '../../../components/portfolio-report';
 import { statuses } from '../../../components/job-list';
+
+const actionLabels: Record<string, string> = {
+  create: 'Confirm your analysis request',
+  budget: 'Confirm the analysis price',
+  approve: 'Allow the exact payment amount',
+  fund: 'Place payment in the contract',
+  submit: 'Deliver your report',
+  refund: 'Request your refund',
+};
+const eventLabels: Record<string, string> = {
+  JobCreated: 'Analysis requested',
+  BudgetSet: 'Price confirmed',
+  JobFunded: 'Payment deposited',
+  JobSubmitted: 'Report delivered',
+  JobCompleted: 'Report accepted · provider paid',
+  JobRejected: 'Report not accepted · payment returned',
+  JobExpired: 'Deadline passed · payment returned',
+};
 
 type Job = {
   request_id: string;
@@ -55,7 +75,9 @@ export default function JobDetail({
       setJob(result);
       setLoadedFor(wallet.account);
     } catch {
-      setError('This job could not be loaded. Check your account and retry.');
+      setError(
+        'This analysis could not be loaded. Check your account and retry.',
+      );
     }
   }
 
@@ -119,7 +141,7 @@ export default function JobDetail({
       setError('Transaction sent. Use Check transaction after confirmation.');
     } catch {
       setError(
-        'Signature was cancelled, or the transaction needs checking. No job is marked paid without confirmation.',
+        'Signature was cancelled, or the transaction needs checking. Payment is only shown as received after confirmation.',
       );
     } finally {
       setBusy(false);
@@ -148,8 +170,10 @@ export default function JobDetail({
 
   return (
     <main>
-      <h1>{job?.job_id ? `Job #${job.job_id}` : 'Review your quote'}</h1>
-      <p className="muted">Portfolio Calculator · CRE simulation</p>
+      <h1>{job?.job_id ? `Analysis #${job.job_id}` : 'Review your quote'}</h1>
+      <p className="muted">
+        Portfolio Calculator · Follow your request, payment and report here.
+      </p>
       {error && (
         <p role="status" className="notice error">
           {error}
@@ -157,21 +181,27 @@ export default function JobDetail({
       )}
       {!wallet.account ? (
         <p className="notice">
-          Connect a participating wallet to view this job.
+          Sign in with the wallet that requested or provides this analysis.
         </p>
       ) : !job ? (
         <button onClick={() => void refresh()}>Retry loading</button>
       ) : (
         <>
           <ol className="timeline">
-            {['Draft', ...statuses].map((s, i) => (
+            {[
+              'Draft',
+              ...statuses.slice(0, 3),
+              job.chain_status !== null && job.chain_status >= 3
+                ? statuses[job.chain_status]
+                : 'Accepted',
+            ].map((s, i) => (
               <li
                 key={s}
                 className={
                   (
                     job.chain_status === null
                       ? i === 0
-                      : i === job.chain_status + 1
+                      : i === Math.min(job.chain_status + 1, 4)
                   )
                     ? 'current'
                     : ''
@@ -184,34 +214,40 @@ export default function JobDetail({
           <dl className="facts">
             <dt>Agreed price</dt>
             <dd>{formatUnits(BigInt(job.budget), 6)} USDC</dd>
-            <dt>Onchain budget</dt>
+            <dt>Price confirmed by provider</dt>
             <dd>
-              {job.onchainBudget === null
-                ? 'Not created'
+              {job.onchainBudget === null || job.onchainBudget === '0'
+                ? 'Not confirmed'
                 : `${formatUnits(BigInt(job.onchainBudget), 6)} USDC`}
             </dd>
             <dt>Deadline</dt>
             <dd>{new Date(job.expired_at * 1000).toLocaleString()}</dd>
-            <dt>Manifest</dt>
-            <dd>{job.manifest_hash}</dd>
-            <dt>Work status</dt>
+            <dt>What happens next</dt>
             <dd>
-              {job.attempts?.[0]?.state === 'running'
-                ? job.attempts[0].phase === 'dispatch'
-                  ? 'Agent running'
-                  : 'Evaluating · CRE simulation'
-                : job.task?.state === 'ready'
-                  ? 'Result ready'
-                  : job.chain_status === 1
-                    ? 'Awaiting operator dispatch'
-                    : job.chain_status === 2
-                      ? 'Awaiting operator evaluation'
-                      : 'Not running'}
+              {job.chain_status === 3
+                ? 'Your report was accepted and the provider was paid.'
+                : job.chain_status === 4
+                  ? 'The report did not pass the checks. Your payment was returned.'
+                  : job.chain_status === 5
+                    ? 'Your payment was returned after the deadline.'
+                    : job.refundAvailable
+                      ? 'The deadline has passed. You can request your refund.'
+                      : job.attempts?.[0]?.state === 'running'
+                        ? job.attempts[0].phase === 'dispatch'
+                          ? 'Calculating your portfolio'
+                          : 'Checking the report · CRE simulation'
+                        : job.task?.state === 'ready'
+                          ? 'Report prepared for delivery'
+                          : job.chain_status === 1
+                            ? 'Waiting for the operator to start the analysis'
+                            : job.chain_status === 2
+                              ? 'Waiting for the operator to check the report'
+                              : 'No analysis in progress'}
             </dd>
           </dl>
           {job.chain_status === 0 && job.onchainBudget === '0' && (
             <p className="notice">
-              Awaiting provider confirmation of the fixed budget.
+              The provider needs to confirm your price before you can pay.
             </p>
           )}
           {job.refundAvailable && (
@@ -223,12 +259,12 @@ export default function JobDetail({
           <div className="actions">
             {buyer && job.chain_status === null && !job.pending_tx && (
               <button disabled={busy} onClick={() => void prepare('create')}>
-                Review job creation
+                <Icon name="check" /> Confirm analysis request
               </button>
             )}
             {provider && job.chain_status === 0 && !expired && (
               <button disabled={busy} onClick={() => void prepare('budget')}>
-                Confirm fixed budget
+                <Icon name="check" /> Confirm price
               </button>
             )}
             {buyer &&
@@ -240,10 +276,10 @@ export default function JobDetail({
                     disabled={busy}
                     onClick={() => void prepare('approve')}
                   >
-                    Approve exact USDC amount
+                    Allow this payment amount
                   </button>
                   <button disabled={busy} onClick={() => void prepare('fund')}>
-                    Review funding
+                    <Icon name="wallet" /> Review payment
                   </button>
                 </>
               )}
@@ -252,12 +288,12 @@ export default function JobDetail({
               job.task?.state === 'ready' &&
               !expired && (
                 <button disabled={busy} onClick={() => void prepare('submit')}>
-                  Review delivery submission
+                  Review report delivery
                 </button>
               )}
             {buyer && job.refundAvailable && (
               <button disabled={busy} onClick={() => void prepare('refund')}>
-                Claim refund
+                <Icon name="wallet" /> Request refund
               </button>
             )}
             <button
@@ -265,20 +301,36 @@ export default function JobDetail({
               disabled={busy}
               onClick={() => void recover()}
             >
-              Check transaction
+              <Icon name="refresh" /> Check transaction
             </button>
           </div>
           {prepared && (
             <section className="panel">
-              <h2>Review {prepared.action}</h2>
+              <h2>{actionLabels[prepared.action] ?? 'Review transaction'}</h2>
               <p>
-                Network gas estimate:{' '}
+                Estimated network fee:{' '}
                 {formatEther(BigInt(prepared.estimatedFeeWei))} USDC. Your
                 wallet shows the final fee.
               </p>
-              <p className="subtle">Destination: {prepared.to}</p>
+              <p>
+                {prepared.action === 'create'
+                  ? 'This records your request. The analysis price is not paid yet; a network fee applies.'
+                  : prepared.action === 'approve'
+                    ? 'This lets the contract use exactly the agreed USDC amount. The payment is deposited in the next step.'
+                    : prepared.action === 'fund'
+                      ? 'Your payment is held in the contract while the analysis is completed and checked.'
+                      : prepared.action === 'submit'
+                        ? 'This commits your prepared report for checking. It does not mean the report has been accepted.'
+                        : prepared.action === 'refund'
+                          ? 'Your funds are returned once this transaction is confirmed.'
+                          : 'Confirm the agreed price so the customer can make the payment.'}
+              </p>
+              <details>
+                <summary>Transaction details</summary>
+                <p className="subtle">Contract address: {prepared.to}</p>
+              </details>
               <button disabled={busy} onClick={() => void sign()}>
-                Sign in wallet
+                <Icon name="wallet" /> Confirm in wallet
               </button>
               <button className="secondary" onClick={() => setPrepared(null)}>
                 Cancel
@@ -286,12 +338,20 @@ export default function JobDetail({
             </section>
           )}
           <details>
-            <summary>Portfolio input</summary>
+            <summary>Contract and request details</summary>
+            <p>Request fingerprint: {job.manifest_hash}</p>
+            <p>
+              Evaluation is performed using CRE simulation, started by an
+              operator.
+            </p>
+          </details>
+          <details>
+            <summary>Your holdings · technical data</summary>
             <pre>{JSON.stringify(job.input, null, 2)}</pre>
           </details>
           {job.policy && (
             <details>
-              <summary>Private evaluation criteria</summary>
+              <summary>Your private calculation checks</summary>
               <pre>{JSON.stringify(job.policy, null, 2)}</pre>
             </details>
           )}
@@ -305,14 +365,14 @@ export default function JobDetail({
                     .catch(() => setError('Result recovery is pending. Retry.'))
                 }
               >
-                View recovered result
+                <Icon name="report" /> View portfolio report
               </button>
-              {result !== null && <pre>{JSON.stringify(result, null, 2)}</pre>}
+              {result !== null && <PortfolioReport value={result} />}
             </>
           )}
           {!!job.reports?.length && (
             <section className="panel">
-              <h2>Public evaluation report</h2>
+              <h2>Report verification</h2>
               {job.reports.map((r) => (
                 <div key={r.hash}>
                   <p>
@@ -325,7 +385,7 @@ export default function JobDetail({
                     target="_blank"
                     rel="noreferrer"
                   >
-                    View evaluator receipt
+                    View verification transaction
                   </a>
                 </div>
               ))}
@@ -333,11 +393,11 @@ export default function JobDetail({
           )}
           <h2>Confirmed activity</h2>
           {!job.events.length ? (
-            <p className="muted">No confirmed job transactions yet.</p>
+            <p className="muted">No confirmed activity to show yet.</p>
           ) : (
             job.events.map((e, i) => (
               <div className="row" key={`${e.tx_hash}-${i}`}>
-                <span>{e.event_name}</span>
+                <span>{eventLabels[e.event_name] ?? e.event_name}</span>
                 <a
                   target="_blank"
                   rel="noreferrer"

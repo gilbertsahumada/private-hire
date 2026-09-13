@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { WalletControl, WalletProvider } from '../components/wallet';
 import '@rainbow-me/rainbowkit/styles.css';
 import './globals.css';
+import { Icon } from '../components/icon';
 
 export const metadata = {
   title: 'Confidential Agent Jobs',
@@ -19,14 +20,22 @@ export default function Layout({ children }: { children: ReactNode }) {
               Confidential Agent Jobs
             </Link>
             <nav aria-label="Main navigation">
-              <Link href="/agents">Agents</Link>
-              <Link href="/jobs">Jobs</Link>
-              <Link href="/provider">Provider</Link>
+              <Link href="/agents">
+                <Icon name="agent" /> Agents
+              </Link>
+              <Link href="/jobs">
+                <Icon name="report" /> My analyses
+              </Link>
+              <Link href="/provider">
+                <Icon name="briefcase" /> For providers
+              </Link>
             </nav>
             <WalletControl />
           </header>
           {children}
-          <footer>Arc Testnet · CRE simulation · Test USDC only</footer>
+          <footer>
+            Demo on Arc Testnet · Use test USDC · Checks run with CRE simulation
+          </footer>
         </WalletProvider>
       </body>
     </html>

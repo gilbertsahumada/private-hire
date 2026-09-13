@@ -16,7 +16,10 @@ test('shows the real agent and protected empty workspaces without overflow', asy
   );
   await page.goto('/agents');
   await expect(
-    page.getByRole('heading', { name: 'Portfolio Calculator', exact: true }),
+    page.getByRole('heading', {
+      name: 'Understand your portfolio.',
+      exact: true,
+    }),
   ).toBeVisible();
   await expect(
     page.getByRole('img', { name: 'Portfolio Calculator avatar' }),
@@ -25,6 +28,9 @@ test('shows the real agent and protected empty workspaces without overflow', asy
     timeout: 30000,
   });
   const state = await (await catalogResponse).json();
+  await page
+    .getByText('About the agent and the technology', { exact: true })
+    .click();
   await expect(
     page.getByRole('combobox', { name: 'Choose wallet' }),
   ).toHaveCount(0);
@@ -36,11 +42,11 @@ test('shows the real agent and protected empty workspaces without overflow', asy
   );
   if (state.agents[0].enabled)
     await expect(
-      page.getByRole('link', { name: 'Create a job', exact: true }),
+      page.getByRole('link', { name: 'Analyze a portfolio', exact: true }),
     ).toBeVisible();
   else
     await expect(
-      page.getByRole('button', { name: 'Contracting not enabled' }),
+      page.getByRole('button', { name: 'Analysis unavailable' }),
     ).toBeDisabled();
   await expect(
     page.getByText(
@@ -52,7 +58,7 @@ test('shows the real agent and protected empty workspaces without overflow', asy
   ).toBeVisible();
   if (!state.agents[0].identityVerified)
     await expect(
-      page.getByRole('button', { name: 'Retry verification' }),
+      page.getByRole('button', { name: 'Check availability' }),
     ).toBeVisible();
   await page.screenshot({
     path: `.local/agents-${info.project.name}.png`,
@@ -65,14 +71,14 @@ test('shows the real agent and protected empty workspaces without overflow', asy
   ).toBeTruthy();
   await page
     .getByRole('navigation')
-    .getByRole('link', { name: 'Jobs', exact: true })
+    .getByRole('link', { name: 'My analyses', exact: true })
     .click();
   await expect(
     page.getByRole('heading', { name: 'Connect your wallet' }),
   ).toBeVisible();
   await page
     .getByRole('navigation')
-    .getByRole('link', { name: 'Provider', exact: true })
+    .getByRole('link', { name: 'For providers', exact: true })
     .click();
   await expect(
     page.getByRole('heading', { name: 'Provider workspace' }),
@@ -222,11 +228,11 @@ test('connects through the standard modal, restores SIWE and clears private data
   await openWallet(page);
   await page.getByRole('button', { name: 'Sign message', exact: true }).click();
   await expect(
-    page.getByRole('heading', { name: 'Your first job starts here' }),
+    page.getByRole('heading', { name: 'Your first analysis starts here' }),
   ).toBeVisible();
   await page.reload();
   await expect(
-    page.getByRole('heading', { name: 'Your first job starts here' }),
+    page.getByRole('heading', { name: 'Your first analysis starts here' }),
   ).toBeVisible();
   await page.evaluate(() =>
     (
@@ -297,7 +303,7 @@ for (const event of ['chainChanged', 'disconnect']) {
       .getByRole('button', { name: 'Sign message', exact: true })
       .click();
     await expect(
-      page.getByRole('heading', { name: 'Your first job starts here' }),
+      page.getByRole('heading', { name: 'Your first analysis starts here' }),
     ).toBeVisible();
     await page.evaluate(
       (event) =>
@@ -360,7 +366,7 @@ test('does not restore a late verified session after switching accounts', async 
     .poll(async () => (await page.request.get('/api/auth/session')).status())
     .toBe(401);
   await expect(
-    page.getByRole('heading', { name: 'Your first job starts here' }),
+    page.getByRole('heading', { name: 'Your first analysis starts here' }),
   ).toHaveCount(0);
 });
 
@@ -391,4 +397,115 @@ test('waits for initial session status before opening the wallet dialog', async 
   await expect(
     page.getByRole('button', { name: 'Connect wallet', exact: true }),
   ).toBeEnabled();
+});
+
+test('lets a customer enter ordinary quantities and prices without a payment', async ({
+  page,
+}, info) => {
+  await installWallet(page);
+  await page.goto('/jobs/new');
+  await openWallet(page);
+  await page.getByRole('button', { name: 'Sign message', exact: true }).click();
+  await expect(
+    page.getByLabel('Asset 1 quantity', { exact: true }),
+  ).toBeVisible();
+  await page.getByLabel('Asset 1 quantity', { exact: true }).fill('2.5');
+  await page.getByLabel('Asset 1 price in USD', { exact: true }).fill('10');
+  await expect(page.getByText('Atomic quantity', { exact: true })).toHaveCount(
+    0,
+  );
+  await page.screenshot({
+    path: `.local/analysis-form-${info.project.name}.png`,
+    fullPage: true,
+  });
+  let body: Record<string, any> | undefined;
+  await page.route('**/api/jobs', async (route) => {
+    body = route.request().postDataJSON();
+    // Inspect the submitted form without creating a real request or initiating payment.
+    await route.fulfill({
+      status: 503,
+      contentType: 'application/json',
+      body: '{"error":"TEST_ONLY"}',
+    });
+  });
+  await page
+    .getByRole('button', { name: 'Review my analysis', exact: true })
+    .click();
+  await expect.poll(() => body).toBeTruthy();
+  expect(body?.input.positions[0]).toMatchObject({
+    quantityAtomic: '25',
+    quantityDecimals: 1,
+    unitPriceMicrousd: '10000000',
+  });
+  expect(body?.policy).toMatchObject({
+    valueToleranceMicrousd: '0',
+    weightToleranceBps: 0,
+  });
+  expect(body?.durationMinutes).toBe(1440);
+});
+
+test('presents a report in dollars and percentages with technical data secondary', async ({
+  page,
+}) => {
+  const account = await installWallet(page);
+  // Browser-only presentation fixture, not a real funded request or acceptance receipt.
+  await page.route('**/api/jobs/copy-preview', (route) =>
+    route.fulfill({
+      json: {
+        request_id: 'copy-preview',
+        job_id: '42',
+        buyer: account.address.toLowerCase(),
+        provider: '0x2222222222222222222222222222222222222222',
+        budget: '10000',
+        onchainBudget: '10000',
+        expired_at: 4102444800,
+        chain_status: 3,
+        manifest_hash: '0x' + '11'.repeat(32),
+        pending_tx: null,
+        refundAvailable: false,
+        task: { state: 'ready', result_hash: '0x' + '22'.repeat(32) },
+        events: [],
+        input: {},
+        reports: [],
+        attempts: [],
+      },
+    }),
+  );
+  await page.route('**/api/jobs/copy-preview/result', (route) =>
+    route.fulfill({
+      json: {
+        result: {
+          schemaVersion: 'portfolio-result/v1',
+          requestId: 'copy-preview',
+          totalValueMicrousd: '25000000',
+          positions: [
+            { assetId: 'sample', valueMicrousd: '25000000', weightBps: 10000 },
+          ],
+          concentrationBps: 10000,
+          executionMode: 'deterministic',
+        },
+      },
+    }),
+  );
+  await page.goto('/jobs/copy-preview');
+  await openWallet(page);
+  await page.getByRole('button', { name: 'Sign message', exact: true }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Analysis #42' }),
+  ).toBeVisible();
+  await expect(
+    page.getByText('Your report was accepted and the provider was paid.'),
+  ).toBeVisible();
+  await page
+    .getByRole('button', { name: 'View portfolio report', exact: true })
+    .click();
+  await expect(
+    page.getByRole('cell', { name: '$25', exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('cell', { name: '100%', exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.locator('pre').filter({ hasText: 'portfolio-result/v1' }),
+  ).not.toBeVisible();
 });

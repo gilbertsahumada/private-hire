@@ -81,3 +81,9 @@ The transitive @base-org/account package is pinned to 2.0.2, compatible with the
 References: [RainbowKit custom authentication](https://rainbowkit.com/docs/custom-authentication), [RainbowKit modal hooks](https://rainbowkit.com/docs/modal-hooks), [wagmi configuration](https://wagmi.sh/react/api/createConfig).
 
 The initial session check finishes (or times out after ten seconds) before enabling the connect control. Otherwise RainbowKit can close an already-open dialog when authentication status transitions out of loading. A delayed-session browser regression covers this ordering. Vitest resolves the CRE SDK to the workflow instance so spies also cover transport calls when pnpm installs optional-peer variants.
+
+## Customer language and report presentation
+
+Customer-facing actions use “Analyze a portfolio”, “My analyses” and “Review my analysis”. A job remains the internal contract/API entity; URLs, IDs and payment operations are unchanged. Provider pages describe requests, confirmed prices and report delivery. Public text explains supplied sample prices, operator-run timing, held payments, refunds, test USDC and operator access without claiming investment advice or production enclaves.
+
+The holding form accepts plain decimal quantities and USD prices, converted exactly with BigInt into the existing integer schema. It rejects excess precision instead of rounding (18 quantity decimal places, 6 price decimal places, 78 atomic digits). Zero-default evaluation tolerances remain available under Advanced with unit explanations. Returned reports display USD values and percentages, with raw data in a disclosure. Inline SVG icons accompany text labels and are hidden from assistive technology. On mobile the price and primary action follow the introduction, ahead of secondary information.
