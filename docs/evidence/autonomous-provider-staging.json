@@ -1,0 +1,30 @@
+{
+  "version": "ac7b2ce3-63c9-4674-91ce-71921c9cb788",
+  "providerListStatus": 200,
+  "correlatedRequests": 0,
+  "privateNoStore": true,
+  "missingTokenRejected": true,
+  "a2aTokenRejectedOnProviderRoute": true,
+  "providerTokenRejectedOnContextRoute": true,
+  "anonymousJobsRejected": true,
+  "agentsPageStatus": 200,
+  "agentCard": {
+    "name": "Portfolio Calculator",
+    "version": "0.2.0"
+  },
+  "readOnlyRunner": {
+    "exitCode": 0,
+    "scanned": 0
+  },
+  "signedTransactions": 0,
+  "date": "2026-09-13",
+  "sourceCommit": "2fa76e3",
+  "credentialUploadedWithExplicitAuthorization": true,
+  "localCredentialCopies": [
+    ".local/provider.env",
+    "apps/web/.dev.vars"
+  ],
+  "localFileMode": "0600",
+  "automationActivated": false,
+  "note": "Initial Python default User-Agent received 403; checks passed with the actual provider client identifier. No funded jobs were available; end-to-end signing remains pending."
+}

@@ -33,3 +33,7 @@ After a revert, expiry of an unresolved transaction, corrupt journal, or stale p
 Funded work is sent through A2A, then recovered via GetTask. Both envelopes must have the same commitment, including the same nonce, and match the job reference before submit preparation. Existing task reservation, conditional R2 write, D1 recovery and AEAD tests continue to apply.
 
 No completion/rejection transaction is signed by this service. It stops at delivery. CRE deployment remains paused due to the documented enclave configuration issue. Provider UI signing controls are removed. The workspace reports that automatic signing is not activated until PROVIDER_AUTOMATION_ENABLED is explicitly enabled after verifying the service. Existing participant APIs remain available for operator diagnostics.
+
+## Staging publication
+
+The scoped routes and monitoring UI are published as Worker version ac7b2ce3-63c9-4674-91ce-71921c9cb788. The user authorized the dedicated service credential upload, which succeeded; copies are kept in ignored .local/provider.env and apps/web/.dev.vars (0600), never in Git. The read-only check passed against HTTPS with zero correlated requests. Cross-credential checks and anonymous access checks passed. An initial Python default-user-agent request received HTTP 403 at the edge; the provider client identifier used by the actual service succeeded. This is access/read-only evidence, not live autonomous signing. PROVIDER_AUTOMATION_ENABLED remains false by default.
