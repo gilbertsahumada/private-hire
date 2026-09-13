@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
+  <title>PrivateHire</title>
+  <rect width="128" height="128" rx="30" fill="#0d191b"/>
+  <path d="M34 94V34H64C78 34 86 42 86 54S78 74 64 74H49V94H34ZM49 48V60H63C68 60 71 58 71 54S68 48 63 48H49Z" fill="#bde7cd"/>
+  <path d="M68 89L78 99L101 76" stroke="#d4ef9d" stroke-width="10" stroke-linecap="square" stroke-linejoin="miter"/>
+</svg>

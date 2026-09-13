@@ -84,6 +84,10 @@ header {
   flex-wrap: wrap;
 }
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
   font-size: 18px;
   font-weight: 700;
   color: var(--ink);

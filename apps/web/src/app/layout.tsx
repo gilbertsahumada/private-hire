@@ -18,7 +18,13 @@ export default function Layout({ children }: { children: ReactNode }) {
         <WalletProvider>
           <header>
             <Link className="brand" href="/">
-              PrivateHire
+              <img
+                src="/brands/privatehire/privatehire-logo.svg"
+                width="36"
+                height="36"
+                alt=""
+              />
+              <span>PrivateHire</span>
             </Link>
             <nav aria-label="Main navigation">
               <Link href="/agents">
