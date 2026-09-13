@@ -6,6 +6,10 @@ staging:
   rpcs:
     - chain-name: arc-testnet
       url: https://rpc.testnet.arc.io
+staging-broadcast:
+  rpcs:
+    - chain-name: arc-testnet
+      url: https://rpc.testnet.arc.io
 deployed-probe:
   rpcs:
     - chain-name: arc-testnet
