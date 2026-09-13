@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { LoadingState, Spinner } from './loading';
 import Link from 'next/link';
 import { formatUnits } from 'viem';
 import { Icon } from './icon';
@@ -26,35 +27,22 @@ type Row = {
 };
 
 export function JobList({ provider = false }: { provider?: boolean }) {
-  const { account } = useWallet();
-  const [rows, setRows] = useState<Row[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  useEffect(() => {
-    let active = true;
-    setRows([]);
-    if (!account) return;
-    setLoading(true);
-    setError('');
-    api<{ jobs: Row[] }>(`/api/jobs?role=${provider ? 'provider' : 'buyer'}`)
-      .then((r) => {
-        if (active) setRows(r.jobs);
-      })
-      .catch(
-        () =>
-          active &&
-          setError(
-            'Your analyses could not be loaded. Sign in again or reload to retry.',
-          ),
-      )
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [account, provider]);
+  const { account, ready } = useWallet();
+  const { data, isPending, isFetching, isError, refetch } = useQuery({
+    queryKey: ['private-jobs', account, provider],
+    queryFn: ({ signal }) =>
+      api<{ jobs: Row[] }>(
+        `/api/jobs?role=${provider ? 'provider' : 'buyer'}`,
+        undefined,
+        AbortSignal.any([signal, AbortSignal.timeout(15000)]),
+      ),
+    enabled: ready && !!account,
+    gcTime: 0,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+  const rows = account ? (data?.jobs ?? []) : [];
+  const loading = !ready || (!!account && isPending);
 
   return (
     <main>
@@ -73,18 +61,32 @@ export function JobList({ provider = false }: { provider?: boolean }) {
           </Link>
         )}
       </div>
-      {error && (
-        <p role="alert" className="notice error">
-          {error}
-        </p>
-      )}
       {loading ? (
-        <p role="status">Loading analyses…</p>
+        <LoadingState
+          label={
+            ready ? 'Loading your analyses…' : 'Connecting your workspace…'
+          }
+        />
       ) : !account ? (
         <div className="empty">
           <Icon name="wallet" className="empty-icon" />
           <h2>Connect your wallet</h2>
           <p>Sign in to see your analysis requests and private reports.</p>
+        </div>
+      ) : isError && !data ? (
+        <div className="empty">
+          <Icon name="refresh" className="empty-icon" />
+          <h2>We couldn’t load your analyses</h2>
+          <p role="alert">
+            Your requests are safe. Try again to load this workspace.
+          </p>
+          <button
+            className="secondary"
+            disabled={isFetching}
+            onClick={() => void refetch()}
+          >
+            {isFetching && <Spinner />} Try again
+          </button>
         </div>
       ) : !rows.length ? (
         <div className="empty">

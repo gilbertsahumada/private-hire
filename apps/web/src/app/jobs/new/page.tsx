@@ -1,24 +1,27 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { formatUnits } from 'viem';
 import { useRouter } from 'next/navigation';
 import { inputSchema, policySchema } from '@private-hire/domain';
 import metadata from '../../../../public/agent/registration.json';
 import { Icon } from '../../../components/icon';
 import { portfolioPositions, type Holding } from '../../../lib/portfolio-form';
+import { LoadingState, Spinner } from '../../../components/loading';
+import { useAgentCatalog } from '../../../components/use-agent-catalog';
 import { api, useWallet } from '../../../components/wallet';
 
 export default function NewJob() {
   const { account } = useWallet();
+  return <NewJobForm key={account ?? 'signed-out'} />;
+}
+
+function NewJobForm() {
+  const { account, ready } = useWallet();
   const router = useRouter();
   const [busy, setBusy] = useState(false);
-  const [price, setPrice] = useState<string | null>(null);
-  useEffect(() => {
-    api<{ agents: { price: string }[] }>('/api/agents')
-      .then((r) => setPrice(r.agents[0].price))
-      .catch(() => setPrice(null));
-  }, []);
+  const { data: catalog, isError: priceError } = useAgentCatalog();
+  const price = catalog?.agents[0]?.price;
   const [requestId] = useState(() => `job-${crypto.randomUUID()}`);
   const [error, setError] = useState('');
   const [positions, setPositions] = useState<Holding[]>([
@@ -69,10 +72,16 @@ export default function NewJob() {
       </p>
       <p>
         <Icon name="report" /> One report:{' '}
-        {price ? formatUnits(BigInt(price), 6) + ' USDC' : 'Checking price…'} in
-        test USDC, plus network fees.
+        {price
+          ? formatUnits(BigInt(price), 6) + ' USDC'
+          : priceError
+            ? 'Price unavailable'
+            : 'Checking price…'}{' '}
+        in test USDC, plus network fees.
       </p>
-      {!account ? (
+      {!ready ? (
+        <LoadingState label="Connecting your workspace…" detail />
+      ) : !account ? (
         <div className="notice">
           <Icon name="wallet" /> Connect your wallet and sign in to save your
           analysis. Signing in does not make a payment.
@@ -251,7 +260,7 @@ export default function NewJob() {
             </p>
           )}
           <button disabled={busy}>
-            <Icon name="report" />{' '}
+            <>{busy ? <Spinner /> : <Icon name="report" />}</>{' '}
             {busy ? 'Saving your analysis…' : 'Review my analysis'}
           </button>
           <p className="subtle">
