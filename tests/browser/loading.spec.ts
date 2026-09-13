@@ -440,3 +440,57 @@ test('agent profile explains the service without technical disclosures', async (
     fullPage: true,
   });
 });
+
+test('recovers a temporary job read failure after a full page reload', async ({
+  page,
+}) => {
+  const account = await installWallet(page);
+  await page.addInitScript(() =>
+    localStorage.setItem('test-authorized', 'true'),
+  );
+  await page.route('**/api/auth/session', (route) =>
+    route.fulfill({ json: { wallet: account.address.toLowerCase() } }),
+  );
+  let failures = 0;
+  await page.route('**/api/jobs/reload-preview', (route) => {
+    if (failures > 0) {
+      failures--;
+      return route.fulfill({ status: 503, body: 'Temporarily unavailable' });
+    }
+    return route.fulfill({
+      json: {
+        request_id: 'reload-preview',
+        job_id: '42',
+        buyer: account.address.toLowerCase(),
+        provider: '0x2222222222222222222222222222222222222222',
+        budget: '10000',
+        onchainBudget: '10000',
+        expired_at: 4102444800,
+        chain_status: 1,
+        manifest_hash: 'preview',
+        pending_tx: null,
+        refundAvailable: false,
+        task: null,
+        events: [],
+        input: {},
+        reports: [],
+        attempts: [],
+      },
+    });
+  });
+  await page.goto('/jobs/reload-preview');
+  await expect(
+    page.getByRole('heading', { name: 'Analysis #42' }),
+  ).toBeVisible();
+  failures = 2;
+  await page.reload();
+  await expect(
+    page.getByRole('status', { name: 'Reconnecting to your analysis…' }),
+  ).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Retry loading' })).toHaveCount(
+    0,
+  );
+  await expect(page.getByRole('heading', { name: 'Analysis #42' })).toBeVisible(
+    { timeout: 10000 },
+  );
+});

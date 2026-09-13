@@ -36,24 +36,8 @@ import type { Address, Hex } from 'viem';
 import { Spinner } from './loading';
 import { arcChain } from '@private-hire/chain';
 
-export async function api<T>(
-  url: string,
-  body?: unknown,
-  signal?: AbortSignal,
-): Promise<T> {
-  const response = await fetch(url, {
-    method: body === undefined ? 'GET' : 'POST',
-    headers: body === undefined ? {} : { 'Content-Type': 'application/json' },
-    body: body === undefined ? undefined : JSON.stringify(body),
-    cache: 'no-store',
-    signal,
-  });
-  const result = await response.json();
-  if (!response.ok)
-    throw new Error(result.error ?? 'Request failed. Try again.');
-
-  return result;
-}
+import { api } from './api';
+export { api } from './api';
 
 function makeConfig() {
   return createConfig({

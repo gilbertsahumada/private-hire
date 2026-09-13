@@ -2,6 +2,7 @@
 
 import { use, useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { jobReadMessage, retryJobRead } from '../../../components/api';
 import { LoadingState, Spinner } from '../../../components/loading';
 import { formatEther, formatUnits } from 'viem';
 import { api, useWallet } from '../../../components/wallet';
@@ -87,6 +88,8 @@ function JobDetailView({ id }: { id: string }) {
     isPending,
     isFetching,
     isError,
+    error: readError,
+    failureCount,
     refetch,
   } = useQuery({
     queryKey: ['private-job', wallet.account, id],
@@ -98,8 +101,10 @@ function JobDetailView({ id }: { id: string }) {
       ),
     enabled: wallet.ready && !!wallet.account,
     gcTime: 0,
-    retry: false,
-    refetchInterval: busy ? false : 15000,
+    retry: retryJobRead,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 2000),
+    refetchInterval: (query) =>
+      busy || query.state.status === 'error' ? false : 15000,
     refetchOnWindowFocus: false,
   });
   const refresh = () => refetch();
@@ -295,7 +300,9 @@ function JobDetailView({ id }: { id: string }) {
         <LoadingState
           label={
             wallet.ready
-              ? 'Loading your analysis…'
+              ? failureCount > 0
+                ? 'Reconnecting to your analysis…'
+                : 'Loading your analysis…'
               : 'Connecting your workspace…'
           }
           detail
@@ -307,9 +314,7 @@ function JobDetailView({ id }: { id: string }) {
       ) : !job ? (
         <div className="empty">
           <h2>We couldn’t load this analysis</h2>
-          <p role="alert">
-            Check that you’re using the right wallet, then try again.
-          </p>
+          <p role="alert">{jobReadMessage(readError)}</p>
           <button
             className="secondary"
             disabled={isFetching}
