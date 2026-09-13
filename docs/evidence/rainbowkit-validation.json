@@ -1,0 +1,23 @@
+{
+  "date": "2026-09-13",
+  "stagingVersion": "61e6d115-45f7-4110-91b4-2ede6fb8571b",
+  "origin": "https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev",
+  "libraries": {
+    "rainbowkit": "2.2.11",
+    "wagmi": "2.19.5",
+    "reactQuery": "5.90.21",
+    "viem": "2.56.3"
+  },
+  "validation": {
+    "typecheck": "passed",
+    "workersBuild": "passed",
+    "unitTests": 31,
+    "stagingBrowserTests": 16,
+    "viewports": [
+      "1440x1000",
+      "390x844"
+    ]
+  },
+  "scope": "Injected test providers with real ephemeral SIWE signatures against staging. No buyer/provider transaction signed. Extension popup closure has no guaranteed event; standard dialog remains dismissible.",
+  "browserCommand": "MARKET_ORIGIN=https://confidential-agent-jobs-staging.gilbertsahumada.workers.dev PLAYWRIGHT_EXECUTABLE_PATH=<installed Chromium> pnpm exec playwright test --max-failures 1"
+}
