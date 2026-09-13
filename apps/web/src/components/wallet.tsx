@@ -71,6 +71,20 @@ function connectionError(error: unknown, step: ConnectionStep): string {
   return 'Connection or sign-in could not be completed. Check your wallet and connection, then try again.';
 }
 
+function waitForWallet<T>(
+  request: Promise<T>,
+  signal: AbortSignal,
+): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const abort = () => reject(signal.reason);
+    if (signal.aborted) return abort();
+    signal.addEventListener('abort', abort, { once: true });
+    request
+      .then(resolve, reject)
+      .finally(() => signal.removeEventListener('abort', abort));
+  });
+}
+
 type Transaction = { from: string; to: string; data: string; chainId: number };
 
 type WalletState = {
@@ -82,6 +96,7 @@ type WalletState = {
   error: string;
   wallets: WalletInfo[];
   connect: () => Promise<void>;
+  cancelConnection: () => void;
   logout: () => Promise<void>;
   send: (tx: Transaction) => Promise<Hex>;
 };
@@ -95,6 +110,7 @@ const Context = createContext<WalletState>({
   error: '',
   wallets: [],
   connect: async () => {},
+  cancelConnection: () => {},
   logout: async () => {},
   send: async () => {
     throw new Error('Connect wallet');
@@ -113,6 +129,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState('');
   const [progress, setProgress] = useState('');
   const connecting = useRef(false);
+  const connectionAttempt = useRef<AbortController | null>(null);
   const epoch = useRef(0);
   const connection = useRef<{ address: string | null; chain: number | null }>({
     address: null,
@@ -303,6 +320,15 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     };
   }, [selected, invalidate]);
 
+  function cancelConnection() {
+    epoch.current++;
+    connectionAttempt.current?.abort(
+      new Error(
+        'Connection canceled. You can try again. Close any pending request in your wallet first.',
+      ),
+    );
+  }
+
   async function connect() {
     if (connecting.current) return;
     const target = active.current;
@@ -313,6 +339,18 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       return;
     }
     connecting.current = true;
+    const attempt = new AbortController();
+    connectionAttempt.current = attempt;
+    const timeout = window.setTimeout(() => {
+      epoch.current++;
+      attempt.abort(
+        new Error(
+          'Your wallet did not respond. If you closed or canceled its request, you can try again. Check the extension for any pending request first.',
+        ),
+      );
+    }, 60000);
+    const wait = <T,>(request: Promise<T>) =>
+      waitForWallet(request, attempt.signal);
     let step: ConnectionStep = 'connection';
     setProgress('Open your wallet to approve the connection.');
     setBusy(true);
@@ -324,14 +362,14 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('market-wallet', target.uuid);
       const client = createWalletClient({
         chain: arcTestnet,
-        transport: custom(target.provider),
+        transport: custom(target.provider, { retryCount: 0 }),
       });
-      await client.requestAddresses();
+      await wait(client.requestAddresses());
       if (active.current !== target) throw new Error('Wallet changed');
       step = 'network';
       setProgress('Confirm Arc Testnet in your wallet.');
-      await client.switchChain({ id: arcTestnet.id });
-      const [address] = await client.getAddresses();
+      await wait(client.switchChain({ id: arcTestnet.id }));
+      const [address] = await wait(client.getAddresses());
       if (!address || active.current !== target)
         throw new Error('Wallet changed');
       connection.current = {
@@ -342,39 +380,47 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       setChainId(arcTestnet.id);
       loginEpoch = epoch.current;
       setBusy(true);
-      const challenge = await api<{ nonce: string; message: string }>(
-        '/api/auth/nonce',
-        { wallet: address },
+      const challenge = await wait(
+        api<{ nonce: string; message: string }>('/api/auth/nonce', {
+          wallet: address,
+        }),
       );
       if (loginEpoch !== epoch.current) return;
       step = 'signature';
       setProgress(
         'Sign the message in your wallet to sign in. This does not send a transaction.',
       );
-      const signature = await client.signMessage({
-        account: address,
-        message: challenge.message,
-      });
+      const signature = await wait(
+        client.signMessage({
+          account: address,
+          message: challenge.message,
+        }),
+      );
       if (loginEpoch !== epoch.current) return;
       step = 'verification';
       setProgress('Verifying your sign-in…');
-      await enqueueAuth(async () => {
-        if (loginEpoch !== epoch.current) return;
-        const verified = await api<{ wallet: string }>('/api/auth/verify', {
-          nonce: challenge.nonce,
-          signature,
-        });
-        if (loginEpoch !== epoch.current) {
-          await api('/api/auth/logout', {});
+      await wait(
+        enqueueAuth(async () => {
+          if (loginEpoch !== epoch.current) return;
+          const verified = await api<{ wallet: string }>('/api/auth/verify', {
+            nonce: challenge.nonce,
+            signature,
+          });
+          if (loginEpoch !== epoch.current) {
+            await api('/api/auth/logout', {});
 
-          return;
-        }
-        if (verified.wallet !== address.toLowerCase())
-          throw new Error('Session mismatch');
-        setAccount(verified.wallet);
-      });
+            return;
+          }
+          if (verified.wallet !== address.toLowerCase())
+            throw new Error('Session mismatch');
+          setAccount(verified.wallet);
+        }),
+      );
     } catch (error) {
-      if (
+      if (attempt.signal.aborted) {
+        setAccount(null);
+        setError(attempt.signal.reason.message);
+      } else if (
         active.current === target &&
         (loginEpoch === epoch.current ||
           step === 'connection' ||
@@ -384,6 +430,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         setError(connectionError(error, step));
       }
     } finally {
+      window.clearTimeout(timeout);
+      connectionAttempt.current = null;
       connecting.current = false;
       setBusy(false);
       setProgress('');
@@ -402,7 +450,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       throw new Error('Sign in with the wallet assigned to this action.');
     const client = createWalletClient({
       chain: arcTestnet,
-      transport: custom(target.provider),
+      transport: custom(target.provider, { retryCount: 0 }),
     });
     const [addresses, network] = await Promise.all([
       client.getAddresses(),
@@ -437,6 +485,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         error,
         wallets,
         connect,
+        cancelConnection,
         logout,
         send,
       }}
@@ -473,6 +522,11 @@ export function WalletControl() {
       {w.connectedAccount && (
         <button className="secondary" onClick={() => void w.logout()}>
           {w.account ? 'Sign out' : 'Disconnect'}
+        </button>
+      )}
+      {w.busy && (
+        <button className="secondary" onClick={w.cancelConnection}>
+          Cancel connection
         </button>
       )}
       {w.busy && w.progress && <p role="status">{w.progress}</p>}

@@ -353,3 +353,74 @@ for (const scenario of [
     await expect(button).toBeEnabled();
   });
 }
+
+for (const recovery of ['cancel', 'timeout']) {
+  test(`recovers a silent wallet using ${recovery} and ignores its late response`, async ({
+    page,
+  }) => {
+    await page.clock.install();
+    await page.addInitScript(() => {
+      const provider = {
+        request({ method }: { method: string }) {
+          if (method === 'eth_accounts') return Promise.resolve([]);
+          if (method === 'eth_chainId') return Promise.resolve('0x4cef52');
+          if (method === 'eth_requestAccounts')
+            return new Promise((resolve) => {
+              (window as unknown as { finishWallet: () => void }).finishWallet =
+                () => resolve(['0x2222222222222222222222222222222222222222']);
+            });
+          throw new Error('An abandoned request must not advance');
+        },
+        on() {},
+        removeListener() {},
+      };
+      window.addEventListener('eip6963:requestProvider', () =>
+        window.dispatchEvent(
+          new CustomEvent('eip6963:announceProvider', {
+            detail: {
+              info: { name: 'MetaMask', uuid: 'silent-test' },
+              provider,
+            },
+          }),
+        ),
+      );
+    });
+    await page.goto('/jobs');
+    const connect = page.getByRole('button', {
+      name: 'Connect wallet',
+      exact: true,
+    });
+    await connect.click();
+    await expect(
+      page.getByText('Open your wallet to approve the connection.'),
+    ).toBeVisible();
+    if (recovery === 'cancel')
+      await page
+        .getByRole('button', { name: 'Cancel connection', exact: true })
+        .click();
+    else await page.clock.fastForward(61000);
+    await expect(
+      page.locator('.wallet-control').getByRole('alert'),
+    ).toContainText(
+      recovery === 'cancel'
+        ? 'Connection canceled'
+        : 'Your wallet did not respond',
+    );
+    await expect(connect).toBeEnabled();
+    await page.evaluate(() =>
+      (window as unknown as { finishWallet: () => void }).finishWallet(),
+    );
+    await expect(connect).toBeEnabled();
+    await expect(
+      page.getByText('Confirm Arc Testnet in your wallet.'),
+    ).toHaveCount(0);
+    await connect.click();
+    await expect(
+      page.getByText('Open your wallet to approve the connection.'),
+    ).toBeVisible();
+    await page
+      .getByRole('button', { name: 'Cancel connection', exact: true })
+      .click();
+    await expect(connect).toBeEnabled();
+  });
+}
