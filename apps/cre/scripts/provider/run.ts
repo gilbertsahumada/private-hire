@@ -130,7 +130,13 @@ async function deliver(work: Work) {
 }
 
 async function recover() {
-  await recoverPending(readJournal(statePath), {
+  const journal = readJournal(statePath);
+  if (
+    journal.pending &&
+    journal.pending.requestId !== process.env.PROVIDER_REQUEST_ID
+  )
+    throw new Error('PROVIDER_PENDING_SCOPE_MISMATCH');
+  await recoverPending(journal, {
     async receipt(hash) {
       try {
         return await client.getTransactionReceipt({ hash });
@@ -255,6 +261,11 @@ async function cycle() {
         ),
       );
     for (const id of page.requestIds) {
+      if (
+        process.env.PROVIDER_REQUEST_ID &&
+        id !== process.env.PROVIDER_REQUEST_ID
+      )
+        continue;
       scanned++;
       try {
         const work = await verifyChain(
@@ -301,6 +312,11 @@ async function main() {
     (process.env.ALLOW_PROVIDER_BROADCAST !== 'yes' || origin !== MARKET.origin)
   )
     throw new Error('PROVIDER_AUTHORIZATION_REQUIRED');
+  if (
+    broadcast &&
+    !/^[a-z0-9][a-z0-9-]{0,63}$/.test(process.env.PROVIDER_REQUEST_ID ?? '')
+  )
+    throw new Error('PROVIDER_REQUEST_SCOPE_REQUIRED');
   if (broadcast) {
     const key = process.env.PROVIDER_PRIVATE_KEY;
     if (

@@ -37,3 +37,5 @@ No completion/rejection transaction is signed by this service. It stops at deliv
 ## Staging publication
 
 The scoped routes and monitoring UI are published as Worker version ac7b2ce3-63c9-4674-91ce-71921c9cb788. The user authorized the dedicated service credential upload, which succeeded; copies are kept in ignored .local/provider.env and apps/web/.dev.vars (0600), never in Git. The read-only check passed against HTTPS with zero correlated requests. Cross-credential checks and anonymous access checks passed. An initial Python default-user-agent request received HTTP 403 at the edge; the provider client identifier used by the actual service succeeded. This is access/read-only evidence, not live autonomous signing. PROVIDER_AUTOMATION_ENABLED remains false by default.
+
+Broadcast runs now require PROVIDER_REQUEST_ID and process only that request. A pending journal for another request blocks recovery and signing. This bounds the first demo to one buyer-approved request.

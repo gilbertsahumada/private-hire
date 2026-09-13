@@ -1,7 +1,8 @@
 """Operator commands for real jobs. Public triggers only; no private data in logs."""
 
 from pathlib import Path
-import argparse, json, os, re, subprocess, uuid, urllib.request
+import argparse, json, os, re, subprocess, uuid, urllib.request, hashlib
+from datetime import datetime, timezone
 
 root = Path(__file__).resolve().parents[1]
 p = argparse.ArgumentParser()
@@ -135,6 +136,7 @@ except Exception:
     raise SystemExit(
         "Cannot reserve workflow attempt; check job state and operator credentials."
     )
+started_at = datetime.now(timezone.utc).isoformat()
 result = subprocess.run(
     cmd,
     cwd=root / "apps/cre",
@@ -153,9 +155,25 @@ if any(len(v.strip()) >= 16 and v.strip() in output for v in secrets.values()) o
     for marker in ["quantityAtomic", "valueToleranceMicrousd", "Authorization: Bearer"]
 ):
     raise SystemExit("Private output detected; log withheld.")
-(
-    root
-    / f'docs/evidence/job-{a.request_id}-{a.phase}-{"broadcast" if a.broadcast else "simulation"}.log'
-).write_text(output)
+evidence_dir = root / "docs/evidence"
+evidence_dir.mkdir(exist_ok=True)
+mode = "broadcast" if a.broadcast else "simulation"
+stem = f"job-{a.request_id}-{a.phase}-{mode}-{attempt_id}"
+log_file = evidence_dir / (stem + ".log")
+log_file.write_text(output)
+(evidence_dir / (stem + ".json")).write_text(json.dumps({
+    "attemptId": attempt_id,
+    "requestId": a.request_id,
+    "phase": a.phase,
+    "mode": "CRE simulation + Arc testnet transaction" if a.broadcast else "CRE simulation",
+    "startedAt": started_at,
+    "finishedAt": datetime.now(timezone.utc).isoformat(),
+    "exitCode": result.returncode,
+    "trigger": payload,
+    "target": "staging-broadcast" if a.broadcast else "staging",
+    "sourceCommit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip(),
+    "logFile": log_file.name,
+    "logSha256": hashlib.sha256(output.encode()).hexdigest(),
+}, indent=2) + "\n")
 print(output)
 raise SystemExit(result.returncode)
