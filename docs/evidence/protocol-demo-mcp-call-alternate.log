@@ -7,12 +7,12 @@ Compiling workflow...
 ✓ Simulation limits enabled
   HTTP: req=120kb resp=250kb timeout=10s | ConfHTTP: req=125kb resp=500kb timeout=1m30s | Consensus obs=25kb | ChainWrite evm_report=50kb evm_gas=10000000 solana_report=265b solana_cu=300000 | WASM binary=100mb compressed=20mb
   Binary hash: a3033993b5a88c7937f59118e20f5373b8c3fe90fdef9be4084d5e6b53efcceb
-  Config hash: 44313706ecf7e849df8c40fe574aff25bb05e239b37cef9c2cb64ed4c92cfc10
-✓ Loaded JSON from file: /private/tmp/private-hire-cre-protocol-adapters/.local/protocol-demo/payload.json
+  Config hash: 33e8ac188a9ce0985c55fca38576c6058f39c2659ae461412158e9b6aeeb7cb3
+✓ Loaded JSON from file: /Users/gilbertsahumada/projects/private-hire/.local/protocol-demo/payload.json
 ✓ Created HTTP trigger payload with 0 fields
-2026-09-13T15:18:47Z [SIMULATION] Simulator Initialized
+2026-09-13T16:23:15Z [SIMULATION] Simulator Initialized
 
-2026-09-13T15:18:47Z [SIMULATION] Running trigger trigger=http-trigger@1.0.0-alpha
+2026-09-13T16:23:15Z [SIMULATION] Running trigger trigger=http-trigger@1.0.0-alpha
 ╭────────────────────────────────────────────────────────────────────────────────────────────────────╮
 │ Trigger requested TEE Execution your trigger will run in one of the following Tees:                │
 │     - AWS Nitro in us-west-2                                                                       │
@@ -27,5 +27,5 @@ Compiling workflow...
 ✓ Workflow Simulation Result:
 "PROTOCOL_DEMO_RESULT={\"resultType\":\"complete\",\"content\":[{\"type\":\"text\",\"text\":\"42\"}],\"structuredContent\":{\"sum\":42},\"isError\":false}"
 
-2026-09-13T15:18:47Z [SIMULATION] Execution finished signal received
-2026-09-13T15:18:47Z [SIMULATION] Skipping WorkflowEngineV2
+2026-09-13T16:23:15Z [SIMULATION] Execution finished signal received
+2026-09-13T16:23:15Z [SIMULATION] Skipping WorkflowEngineV2
