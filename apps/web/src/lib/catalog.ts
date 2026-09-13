@@ -1,3 +1,4 @@
+import metadata from '../../public/agent/registration.json';
 import snapshot from './agent-snapshot.json';
 import {
   createPublicClient,
@@ -235,9 +236,12 @@ export async function catalog(env: MarketEnv) {
   }
 
   return {
-    name: 'Portfolio Calculator',
+    name: metadata.name,
+    description: metadata.description,
+    capabilities: metadata.capabilities,
+    version: metadata.version,
     indexedName,
-    image: '/agent/portfolio-calculator.svg',
+    image: metadata.image,
     agentId: MARKET.agentId,
     registry: MARKET.registry,
     wallet: MARKET.provider,

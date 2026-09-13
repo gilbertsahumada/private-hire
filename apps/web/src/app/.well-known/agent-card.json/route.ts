@@ -1,13 +1,14 @@
 import { AgentCard } from '@a2a-js/sdk';
+import metadata from '../../../../public/agent/registration.json';
 import { bindings } from '../../../lib/http';
 
 export function GET() {
   const origin = bindings().PUBLIC_ORIGIN;
   const card = AgentCard.fromJSON({
-    name: 'Portfolio Calculator',
-    description:
-      'Exact portfolio values, weights and concentration for up to ten synthetic positions. Authenticated, operator-provisioned staging probes; ERC-8004 agent 894552 on Arc Testnet; paid jobs not enabled.',
-    version: '0.1.0',
+    name: metadata.name,
+    description: metadata.description,
+    version: metadata.version,
+    iconUrl: metadata.image,
     supportedInterfaces: [
       {
         url: `${origin}/api/agent/a2a`,
@@ -25,10 +26,9 @@ export function GET() {
     skills: [
       {
         id: 'portfolio-probe',
-        name: 'Portfolio Calculator',
-        description:
-          'Calculate position values and total micro-USD value using integer truncation, weights in basis points, and concentration as the maximum weight. Returns portfolio-result/v1 JSON.',
-        tags: ['portfolio', 'deterministic', 'valuation', 'concentration'],
+        name: metadata.name,
+        description: metadata.description,
+        tags: metadata.capabilities,
       },
     ],
   });
