@@ -7,7 +7,8 @@ import { Icon } from '../components/icon';
 
 export const metadata = {
   title: 'Confidential Agent Jobs',
-  description: 'Hire a deterministic portfolio agent on Arc Testnet.',
+  description:
+    'Find agents for tasks with private data. Explore our first portfolio analysis agent on Arc Testnet.',
 };
 
 export default function Layout({ children }: { children: ReactNode }) {
@@ -16,7 +17,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       <body>
         <WalletProvider>
           <header>
-            <Link className="brand" href="/agents">
+            <Link className="brand" href="/">
               Confidential Agent Jobs
             </Link>
             <nav aria-label="Main navigation">
@@ -24,7 +25,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                 <Icon name="agent" /> Agents
               </Link>
               <Link href="/jobs">
-                <Icon name="report" /> My analyses
+                <Icon name="report" /> My requests
               </Link>
               <Link href="/provider">
                 <Icon name="briefcase" /> For providers

@@ -71,7 +71,7 @@ test('shows the real agent and protected empty workspaces without overflow', asy
   ).toBeTruthy();
   await page
     .getByRole('navigation')
-    .getByRole('link', { name: 'My analyses', exact: true })
+    .getByRole('link', { name: 'My requests', exact: true })
     .click();
   await expect(
     page.getByRole('heading', { name: 'Connect your wallet' }),
