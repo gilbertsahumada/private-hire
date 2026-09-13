@@ -118,5 +118,16 @@
       "status": "PAUSED",
       "registry": "private"
     }
-  ]
+  ],
+  "vaultSecretListVerification": {
+    "command": "/Users/gilbertsahumada/.cre/bin/cre secrets list -R apps/cre -T deployed-probe --secrets-auth browser --namespace main --yes --non-interactive",
+    "exitCode": 0,
+    "secretId": "PRIVATEHIRE_DEPLOY_PROBE_V1",
+    "owner": "0xEd592E27D18678dBBbFF7268A55736d4dcDa5bA9",
+    "namespace": "main",
+    "matchesWorkflowSecretId": true,
+    "matchesWorkflowOwner": true,
+    "valueRetrieved": false,
+    "caveat": "CLI reported Vault gateway validation skipped; listing confirms the gateway response, not independent verification of its signature."
+  }
 }

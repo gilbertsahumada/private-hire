@@ -31,3 +31,11 @@ The confidential executor emits the exact error when its internal DON membership
 That source obtains membership from LocalNode().WorkflowDON.Members and reconciles enclave configuration. Public source is not proof of the hosted binary version or exact root cause. The tested user-side choices can be excluded individually; backend initialization/synchronization remains an inference.
 
 A further HTTP-only control (deployment-probe-http-only) uses the same public Agent Card GET and no getSecret call. Its detailed outcome is recorded in evidence.
+
+## Vault verification after bootcamp guidance
+
+After the user completed browser authorization, `cre secrets list -R apps/cre -T deployed-probe --secrets-auth browser --namespace main --yes --non-interactive` exited 0 and returned PRIVATEHIRE_DEPLOY_PROBE_V1 for owner 0xEd592E27D18678dBBbFF7268A55736d4dcDa5bA9 in namespace main. Both the ID and owner match the deployed probe. The earlier create log also confirms this identifier was created. No secret value was retrieved. The CLI continues to warn that gateway validation was skipped; preserve that limitation.
+
+This follows the bootcamp's browser-authenticated create/list sequence: https://smartcontractkit.github.io/CRE-Confidential-bootcamp/day-2/01-hello-confidential-workflows.html#step-1-add-the-secret-to-the-vault-don-before-deploying
+
+The missing-create hypothesis is not supported: creation and subsequent listing succeeded, while a handler without any getSecret call also reproduces the enclave configuration error. These checks do not establish successful decryption inside a deployed enclave.
