@@ -14,6 +14,12 @@ a = p.parse_args()
 cli = str(Path.home() / ".cre/bin/cre")
 credentials = root / ".local/staging-jobs.env"
 
+if a.broadcast and (
+    a.phase != "evaluate" or os.environ.get("ALLOW_ARC_BROADCAST") != "yes"
+):
+    raise SystemExit("Explicit authorization required for evaluation broadcast.")
+
+
 if a.phase == "compile":
     raise SystemExit(
         subprocess.call(
@@ -68,10 +74,6 @@ if a.phase == "evaluate" and (
     not a.submit_tx or not re.fullmatch(r"0x[0-9a-fA-F]{64}", a.submit_tx)
 ):
     raise SystemExit("Evaluation requires the confirmed JobSubmitted transaction.")
-if a.broadcast and (
-    a.phase != "evaluate" or os.environ.get("ALLOW_ARC_BROADCAST") != "yes"
-):
-    raise SystemExit("Explicit authorization required for evaluation broadcast.")
 payload = {"requestId": a.request_id, "phase": a.phase}
 if a.submit_tx:
     payload["submitTx"] = a.submit_tx
@@ -83,7 +85,7 @@ cmd = [
     "simulate",
     "jobs",
     "--target",
-    "staging",
+    "staging-broadcast" if a.broadcast else "staging",
     "--non-interactive",
     "--trigger-index",
     "0",

@@ -5,3 +5,11 @@ staging:
     workflow-path: './main.ts'
     config-path: './config.staging.json'
     secrets-path: './secrets.yaml'
+
+staging-broadcast:
+  user-workflow:
+    workflow-name: 'private-hire-jobs-staging-simulation'
+  workflow-artifacts:
+    workflow-path: './main.ts'
+    config-path: './config.staging-broadcast.json'
+    secrets-path: './secrets.yaml'
