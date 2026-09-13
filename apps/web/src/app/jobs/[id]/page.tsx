@@ -1,6 +1,8 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
+import { use, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { LoadingState, Spinner } from '../../../components/loading';
 import { formatEther, formatUnits } from 'viem';
 import { api, useWallet } from '../../../components/wallet';
 import { Icon } from '../../../components/icon';
@@ -64,40 +66,54 @@ export default function JobDetail({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const { account } = useWallet();
+  return <JobDetailView key={`${id}:${account ?? 'signed-out'}`} id={id} />;
+}
+
+function JobDetailView({ id }: { id: string }) {
   const wallet = useWallet();
-  const [loadedJob, setJob] = useState<Job | null>(null);
-  const [loadedFor, setLoadedFor] = useState<string | null>(null);
-  const job = loadedFor === wallet.account ? loadedJob : null;
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState('');
+  const [busyLabel, setBusyLabel] = useState('');
   const [prepared, setPrepared] = useState<Prepared | null>(null);
   const [result, setResult] = useState<unknown>(null);
+  const [loadingReport, setLoadingReport] = useState(false);
+  const {
+    data: job,
+    isPending,
+    isFetching,
+    isError,
+    refetch,
+  } = useQuery({
+    queryKey: ['private-job', wallet.account, id],
+    queryFn: ({ signal }) =>
+      api<Job>(
+        `/api/jobs/${id}`,
+        undefined,
+        AbortSignal.any([signal, AbortSignal.timeout(15000)]),
+      ),
+    enabled: wallet.ready && !!wallet.account,
+    gcTime: 0,
+    retry: false,
+    refetchInterval: busy ? false : 15000,
+    refetchOnWindowFocus: false,
+  });
+  const refresh = () => refetch();
 
-  async function refresh() {
+  async function loadReport() {
+    setLoadingReport(true);
     try {
-      const result = await api<Job>(`/api/jobs/${id}`);
-      setJob(result);
-      setLoadedFor(wallet.account);
+      setResult(await api(`/api/jobs/${id}/result`));
     } catch {
-      setError(
-        'This analysis could not be loaded. Check your account and retry.',
-      );
+      setError('The report could not be loaded. Try again.');
+    } finally {
+      setLoadingReport(false);
     }
   }
 
-  useEffect(() => {
-    setJob(null);
-    setResult(null);
-    setPrepared(null);
-    if (!wallet.account) return;
-    void refresh();
-    const timer = setInterval(() => void refresh(), 15000);
-
-    return () => clearInterval(timer);
-  }, [id, wallet.account]);
-
   async function prepare(action: string) {
+    setBusyLabel('Preparing your transaction…');
     setBusy(true);
     setError('');
     try {
@@ -135,6 +151,7 @@ export default function JobDetail({
 
       return;
     }
+    setBusyLabel('Waiting for your wallet…');
     setBusy(true);
     setError('');
     setProgress('Checking payment details…');
@@ -163,6 +180,8 @@ export default function JobDetail({
   }
 
   async function recover() {
+    setBusyLabel('Checking your transaction…');
+    setError('');
     setBusy(true);
     try {
       const hash = localStorage.getItem(`job-tx:${id}`) ?? job?.pending_tx;
@@ -186,7 +205,13 @@ export default function JobDetail({
 
   return (
     <main>
-      <h1>{job?.job_id ? `Analysis #${job.job_id}` : 'Review your quote'}</h1>
+      <h1>
+        {job?.job_id
+          ? `Analysis #${job.job_id}`
+          : job
+            ? 'Review your quote'
+            : 'Your analysis'}
+      </h1>
       <p className="muted">
         {metadata.name} · Follow your request, payment and report here.
       </p>
@@ -195,14 +220,57 @@ export default function JobDetail({
           {error}
         </p>
       )}
-      {!wallet.account ? (
+      {!wallet.ready || (wallet.account && isPending) ? (
+        <LoadingState
+          label={
+            wallet.ready
+              ? 'Loading your analysis…'
+              : 'Connecting your workspace…'
+          }
+          detail
+        />
+      ) : !wallet.account ? (
         <p className="notice">
           Sign in with the wallet that requested or provides this analysis.
         </p>
       ) : !job ? (
-        <button onClick={() => void refresh()}>Retry loading</button>
+        <div className="empty">
+          <h2>We couldn’t load this analysis</h2>
+          <p role="alert">
+            Check that you’re using the right wallet, then try again.
+          </p>
+          <button
+            className="secondary"
+            disabled={isFetching}
+            onClick={() => void refresh()}
+          >
+            {isFetching && <Spinner />} Retry loading
+          </button>
+        </div>
       ) : (
         <>
+          <div className="activity-slot" role="status" aria-live="polite">
+            {busy ? (
+              <>
+                <Spinner /> {progress || busyLabel}
+              </>
+            ) : isFetching ? (
+              <>
+                <Spinner /> Updating status…
+              </>
+            ) : isError ? (
+              <span className="refresh-warning">
+                Couldn’t refresh. Showing the last loaded details.{' '}
+                <button className="text-button" onClick={() => void refresh()}>
+                  Try again
+                </button>
+              </span>
+            ) : (
+              <>
+                <span className="status-dot" /> Up to date
+              </>
+            )}
+          </div>
           {job.chain_status === null && (
             <section className="panel">
               <h2>
@@ -374,11 +442,6 @@ export default function JobDetail({
               <Icon name="refresh" /> Check transaction
             </button>
           </div>
-          {busy && progress && (
-            <p role="status" className="notice">
-              {progress}
-            </p>
-          )}
           {prepared && (
             <section className="panel">
               <h2>{actionLabels[prepared.action] ?? 'Review transaction'}</h2>
@@ -439,13 +502,16 @@ export default function JobDetail({
             <>
               <button
                 className="secondary"
-                onClick={() =>
-                  api(`/api/jobs/${id}/result`)
-                    .then(setResult)
-                    .catch(() => setError('Result recovery is pending. Retry.'))
-                }
+                disabled={loadingReport}
+                aria-busy={loadingReport}
+                onClick={() => void loadReport()}
               >
-                <Icon name="report" /> View portfolio report
+                {loadingReport ? <Spinner /> : <Icon name="report" />}{' '}
+                {loadingReport
+                  ? 'Loading report…'
+                  : result !== null
+                    ? 'Refresh portfolio report'
+                    : 'View portfolio report'}
               </button>
               {result !== null && <PortfolioReport value={result} />}
             </>

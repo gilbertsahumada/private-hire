@@ -1,221 +1,130 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { formatUnits } from 'viem';
-import metadata from '../../../public/agent/registration.json';
 import { Icon } from '../../components/icon';
-import { api } from '../../components/wallet';
-
-type Agent = {
-  name: string;
-  wallet: string;
-  walletExplorerUrl: string;
-  price: string;
-  stale: boolean;
-  identityVerified: boolean;
-  enabled: boolean;
-  availabilityReason: string;
-  trustUrl: string;
-};
+import { LoadingState, Spinner } from '../../components/loading';
+import { useAgentCatalog } from '../../components/use-agent-catalog';
 
 export default function Agents() {
-  const [agent, setAgent] = useState<Agent | null>(null);
-  const [error, setError] = useState('');
-
-  const load = () => {
-    setError('');
-    api<{ agents: Agent[] }>('/api/agents')
-      .then((r) => setAgent(r.agents[0]))
-      .catch(() =>
-        setError('Agent availability could not be checked. Try again.'),
-      );
-  };
-
-  useEffect(() => {
-    load();
-  }, []);
+  const { data, isPending, isFetching, isError, refetch } = useAgentCatalog();
+  const agents = data?.agents ?? [];
 
   return (
-    <main>
-      <div className="badges">
-        <span className="badge">Arc Testnet</span>
-        <span className="badge">Portfolio analysis demo</span>
-      </div>
-      <div className="agent-layout">
-        <section>
-          <div className="agent-heading">
-            <img className="avatar" src={metadata.image} alt={metadata.name} />
-            <div>
-              <h1>{metadata.name}</h1>
-              <a
-                href="https://trust8004.xyz/agents/5042002:894552"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Agent identity #894552
-              </a>
-            </div>
-          </div>
-          <p className="muted">{metadata.description}</p>
-          <div className="features">
-            <div>
-              <h3>
-                <Icon name="chart" /> Total value
-              </h3>
-              <p className="muted">
-                What each holding is worth and how they add up.
-              </p>
-            </div>
-            <div>
-              <h3>
-                <Icon name="pie" /> Portfolio mix
-              </h3>
-              <p className="muted">
-                The share of your portfolio held in each asset.
-              </p>
-            </div>
-            <div>
-              <h3>
-                <Icon name="report" /> Largest holding
-              </h3>
-              <p className="muted">
-                See how much depends on your biggest position.
-              </p>
-            </div>
-          </div>
-          <section className="how-it-works">
-            <h2>From holdings to a clear report</h2>
-            <ol>
-              <li>
-                <strong>Add your holdings</strong>
-                <span>Enter up to ten assets, quantities and prices.</span>
-              </li>
-              <li>
-                <strong>Review the price</strong>
-                <span>
-                  The provider confirms it before you place your test payment in
-                  the contract.
-                </span>
-              </li>
-              <li>
-                <strong>Receive your analysis</strong>
-                <span>
-                  The result is checked against your criteria before the
-                  provider is paid.
-                </span>
-              </li>
-            </ol>
-            <p className="subtle">
-              This demo is started and checked by an operator. Results are not
-              instant.
-            </p>
-          </section>
-          <details>
-            <summary>About the agent and the technology</summary>
-            <dl className="facts">
-              <dt>Input</dt>
-              <dd>Up to ten positions with quantities and supplied prices</dd>
-              <dt>Delivery</dt>
-              <dd>Structured report with exact integer calculations</dd>
-              <dt>Identity</dt>
-              <dd>
-                {agent?.identityVerified
-                  ? 'Registry and payment wallet verified'
-                  : agent
-                    ? 'Verification unavailable'
-                    : 'Checking registry…'}
-              </dd>
-              <dt>Evaluation</dt>
-              <dd>CRE simulation, operated manually</dd>
-              <dt>Provider wallet</dt>
-              <dd>
-                {agent ? (
-                  <a
-                    href={agent.walletExplorerUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {agent.wallet}
-                  </a>
-                ) : (
-                  'Checking…'
-                )}
-              </dd>
-            </dl>
-            <p className="subtle">
-              Identity uses ERC-8004. Registration is not a certification of
-              quality or a live secure enclave.
-            </p>
-          </details>
-        </section>
-        <aside className="panel">
-          <h2>
-            <Icon name="report" /> Your portfolio report
-          </h2>
-          <p className="price">
-            {agent ? formatUnits(BigInt(agent.price), 6) : '0.01'}{' '}
-            <small>USDC</small>
-          </p>
+    <main className="agent-directory">
+      <div className="directory-heading">
+        <div>
+          <h1>Find your next agent.</h1>
           <p className="muted">
-            One analysis, one fixed price. Network fees are shown separately
-            before you confirm in your wallet.
+            Explore what’s possible. Choose an agent and see how it works.
           </p>
-          {agent?.enabled ? (
-            <Link className="button" href="/jobs/new">
-              <Icon name="plus" /> Analyze a portfolio
-            </Link>
-          ) : (
+        </div>
+        <Link className="directory-provider-link" href="/provider">
+          Building an agent? <Icon name="arrow" />
+        </Link>
+      </div>
+      <div className="directory-toolbar">
+        <span>
+          All agents{' '}
+          <span className="directory-count">
+            {isPending ? '…' : agents.length}
+          </span>
+        </span>
+        <span className="subtle">
+          {isFetching && data ? (
             <>
-              <button disabled>
-                {agent ? 'Analysis unavailable' : 'Checking availability…'}
-              </button>
-              <p className="subtle">
-                {agent?.availabilityReason === 'CONTRACTING_NOT_ENABLED'
-                  ? 'This demo is not accepting requests yet.'
-                  : 'We need to confirm the service is available before you can request an analysis.'}
-              </p>
+              <Spinner /> Updating catalog…
             </>
+          ) : (
+            'Discover the growing catalog'
           )}
-          <p className="subtle">
-            Use test USDC on Arc Testnet. You can review your request before any
-            payment.
-          </p>
-          <hr />
-          <p className="subtle">
-            <Icon name="lock" /> Your holdings and report are stored encrypted.
-            The app operator can access them. Your analysis does not buy, sell
-            or move any portfolio assets.
-          </p>
-          {agent &&
-            !agent.enabled &&
-            agent.availabilityReason !== 'CONTRACTING_NOT_ENABLED' && (
-              <div className="notice">
-                <p>
-                  We cannot confirm availability right now. Try checking again
-                  before starting an analysis.
-                </p>
-                <button className="secondary" onClick={load}>
-                  Check availability
-                </button>
-              </div>
-            )}
-          {agent?.stale && (
-            <p className="notice">
-              Some profile details may be outdated. The agent’s identity is
-              checked separately.
+        </span>
+      </div>
+      {isPending ? (
+        <LoadingState label="Loading agents…" />
+      ) : isError && !data ? (
+        <div className="empty">
+          <h2>The catalog couldn’t be loaded</h2>
+          <p role="alert">Try again to see the listed agents.</p>
+          <button
+            className="secondary"
+            disabled={isFetching}
+            onClick={() => void refetch()}
+          >
+            {isFetching && <Spinner />} Retry
+          </button>
+        </div>
+      ) : !agents.length ? (
+        <div className="empty">
+          <Icon name="agent" className="empty-icon" />
+          <h2>New agents are on their way</h2>
+          <p>Check back to discover what they can do.</p>
+        </div>
+      ) : (
+        <>
+          {isError && (
+            <p className="notice" role="status">
+              Couldn’t refresh the catalog. Showing the last loaded agents.{' '}
+              <button className="text-button" onClick={() => void refetch()}>
+                Try again
+              </button>
             </p>
           )}
-          {error && (
-            <div role="alert">
-              <p>{error}</p>
-              <button className="secondary" onClick={load}>
-                Retry
-              </button>
-            </div>
-          )}
-        </aside>
-      </div>
+          <div className="agent-grid">
+            {agents.map((agent) => (
+              <article className="agent-card" key={agent.agentId}>
+                <div className="agent-card-top">
+                  {agent.image ? (
+                    <img
+                      className="agent-card-avatar"
+                      src={agent.image}
+                      alt=""
+                      width="64"
+                      height="64"
+                    />
+                  ) : (
+                    <div className="agent-card-avatar agent-card-fallback">
+                      <Icon name="agent" />
+                    </div>
+                  )}
+                  <span
+                    className={`agent-availability ${agent.enabled ? 'available' : ''}`}
+                  >
+                    <span aria-hidden="true" />
+                    {agent.enabled ? 'Available' : 'Unavailable'}
+                  </span>
+                </div>
+                <h2>
+                  <Link href={`/agents/${encodeURIComponent(agent.agentId)}`}>
+                    {agent.name}
+                  </Link>
+                </h2>
+                <p className="agent-card-description">{agent.description}</p>
+                <div className="agent-card-bottom">
+                  <span>
+                    <strong>{formatUnits(BigInt(agent.price), 6)} USDC</strong>
+                    <small>per request</small>
+                  </span>
+                  <Link
+                    className="button secondary"
+                    href={`/agents/${encodeURIComponent(agent.agentId)}`}
+                    aria-label={`View ${agent.name}`}
+                  >
+                    View agent <Icon name="arrow" />
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+          <div className="directory-note">
+            <Icon name="agent" />
+            <p>
+              <strong>This is just the beginning.</strong> More agents will join
+              the catalog as new services become available.
+            </p>
+          </div>
+        </>
+      )}
     </main>
   );
 }

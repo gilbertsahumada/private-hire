@@ -2,7 +2,6 @@
 
 import {
   createContext,
-  Fragment,
   useContext,
   useEffect,
   useMemo,
@@ -34,6 +33,7 @@ import {
 import { injectedWallet } from '@rainbow-me/rainbowkit/wallets';
 import { parseSiweMessage } from 'viem/siwe';
 import type { Address, Hex } from 'viem';
+import { Spinner } from './loading';
 import { arcChain } from '@private-hire/chain';
 
 export async function api<T>(
@@ -315,7 +315,8 @@ function SessionProvider({ children }: { children: ReactNode }) {
         appInfo={{ appName: 'PrivateHire' }}
       >
         <Context.Provider value={{ account, send, ready: !loading }}>
-          <Fragment key={account ?? 'signed-out'}>{children}</Fragment>
+          {/* Private views reset by account; keep the shared navigation mounted. */}
+          {children}
           {notice && (
             <div className="wallet-notice" role="alert">
               {notice}
@@ -332,7 +333,9 @@ export function WalletControl() {
   if (!ready)
     return (
       <div className="wallet-control">
-        <button disabled>Connect wallet</button>
+        <button disabled aria-busy="true">
+          <Spinner /> Connect wallet
+        </button>
       </div>
     );
 

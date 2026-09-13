@@ -14,7 +14,7 @@ test('shows the real agent and protected empty workspaces without overflow', asy
   const catalogResponse = page.waitForResponse(
     (r) => r.url().endsWith('/api/agents') && r.status() === 200,
   );
-  await page.goto('/agents');
+  await page.goto('/agents/894552');
   await expect(
     page.getByRole('heading', {
       name: 'Portfolio Calculator',
@@ -28,18 +28,13 @@ test('shows the real agent and protected empty workspaces without overflow', asy
     timeout: 30000,
   });
   const state = await (await catalogResponse).json();
-  await page
-    .getByText('About the agent and the technology', { exact: true })
-    .click();
+  await expect(page.locator('main details')).toHaveCount(0);
   await expect(
-    page.getByRole('combobox', { name: 'Choose wallet' }),
-  ).toHaveCount(0);
+    page.getByRole('heading', { name: 'What you’ll need' }),
+  ).toBeVisible();
   await expect(
-    page.getByRole('link', { name: state.agents[0].wallet, exact: true }),
-  ).toHaveAttribute(
-    'href',
-    `https://testnet.arcscan.app/address/${state.agents[0].wallet}`,
-  );
+    page.getByRole('link', { name: 'View agent identity' }),
+  ).toHaveAttribute('href', 'https://trust8004.xyz/agents/5042002:894552');
   if (state.agents[0].enabled)
     await expect(
       page.getByRole('link', { name: 'Analyze a portfolio', exact: true }),
@@ -48,14 +43,6 @@ test('shows the real agent and protected empty workspaces without overflow', asy
     await expect(
       page.getByRole('button', { name: 'Analysis unavailable' }),
     ).toBeDisabled();
-  await expect(
-    page.getByText(
-      state.agents[0].identityVerified
-        ? 'Registry and payment wallet verified'
-        : 'Verification unavailable',
-      { exact: true },
-    ),
-  ).toBeVisible();
   if (!state.agents[0].identityVerified)
     await expect(
       page.getByRole('button', { name: 'Check availability' }),
@@ -70,14 +57,14 @@ test('shows the real agent and protected empty workspaces without overflow', asy
     ),
   ).toBeTruthy();
   await page
-    .getByRole('navigation')
+    .getByRole('navigation', { name: 'Main navigation' })
     .getByRole('link', { name: 'My requests', exact: true })
     .click();
   await expect(
     page.getByRole('heading', { name: 'Connect your wallet' }),
   ).toBeVisible();
   await page
-    .getByRole('navigation')
+    .getByRole('navigation', { name: 'Main navigation' })
     .getByRole('link', { name: 'For providers', exact: true })
     .click();
   await expect(
