@@ -71,6 +71,8 @@ export default function JobDetail({
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState('');
+  const [pendingHash, setPendingHash] = useState<string | null>(null);
+  const [transactionNotice, setTransactionNotice] = useState('');
   const [prepared, setPrepared] = useState<Prepared | null>(null);
   const [result, setResult] = useState<unknown>(null);
 
@@ -90,12 +92,75 @@ export default function JobDetail({
     setJob(null);
     setResult(null);
     setPrepared(null);
+    setPendingHash(null);
+    setTransactionNotice('');
     if (!wallet.account) return;
+    setPendingHash(localStorage.getItem(`job-tx:${id}`));
     void refresh();
     const timer = setInterval(() => void refresh(), 15000);
 
     return () => clearInterval(timer);
   }, [id, wallet.account]);
+
+  useEffect(() => {
+    if (!wallet.account || !job) return;
+    const hash = pendingHash ?? job.pending_tx;
+    if (!hash) return;
+    const controller = new AbortController();
+    let timer: ReturnType<typeof setTimeout>;
+    let failures = 0;
+    setTransactionNotice('Transaction sent. Waiting for confirmation on Arc…');
+
+    async function checkReceipt() {
+      try {
+        const receipt = await api<{ confirmed: boolean; reverted?: boolean }>(
+          `/api/jobs/${id}/confirm-tx`,
+          { hash },
+          controller.signal,
+        );
+        if (controller.signal.aborted) return;
+        if (!receipt.confirmed && !receipt.reverted) throw new Error('Pending');
+        setError('');
+        setTransactionNotice(
+          receipt.reverted
+            ? 'Transaction reverted. Your action did not complete. Review it before trying again.'
+            : 'Transaction confirmed on Arc. Updating your request…',
+        );
+        const updated = await api<Job>(
+          `/api/jobs/${id}`,
+          undefined,
+          controller.signal,
+        );
+        if (controller.signal.aborted) return;
+        if (localStorage.getItem(`job-tx:${id}`) === hash)
+          localStorage.removeItem(`job-tx:${id}`);
+        setPendingHash(null);
+        setJob(updated);
+        setLoadedFor(wallet.account);
+        setTransactionNotice(
+          receipt.reverted
+            ? 'Transaction reverted. Review the action before trying again.'
+            : updated.chain_status === 1
+              ? 'Payment confirmed. Your funds are held in the contract while the agent completes your analysis.'
+              : 'Transaction confirmed on Arc. You can continue with the next step.',
+        );
+      } catch {
+        if (controller.signal.aborted) return;
+        failures += 1;
+        if (failures >= 10)
+          setTransactionNotice(
+            'Confirmation is taking longer than usual or the network cannot be reached. We are still checking. Do not send the payment again.',
+          );
+        timer = setTimeout(() => void checkReceipt(), 3000);
+      }
+    }
+
+    void checkReceipt();
+    return () => {
+      controller.abort();
+      clearTimeout(timer);
+    };
+  }, [id, wallet.account, pendingHash, job?.pending_tx, !!job]);
 
   async function prepare(action: string) {
     setBusy(true);
@@ -123,6 +188,7 @@ export default function JobDetail({
       { hash },
     );
     localStorage.removeItem(`job-tx:${id}`);
+    setPendingHash(null);
     await refresh();
     if (receipt.reverted)
       setError('Transaction reverted. You can review and retry the action.');
@@ -148,14 +214,18 @@ export default function JobDetail({
       setProgress('Open MetaMask to review and confirm the transaction.');
       const hash = await wallet.send(latest);
       localStorage.setItem(`job-tx:${id}`, hash);
+      setPendingHash(hash);
+      setTransactionNotice(
+        'Transaction sent. Waiting for confirmation on Arc…',
+      );
+      setPrepared(null);
       if (prepared.action === 'create')
         await api(`/api/jobs/${id}/pending-tx`, { hash });
-      setPrepared(null);
-      setError('Transaction sent. Use Check transaction after confirmation.');
     } catch {
-      setError(
-        'Signature was cancelled, or the transaction needs checking. Payment is only shown as received after confirmation.',
-      );
+      if (!localStorage.getItem(`job-tx:${id}`))
+        setError(
+          'Signature was cancelled, or the transaction needs checking. Payment is only shown as received after confirmation.',
+        );
     } finally {
       setBusy(false);
       setProgress('');
@@ -356,7 +426,10 @@ export default function JobDetail({
                   >
                     Allow this payment amount
                   </button>
-                  <button disabled={busy} onClick={() => void prepare('fund')}>
+                  <button
+                    disabled={busy || !!pendingHash || !!job.pending_tx}
+                    onClick={() => void prepare('fund')}
+                  >
                     <Icon name="wallet" /> Review payment
                   </button>
                 </>
@@ -374,6 +447,25 @@ export default function JobDetail({
               <Icon name="refresh" /> Check transaction
             </button>
           </div>
+          {transactionNotice && (
+            <section className="panel" role="status" aria-live="polite">
+              <h2>
+                {pendingHash || job.pending_tx
+                  ? 'Waiting for network confirmation'
+                  : 'Transaction status'}
+              </h2>
+              <p>{transactionNotice}</p>
+              {(pendingHash ?? job.pending_tx) && (
+                <a
+                  href={`https://testnet.arcscan.app/tx/${pendingHash ?? job.pending_tx}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  View transaction on Arc explorer
+                </a>
+              )}
+            </section>
+          )}
           {busy && progress && (
             <p role="status" className="notice">
               {progress}

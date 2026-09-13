@@ -580,3 +580,78 @@ test('explains a saved draft and displays supplied holdings before a wallet tran
     page.getByRole('button', { name: 'Confirm analysis request', exact: true }),
   ).toBeVisible();
 });
+
+test('recovers a pending transaction after reload and updates payment without a manual check', async ({
+  page,
+}) => {
+  const account = await installWallet(page);
+  await page.route('**/api/auth/session', (route) =>
+    route.fulfill({ json: { wallet: account.address.toLowerCase() } }),
+  );
+  const hash = '0x' + 'ab'.repeat(32);
+  let confirmed = false;
+  let checks = 0;
+  // Isolated UI fixture: no transaction is signed or broadcast.
+  await page.route('**/api/jobs/payment-progress', (route) =>
+    route.fulfill({
+      json: {
+        request_id: 'payment-progress',
+        job_id: '42',
+        buyer: account.address.toLowerCase(),
+        provider: '0x2222222222222222222222222222222222222222',
+        budget: '10000',
+        onchainBudget: '10000',
+        expired_at: 4102444800,
+        chain_status: confirmed ? 1 : 0,
+        manifest_hash: '0x' + '11'.repeat(32),
+        pending_tx: null,
+        refundAvailable: false,
+        task: null,
+        events: [],
+        input: {},
+        reports: [],
+        attempts: [],
+      },
+    }),
+  );
+  await page.route('**/api/jobs/payment-progress/confirm-tx', (route) => {
+    checks++;
+    return route.fulfill(
+      confirmed
+        ? { json: { confirmed: true } }
+        : { status: 503, json: { error: 'PENDING' } },
+    );
+  });
+  await page.goto('/jobs/payment-progress');
+  await openWallet(page);
+  await expect(
+    page.getByRole('heading', { name: 'Analysis #42' }),
+  ).toBeVisible();
+  await page.evaluate(
+    (hash) => localStorage.setItem('job-tx:payment-progress', hash),
+    hash,
+  );
+  await page.reload();
+  await expect(
+    page.getByRole('heading', { name: 'Waiting for network confirmation' }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('link', { name: 'View transaction on Arc explorer' }),
+  ).toHaveAttribute('href', `https://testnet.arcscan.app/tx/${hash}`);
+  await expect(
+    page.getByRole('button', { name: 'Review payment', exact: true }),
+  ).toBeDisabled();
+  await expect.poll(() => checks).toBeGreaterThan(0);
+  confirmed = true;
+  await expect(
+    page.getByText(
+      'Payment confirmed. Your funds are held in the contract while the agent completes your analysis.',
+    ),
+  ).toBeVisible({ timeout: 15000 });
+  expect(
+    await page.evaluate(() => localStorage.getItem('job-tx:payment-progress')),
+  ).toBeNull();
+  await expect(
+    page.getByRole('button', { name: 'Review payment', exact: true }),
+  ).toHaveCount(0);
+});
