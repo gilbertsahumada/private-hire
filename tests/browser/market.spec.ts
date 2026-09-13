@@ -276,10 +276,8 @@ test('wallet absence is actionable and navigation works with the keyboard', asyn
     .getByRole('button', { name: 'Connect wallet', exact: true })
     .click();
   await expect(
-    page
-      .getByRole('alert')
-      .filter({ hasText: 'Connection or sign-in was not completed' }),
-  ).toContainText('Connection or sign-in was not completed');
+    page.getByRole('alert').filter({ hasText: 'No wallet detected' }),
+  ).toContainText('No wallet detected');
   const jobs = page
     .getByRole('navigation')
     .getByRole('link', { name: 'Jobs', exact: true });
@@ -290,3 +288,68 @@ test('wallet absence is actionable and navigation works with the keyboard', asyn
     page.getByRole('heading', { name: 'Connect your wallet' }),
   ).toBeVisible();
 });
+
+for (const scenario of [
+  {
+    method: 'eth_requestAccounts',
+    code: 4001,
+    message: 'Wallet connection canceled',
+  },
+  {
+    method: 'wallet_switchEthereumChain',
+    code: 4001,
+    message: 'Network change canceled',
+  },
+  { method: 'personal_sign', code: 4001, message: 'Sign-in canceled' },
+  {
+    method: 'eth_requestAccounts',
+    code: -32002,
+    message: 'A request is already open',
+  },
+]) {
+  test(`explains ${scenario.method} failure ${scenario.code} and allows retry`, async ({
+    page,
+  }) => {
+    await page.addInitScript(({ method: rejectedMethod, code }) => {
+      const provider = {
+        async request({ method }: { method: string }) {
+          if (method === rejectedMethod)
+            throw { code, message: 'User rejected or pending request' };
+          if (method === 'eth_accounts' || method === 'eth_requestAccounts')
+            return ['0x2222222222222222222222222222222222222222'];
+          if (method === 'eth_chainId') return '0x4cef52';
+          if (method === 'wallet_switchEthereumChain') return null;
+          throw new Error('Unexpected test method');
+        },
+        on() {},
+        removeListener() {},
+      };
+      window.addEventListener('eip6963:requestProvider', () =>
+        window.dispatchEvent(
+          new CustomEvent('eip6963:announceProvider', {
+            detail: {
+              info: { name: 'MetaMask', uuid: 'cancellation-test' },
+              provider,
+            },
+          }),
+        ),
+      );
+    }, scenario);
+    await page.goto('/jobs');
+    await expect(page.getByLabel('Connected wallet')).toBeVisible();
+    const button = page.getByRole('button', { name: 'Sign in', exact: true });
+    await button.click();
+    await expect(
+      page.getByRole('alert').filter({ hasText: scenario.message }),
+    ).toBeVisible();
+    await expect(button).toBeEnabled();
+    await expect(
+      page.getByRole('button', { name: 'Sign out', exact: true }),
+    ).toHaveCount(0);
+    await button.click();
+    await expect(
+      page.getByRole('alert').filter({ hasText: scenario.message }),
+    ).toBeVisible();
+    await expect(button).toBeEnabled();
+  });
+}

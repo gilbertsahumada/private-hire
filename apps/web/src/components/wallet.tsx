@@ -37,6 +37,40 @@ export async function api<T>(url: string, body?: unknown): Promise<T> {
   return result;
 }
 
+type ConnectionStep = 'connection' | 'network' | 'signature' | 'verification';
+
+function walletErrorCode(error: unknown): number | undefined {
+  const seen = new Set<unknown>();
+  let current = error;
+  while (current && typeof current === 'object' && !seen.has(current)) {
+    seen.add(current);
+    const value = current as { code?: unknown; cause?: unknown };
+    if (value.code === 4001 || value.code === -32002 || value.code === 4902)
+      return value.code;
+    current = value.cause;
+  }
+
+  return undefined;
+}
+
+function connectionError(error: unknown, step: ConnectionStep): string {
+  const code = walletErrorCode(error);
+  if (code === 4001) {
+    if (step === 'network')
+      return 'Network change canceled. Switch to Arc Testnet to continue. You can try again.';
+    if (step === 'signature')
+      return 'Sign-in canceled. Your wallet is connected, but you are not signed in. You can try again.';
+
+    return 'Wallet connection canceled. You can try again when you are ready.';
+  }
+  if (code === -32002)
+    return 'A request is already open in your wallet. Open the extension to approve or cancel it.';
+  if (code === 4902)
+    return 'Arc Testnet is not available in your wallet. Add the network, then try again.';
+
+  return 'Connection or sign-in could not be completed. Check your wallet and connection, then try again.';
+}
+
 type Transaction = { from: string; to: string; data: string; chainId: number };
 
 type WalletState = {
@@ -44,6 +78,7 @@ type WalletState = {
   connectedAccount: string | null;
   chainId: number | null;
   busy: boolean;
+  progress: string;
   error: string;
   wallets: WalletInfo[];
   connect: () => Promise<void>;
@@ -56,6 +91,7 @@ const Context = createContext<WalletState>({
   connectedAccount: null,
   chainId: null,
   busy: false,
+  progress: '',
   error: '',
   wallets: [],
   connect: async () => {},
@@ -75,6 +111,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [selectedId, setSelectedId] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [progress, setProgress] = useState('');
+  const connecting = useRef(false);
   const epoch = useRef(0);
   const connection = useRef<{ address: string | null; chain: number | null }>({
     address: null,
@@ -266,13 +304,21 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   }, [selected, invalidate]);
 
   async function connect() {
-    if (busy) return;
+    if (connecting.current) return;
+    const target = active.current;
+    if (!target) {
+      setError(
+        'No wallet detected. Install or enable your wallet extension, then refresh this page.',
+      );
+      return;
+    }
+    connecting.current = true;
+    let step: ConnectionStep = 'connection';
+    setProgress('Open your wallet to approve the connection.');
     setBusy(true);
     setError('');
     let loginEpoch = epoch.current;
     try {
-      const target = active.current;
-      if (!target) throw new Error('No wallet');
       signedOut.current = false;
       localStorage.removeItem('market-signed-out');
       localStorage.setItem('market-wallet', target.uuid);
@@ -281,6 +327,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         transport: custom(target.provider),
       });
       await client.requestAddresses();
+      if (active.current !== target) throw new Error('Wallet changed');
+      step = 'network';
+      setProgress('Confirm Arc Testnet in your wallet.');
       await client.switchChain({ id: arcTestnet.id });
       const [address] = await client.getAddresses();
       if (!address || active.current !== target)
@@ -298,11 +347,17 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         { wallet: address },
       );
       if (loginEpoch !== epoch.current) return;
+      step = 'signature';
+      setProgress(
+        'Sign the message in your wallet to sign in. This does not send a transaction.',
+      );
       const signature = await client.signMessage({
         account: address,
         message: challenge.message,
       });
       if (loginEpoch !== epoch.current) return;
+      step = 'verification';
+      setProgress('Verifying your sign-in…');
       await enqueueAuth(async () => {
         if (loginEpoch !== epoch.current) return;
         const verified = await api<{ wallet: string }>('/api/auth/verify', {
@@ -318,15 +373,20 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           throw new Error('Session mismatch');
         setAccount(verified.wallet);
       });
-    } catch {
-      if (loginEpoch === epoch.current) {
+    } catch (error) {
+      if (
+        active.current === target &&
+        (loginEpoch === epoch.current ||
+          step === 'connection' ||
+          step === 'network')
+      ) {
         setAccount(null);
-        setError(
-          'Connection or sign-in was not completed. Check your wallet and select Arc Testnet.',
-        );
+        setError(connectionError(error, step));
       }
     } finally {
-      if (loginEpoch === epoch.current) setBusy(false);
+      connecting.current = false;
+      setBusy(false);
+      setProgress('');
     }
   }
 
@@ -373,6 +433,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         connectedAccount,
         chainId,
         busy,
+        progress,
         error,
         wallets,
         connect,
@@ -414,6 +475,7 @@ export function WalletControl() {
           {w.account ? 'Sign out' : 'Disconnect'}
         </button>
       )}
+      {w.busy && w.progress && <p role="status">{w.progress}</p>}
       {w.error && <p role="alert">{w.error}</p>}
     </div>
   );
