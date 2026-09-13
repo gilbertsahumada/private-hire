@@ -1,0 +1,43 @@
+{
+  "checkedAt": "2026-09-13T11:51:47.857593+00:00",
+  "stagingVersion": "cd21b0e6-c3cd-4bcc-b40e-aa35a24442e6",
+  "metadataVersion": "0.2.0",
+  "checks": {
+    "typecheck": "passed",
+    "unitTests": 37,
+    "contractTestsIncludingArcFork": 30,
+    "browserLocal": 22,
+    "browserStaging": 22,
+    "webBuild": "passed",
+    "creTargets": [
+      "staging",
+      "staging-broadcast"
+    ]
+  },
+  "artifacts": {
+    "apps/cre/jobs/binary.wasm": {
+      "sha256": "b4e2bc9e4f4d7985fbf3ca88714119e2a63a4a7df9117f1c3b0f6979f56a4233"
+    },
+    "apps/web/public/agent/registration.json": {
+      "sha256": "f0e29d2b6b9bd2e6197e11434f0c6db0ec214dc1f3b2f8243c4a2140122181f7"
+    },
+    "apps/cre/jobs/config.staging.json": {
+      "sha256": "e8cea32fe224e52fc9e16f225ccdeaf7ad69bc24d78dadd7930b8fbf89f2bc5c"
+    },
+    "apps/cre/jobs/config.staging-broadcast.json": {
+      "sha256": "31b8ada8aea883f6298eb54bebe52009d91f10d4d974d1e1f10ef76a19d08e8c"
+    }
+  },
+  "liveCatalog": {
+    "enabled": true,
+    "identityVerified": true,
+    "price": "10000",
+    "availabilityReason": ""
+  },
+  "journeys": {
+    "acceptance": "pending manual wallet transactions",
+    "rejection": "pending manual wallet transactions",
+    "expiry": "pending manual wallet transactions"
+  },
+  "scope": "Release and readiness only. Browser fixtures do not demonstrate real payment, rejection or refund. No job transaction or report broadcast performed."
+}

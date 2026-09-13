@@ -1,0 +1,19 @@
+{
+  "capturedAt": "2026-09-13T11:49:50.549774+00:00",
+  "chainId": 5042002,
+  "blockNumber": "61893758",
+  "purpose": "Read-only readiness snapshot; refresh balances before each funded journey.",
+  "wallets": {
+    "buyer": {
+      "address": "0x5ee75a1B1648C023e885E58bD3735Ae273f2cc52",
+      "nativeBalanceAtomic18": "18999538000000000000",
+      "usdcBalanceAtomic6": "18999538"
+    },
+    "provider": {
+      "address": "0x0C68C8D018ba72C33e966498B2148dC2af454645",
+      "nativeBalanceAtomic18": "962309094000000000",
+      "usdcBalanceAtomic6": "962309"
+    }
+  },
+  "blockHash": "0x682a0c587acdc36c8b16dfcbfab71f634e0c666fd102851d0761127be46d0fe3"
+}

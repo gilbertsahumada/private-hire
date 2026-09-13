@@ -97,3 +97,27 @@ The root route introduces the platform independently of the first agent. It link
 The request form now starts empty. Example holdings require an explicit action and never replace entered values. Native required fields and the existing schema validation prevent a blank request from being submitted. The saved draft page shows human-readable quantities and prices and explains the separate request, provider confirmation, and payment steps. Existing drafts are preserved.
 
 Agent name, image and description on the profile and landing come directly from the published registration metadata file; request screens reuse its name. The metadata content itself has not been rewritten. Its legacy probe-only availability wording still needs a deliberate metadata update to reflect current staging capabilities.
+
+## PrivateHire release and real-journey handoff (2026-09-13)
+
+Staging version: cd21b0e6-c3cd-4bcc-b40e-aa35a24442e6. The landing, responsive changes, explicit example input, draft review and PrivateHire wallet branding are now published. Registration metadata and Agent Card are version 0.2.0; name, description, image and capability tags share the registration file. Live tariff and availability remain independent checks. The metadata URI and agent identity have not changed.
+
+The normal CRE target remains staging with writeReport=false. An evaluation with both --broadcast and ALLOW_ARC_BROADCAST=yes selects staging-broadcast, which has the same origin and receiver and writeReport=true. Dispatch cannot broadcast. Both targets compile; authorization must still cover each concrete report and its gas before using the guard. No report was broadcast during release verification.
+
+### Manual journey sequence
+
+Use fresh requests, preserving the existing draft job-fcac44de-3aaf-44d5-a1fd-ae37598a0740.
+
+1. Buyer signs in with MetaMask in Brave. Open /jobs/new, explicitly choose the example (2.5 units at 10 USD), leave both tolerances at zero, and save a 24-hour draft.
+2. Review holdings and price, prepare create, review its network fee, and confirm in the buyer wallet. Check the transaction until a canonical receipt associates the real job.
+3. Provider signs in with 0x0C68C8D018ba72C33e966498B2148dC2af454645, confirms the 0.01 USDC price and checks its receipt.
+4. Buyer approves the exact amount and funds after reviewing each transaction. Capture balances and receipts, including gas separately.
+5. Operator runs python3 scripts/jobs.py dispatch --request-id REQUEST_ID. Provider reviews the recovered report and signs submit.
+6. Operator evaluates without broadcast using python3 scripts/jobs.py evaluate --request-id REQUEST_ID --submit-tx TX_HASH. Expected acceptance: 25000000 micro-USD, weight and concentration 10000 bps.
+7. Prepare the concrete report and gas estimate for authorization, then evaluate with --broadcast and the authorization guard. Verify the receipt, escrow terminal state and balances.
+
+Repeat with another 24-hour request for rejection. Before task reservation, temporarily enable the fixture gate and call the authenticated internal fixture route for that request only, then disable the gate. Verify that the committed plus-one artifact produces rejection with zero tolerance; transport/integrity failures must remain pending.
+
+Use a third request with a 15-minute deadline for expiry. Fund it without dispatching. Check Refund available at the boundary, sign the refund manually and verify its receipt before marking Expired.
+
+Refresh balance snapshots before each journey. The published readiness snapshot is not proof of payment. Browser fixtures and sign-in tests are not funded jobs. Reconciliation must be repeated to confirm recovery and idempotence after the real transactions; never resolve a terminal job again.
