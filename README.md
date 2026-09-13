@@ -1,4 +1,4 @@
-# Confidential Agent Jobs
+# PrivateHire
 
 A pnpm/Turborepo monorepo testing an A2A 1.0 portfolio agent, encrypted Cloudflare persistence and a confidential CRE workflow's report path to Arc Testnet.
 

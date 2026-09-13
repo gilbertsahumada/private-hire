@@ -62,7 +62,7 @@ function makeConfig() {
     connectors: connectorsForWallets(
       [{ groupName: 'Browser wallets', wallets: [injectedWallet] }],
       {
-        appName: 'Confidential Agent Jobs',
+        appName: 'PrivateHire',
         projectId: '',
       },
     ),
@@ -312,7 +312,7 @@ function SessionProvider({ children }: { children: ReactNode }) {
           borderRadius: 'medium',
           fontStack: 'system',
         })}
-        appInfo={{ appName: 'Confidential Agent Jobs' }}
+        appInfo={{ appName: 'PrivateHire' }}
       >
         <Context.Provider value={{ account, send, ready: !loading }}>
           <Fragment key={account ?? 'signed-out'}>{children}</Fragment>

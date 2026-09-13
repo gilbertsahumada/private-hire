@@ -37,7 +37,7 @@ export async function challenge(env: MarketEnv, wallet: string) {
     issuedAt: new Date(),
     expirationTime: new Date(expires * 1000),
     statement:
-      'Sign in to Confidential Agent Jobs. This does not authorize a transaction.',
+      'Sign in to PrivateHire. This does not authorize a transaction.',
   });
   await env.DB.prepare(
     'INSERT INTO auth_challenges(nonce,wallet,message,expires_at) VALUES(?,?,?,?)',

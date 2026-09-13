@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { keccak256, toHex, type Hex } from 'viem';
 
-export const PROJECT_NAME = 'Confidential Agent Jobs';
+export const PROJECT_NAME = 'PrivateHire';
 
 export const probeIdSchema = z.string().regex(/^[a-z0-9][a-z0-9-]{0,63}$/);
 

@@ -542,3 +542,43 @@ td {
     gap: 16px;
   }
 }
+
+/* Official monochrome marks retain their original colors and proportions. */
+.powered-by {
+  margin-bottom: 2rem;
+  color: var(--accent, #bce4ce);
+}
+.powered-by > p {
+  margin: 0 0 1.5rem;
+  font-size: 1rem;
+}
+.powered-by-logos {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2rem 4rem;
+}
+.powered-by-logos a {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  text-decoration: none;
+}
+.powered-by-logos img {
+  display: block;
+  object-fit: contain;
+  object-position: left center;
+  height: 50px;
+  max-width: 100%;
+}
+.powered-by-logos .chainlink-logo {
+  width: 195px;
+}
+.powered-by-logos .arc-logo {
+  width: 147px;
+}
+.powered-by-logos span {
+  font-size: 0.85rem;
+}

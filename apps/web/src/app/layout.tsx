@@ -6,7 +6,7 @@ import './globals.css';
 import { Icon } from '../components/icon';
 
 export const metadata = {
-  title: 'Confidential Agent Jobs',
+  title: 'PrivateHire',
   description:
     'Find agents for tasks with private data. Explore our first portfolio analysis agent on Arc Testnet.',
 };
@@ -18,7 +18,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         <WalletProvider>
           <header>
             <Link className="brand" href="/">
-              Confidential Agent Jobs
+              PrivateHire
             </Link>
             <nav aria-label="Main navigation">
               <Link href="/agents">
@@ -35,6 +35,31 @@ export default function Layout({ children }: { children: ReactNode }) {
           </header>
           {children}
           <footer>
+            <div className="powered-by" aria-label="Powered by">
+              <p>Powered by</p>
+              <div className="powered-by-logos">
+                <a
+                  href="https://chain.link/cre"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <img
+                    src="/brands/chainlink-white.svg"
+                    alt="Chainlink"
+                    className="chainlink-logo"
+                  />
+                  <span>CRE simulation</span>
+                </a>
+                <a href="https://www.arc.io/" target="_blank" rel="noreferrer">
+                  <img
+                    src="/brands/arc-white.svg"
+                    alt="Arc"
+                    className="arc-logo"
+                  />
+                  <span>Arc Testnet</span>
+                </a>
+              </div>
+            </div>
             Demo on Arc Testnet · Use test USDC · Checks run with CRE simulation
           </footer>
         </WalletProvider>
