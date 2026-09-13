@@ -43,11 +43,9 @@ type WalletState = {
   account: string | null;
   connectedAccount: string | null;
   chainId: number | null;
-  selectedId: string;
   busy: boolean;
   error: string;
   wallets: WalletInfo[];
-  select: (id: string) => void;
   connect: () => Promise<void>;
   logout: () => Promise<void>;
   send: (tx: Transaction) => Promise<Hex>;
@@ -57,11 +55,9 @@ const Context = createContext<WalletState>({
   account: null,
   connectedAccount: null,
   chainId: null,
-  selectedId: '',
   busy: false,
   error: '',
   wallets: [],
-  select: () => {},
   connect: async () => {},
   logout: async () => {},
   send: async () => {
@@ -269,18 +265,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     };
   }, [selected, invalidate]);
 
-  function select(id: string) {
-    if (id === selected?.uuid) return;
-    void invalidate();
-    setConnectedAccount(null);
-    setChainId(null);
-    signedOut.current = false;
-    localStorage.removeItem('market-signed-out');
-    localStorage.setItem('market-wallet', id);
-    setSelectedId(id);
-    setError('');
-  }
-
   async function connect() {
     if (busy) return;
     setBusy(true);
@@ -388,11 +372,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         account,
         connectedAccount,
         chainId,
-        selectedId: selected?.uuid ?? '',
         busy,
         error,
         wallets,
-        select,
         connect,
         logout,
         send,
@@ -408,18 +390,6 @@ export function WalletControl() {
 
   return (
     <div className="wallet-control">
-      <select
-        aria-label="Choose wallet"
-        value={w.selectedId}
-        onChange={(e) => w.select(e.target.value)}
-      >
-        {!w.wallets.length && <option value="">No wallet</option>}
-        {w.wallets.map((wallet) => (
-          <option key={wallet.uuid} value={wallet.uuid}>
-            {wallet.name}
-          </option>
-        ))}
-      </select>
       {w.connectedAccount && (
         <span role="status" aria-label="Connected wallet">
           {w.connectedAccount.slice(0, 6)}…{w.connectedAccount.slice(-4)}

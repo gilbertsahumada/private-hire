@@ -241,6 +241,7 @@ export async function catalog(env: MarketEnv) {
     agentId: MARKET.agentId,
     registry: MARKET.registry,
     wallet: MARKET.provider,
+    walletExplorerUrl: `${arcTestnet.blockExplorers.default.url}/address/${MARKET.provider}`,
     chainId: ARC.id,
     price: env.JOB_PRICE_ATOMIC ?? MARKET.fee,
     stale,

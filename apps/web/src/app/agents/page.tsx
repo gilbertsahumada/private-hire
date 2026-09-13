@@ -8,6 +8,7 @@ import { api } from '../../components/wallet';
 type Agent = {
   name: string;
   wallet: string;
+  walletExplorerUrl: string;
   price: string;
   stale: boolean;
   identityVerified: boolean;
@@ -79,7 +80,19 @@ export default function Agents() {
             <dt>Evaluation</dt>
             <dd>CRE simulation, operated manually</dd>
             <dt>Provider wallet</dt>
-            <dd>{agent?.wallet ?? 'Checking…'}</dd>
+            <dd>
+              {agent ? (
+                <a
+                  href={agent.walletExplorerUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {agent.wallet}
+                </a>
+              ) : (
+                'Checking…'
+              )}
+            </dd>
           </dl>
           <div className="features">
             <div>

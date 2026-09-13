@@ -25,6 +25,15 @@ test('shows the real agent and protected empty workspaces without overflow', asy
     timeout: 30000,
   });
   const state = await (await catalogResponse).json();
+  await expect(
+    page.getByRole('combobox', { name: 'Choose wallet' }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole('link', { name: state.agents[0].wallet, exact: true }),
+  ).toHaveAttribute(
+    'href',
+    `https://testnet.arcscan.app/address/${state.agents[0].wallet}`,
+  );
   if (state.agents[0].enabled)
     await expect(
       page.getByRole('link', { name: 'Create a job', exact: true }),
@@ -164,39 +173,6 @@ test('detects wallet immediately and updates restored login on account chain and
     fullPage: true,
   });
   const second = '0x2222222222222222222222222222222222222222';
-
-  await page.evaluate((address) => {
-    window.dispatchEvent(
-      new CustomEvent('eip6963:announceProvider', {
-        detail: {
-          info: { name: 'Other test wallet', uuid: 'other-test-wallet' },
-          provider: {
-            request: async ({ method }: { method: string }) =>
-              method === 'eth_accounts'
-                ? [address]
-                : '0x' + (5042002).toString(16),
-            on: () => {},
-            removeListener: () => {},
-          },
-        },
-      }),
-    );
-  }, second);
-  await page.getByLabel('Choose wallet').selectOption('other-test-wallet');
-  await expect(page.getByLabel('Connected wallet')).toContainText(
-    '0x2222…2222',
-  );
-  await expect(
-    page.getByRole('heading', { name: 'Connect your wallet' }),
-  ).toBeVisible();
-  await page.getByLabel('Choose wallet').selectOption('test-wallet');
-  await expect(
-    page.getByRole('button', { name: 'Sign in', exact: true }),
-  ).toBeVisible();
-  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await expect(
-    page.getByRole('heading', { name: 'Your first job starts here' }),
-  ).toBeVisible();
 
   await page.evaluate(
     (address) =>
