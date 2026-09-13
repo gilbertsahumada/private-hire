@@ -1,0 +1,8 @@
+deployed-probe:
+  user-workflow:
+    workflow-name: 'private-hire-tee-http-only-probe'
+    deployment-registry: 'private'
+  workflow-artifacts:
+    workflow-path: './main.ts'
+    config-path: './config.json'
+    secrets-path: './secrets.yaml'

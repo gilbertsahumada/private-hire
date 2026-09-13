@@ -1,0 +1,122 @@
+{
+  "date": "2026-09-13",
+  "cli": "1.33.0 (absolute path)",
+  "registry": "private",
+  "family": "zone-a",
+  "tests": {
+    "explicit": {
+      "uuid": "baa56e22-938c-4c4f-8397-6183ed314d54",
+      "workflowUUID": "e3fc8366-88f9-4283-9234-a2cb561649b6",
+      "workflowName": "private-hire-confidential-deployment-probe",
+      "status": "SUCCESS",
+      "startedAt": "2026-09-13T13:09:01Z",
+      "finishedAt": "2026-09-13T13:09:12Z",
+      "duration": "11s",
+      "creditUsed": "0",
+      "errors": [
+        {
+          "error": "confidential-workflows capability execution failed: [13]Internal: failed after 2 retries: failed to get enclave params: enclave config validation failed for request 0f71dbb27936f2d163f492271e6a4d8d0da1830ff6aa33d77673316c40bacf5b: cannot validate enclave config: DON members not set\nfailed to get enclave params: enclave config validation failed for request 0f71dbb27936f2d163f492271e6a4d8d0da1830ff6aa33d77673316c40bacf5b: cannot validate enclave config: DON members not set",
+          "count": 1
+        }
+      ]
+    },
+    "any-tee": {
+      "uuid": "e1fa9988-64c2-49a4-bb33-d9f97e710d48",
+      "workflowUUID": "6c6ed8bc-8209-4aba-b334-51f8cdc462b1",
+      "workflowName": "private-hire-confidential-any-tee-probe",
+      "status": "SUCCESS",
+      "startedAt": "2026-09-13T13:11:01Z",
+      "finishedAt": "2026-09-13T13:11:10Z",
+      "duration": "9s",
+      "creditUsed": "0",
+      "errors": [
+        {
+          "error": "confidential-workflows capability execution failed: [13]Internal: failed after 2 retries: failed to get enclave params: enclave config validation failed for request 9c421d0fd660c0b8e57b8f055cf6bea2188a921207fa36afa4af771f43ff0da3: cannot validate enclave config: DON members not set\nfailed to get enclave params: enclave config validation failed for request 9c421d0fd660c0b8e57b8f055cf6bea2188a921207fa36afa4af771f43ff0da3: cannot validate enclave config: DON members not set",
+          "count": 1
+        }
+      ]
+    },
+    "no-secret": {
+      "uuid": "8be8623a-f167-46d5-97f0-23e7318daabf",
+      "workflowUUID": "f6d1aa6b-08a3-484e-9763-d66454624b6a",
+      "workflowName": "private-hire-tee-zone-b-probe",
+      "status": "SUCCESS",
+      "startedAt": "2026-09-13T13:14:01Z",
+      "finishedAt": "2026-09-13T13:14:06Z",
+      "duration": "5s",
+      "creditUsed": "0",
+      "errors": [
+        {
+          "error": "confidential-workflows capability execution failed: [13]Internal: failed after 2 retries: failed to get enclave params: enclave config validation failed for request 6afaf939e9e9b837d543dd2e1020f042d659a6bfbc2c698dd8859c511fe2789a: cannot validate enclave config: DON members not set\nfailed to get enclave params: enclave config validation failed for request 6afaf939e9e9b837d543dd2e1020f042d659a6bfbc2c698dd8859c511fe2789a: cannot validate enclave config: DON members not set",
+          "count": 1
+        }
+      ]
+    },
+    "http-only": {
+      "uuid": "21deb2c9-7829-4853-9db8-3313a176d73b",
+      "workflowUUID": "373bf0a2-12a9-4410-a135-781dfe077903",
+      "workflowName": "private-hire-tee-http-only-probe",
+      "status": "SUCCESS",
+      "startedAt": "2026-09-13T13:16:01Z",
+      "finishedAt": "2026-09-13T13:16:06Z",
+      "duration": "5s",
+      "creditUsed": "0",
+      "errors": [
+        {
+          "error": "confidential-workflows capability execution failed: [13]Internal: failed after 2 retries: failed to get enclave params: enclave config validation failed for request 850a4a0d251122033205f06f2cf8aac5ba19f7280266c608d374c06db48bcd33: cannot validate enclave config: DON members not set\nfailed to get enclave params: enclave config validation failed for request 850a4a0d251122033205f06f2cf8aac5ba19f7280266c608d374c06db48bcd33: cannot validate enclave config: DON members not set",
+          "count": 1
+        }
+      ]
+    }
+  },
+  "zoneB": {
+    "registeredDONs": [
+      3,
+      10,
+      5,
+      9
+    ],
+    "deployment": "rejected",
+    "error": "organization workflow limit exceeded for don_family=\"zone-b\" (limit=0)"
+  },
+  "zoneARegisteredDONs": [
+    9,
+    1,
+    3,
+    8,
+    11
+  ],
+  "blockchainTransactions": 0,
+  "applicationSecretsUsed": false,
+  "conclusion": "All four zone-a variants repeat the exact error, including constant-only TEE handler with no secrets or HTTP. Specific hosted root cause remains unconfirmed.",
+  "finalRegistry": [
+    {
+      "name": "private-hire-confidential-any-tee-probe",
+      "workflowId": "00843d6201ec4c6d3f4080447e4edb3d2b5828ca06615cc8f40d287281d93cdb",
+      "ownerAddress": "ed592e27d18678dbbbff7268a55736d4dcda5ba9",
+      "status": "PAUSED",
+      "registry": "private"
+    },
+    {
+      "name": "private-hire-tee-zone-b-probe",
+      "workflowId": "005696542f09a38390b85f9125d654ec3137b842e1fcf423297fc87696af39c7",
+      "ownerAddress": "ed592e27d18678dbbbff7268a55736d4dcda5ba9",
+      "status": "PAUSED",
+      "registry": "private"
+    },
+    {
+      "name": "private-hire-tee-http-only-probe",
+      "workflowId": "0006c241672ee2cf9628e2ab2fc188c8bd3048034329abfa5549ae26fe65e519",
+      "ownerAddress": "ed592e27d18678dbbbff7268a55736d4dcda5ba9",
+      "status": "PAUSED",
+      "registry": "private"
+    },
+    {
+      "name": "private-hire-confidential-deployment-probe",
+      "workflowId": "0009208cf3b07ce8e8f98ef8b12392e0519bbd6838b158ce872be3b7aa984a02",
+      "ownerAddress": "ed592e27d18678dbbbff7268a55736d4dcda5ba9",
+      "status": "PAUSED",
+      "registry": "private"
+    }
+  ]
+}

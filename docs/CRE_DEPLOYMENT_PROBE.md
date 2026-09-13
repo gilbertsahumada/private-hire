@@ -28,3 +28,5 @@ Official references:
 - https://docs.chain.link/cre/guides/workflow/secrets/using-secrets-deployed
 
 The exact workflow passed local simulation and returned PRIVATEHIRE_DEPLOY_PROBE_OK. This checks the code and endpoint path but does not resolve the deployed enclave configuration errors.
+
+Follow-up deployed matrix: see CRE_DON_DIAGNOSTICS.md. Explicit family, unrestricted TEE, constant-only callback, and HTTP-only controls all reproduce the error. zone-b registration is rejected for organization limit 0.
