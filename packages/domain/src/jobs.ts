@@ -26,7 +26,11 @@ export const manifestSchema = z.strictObject({
   evaluator: addressSchema,
   agentRegistry: z.string(),
   agentId: z.literal('894552'),
-  endpoint: z.string().url(),
+  // CRE/WASM has no URL global. Accept the HTTP endpoint shape here;
+  // dispatch additionally requires the exact configured provider endpoint.
+  endpoint: z
+    .string()
+    .regex(/^https?:\/\/[a-z0-9.-]+(?::[0-9]{1,5})?\/[a-z0-9/_.~%+-]*$/i),
   a2aVersion: z.literal('1.0'),
   input: inputSchema,
   policy: policySchema,

@@ -217,3 +217,13 @@ it('leaves transport and integrity failures pending instead of rejecting', () =>
   expect(() => onJob(f.runtime, f.payload)).toThrow('JOB_PENDING');
   expect(f.report).not.toHaveBeenCalled();
 });
+
+it('validates manifests in CRE without the browser URL global', () => {
+  const f = fixture('1');
+  vi.stubGlobal('URL', undefined);
+  try {
+    expect(onJob(f.runtime, f.payload)).toContain('decision=1');
+  } finally {
+    vi.unstubAllGlobals();
+  }
+});

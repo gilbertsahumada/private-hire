@@ -44,6 +44,7 @@ export function requestJson(
           Authorization: { values: [`Bearer ${token}`] },
           'Content-Type': { values: ['application/json'] },
           Accept: { values: ['application/json'] },
+          'User-Agent': { values: ['private-hire-cre/1'] },
           'A2A-Version': { values: ['1.0'] },
         },
       })
@@ -55,10 +56,10 @@ export function requestJson(
     throw new Error('HTTP_RESPONSE_PENDING');
 
   const header = (name: string) =>
-    Object.entries(response.multiHeaders).find(
+    Object.entries(response.multiHeaders ?? {}).find(
       ([k]) => k.toLowerCase() === name,
     )?.[1].values[0] ??
-    Object.entries(response.headers).find(
+    Object.entries(response.headers ?? {}).find(
       ([k]) => k.toLowerCase() === name,
     )?.[1];
 

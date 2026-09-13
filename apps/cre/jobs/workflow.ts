@@ -41,6 +41,7 @@ type Config = z.infer<typeof configSchema>;
 const equal = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
 
 export function onJob(runtime: TeeRuntime<Config>, payload: HTTPPayload) {
+  let stage = 'trigger';
   try {
     const trigger = z
       .strictObject({
@@ -52,22 +53,25 @@ export function onJob(runtime: TeeRuntime<Config>, payload: HTTPPayload) {
           .optional(),
       })
       .parse(JSON.parse(new TextDecoder().decode(payload.input)));
+    stage = 'secrets';
     const token = runtime.getSecret({ id: 'JOB_CONTEXT_TOKEN' }).result().value;
     const agentToken = runtime.getSecret({ id: 'A2A_TOKEN' }).result().value;
+    stage = 'context_transport';
+    const rawContext = requestJson(
+      runtime,
+      runtime.config,
+      `/api/internal/jobs/${trigger.requestId}/context`,
+      token,
+    );
+    stage = 'context_schema';
     const context = z
       .object({
         manifest: manifestSchema,
         manifestHash: z.string(),
         jobId: z.string().regex(/^[1-9][0-9]*$/),
       })
-      .parse(
-        requestJson(
-          runtime,
-          runtime.config,
-          `/api/internal/jobs/${trigger.requestId}/context`,
-          token,
-        ),
-      );
+      .parse(rawContext);
+    stage = 'context_validation';
     const m = context.manifest;
     if (
       m.requestId !== trigger.requestId ||
@@ -80,6 +84,7 @@ export function onJob(runtime: TeeRuntime<Config>, payload: HTTPPayload) {
       m.expiredAt <= Math.floor(runtime.now().getTime() / 1000)
     )
       throw new Error('CONTEXT_PENDING');
+    stage = 'chain_read';
     const don = runtime.usingTheDons();
     const evm = new cre.capabilities.EVMClient(BigInt(ARC.selector));
     const read = evm
@@ -101,6 +106,7 @@ export function onJob(runtime: TeeRuntime<Config>, payload: HTTPPayload) {
       functionName: 'getJob',
       data: bytesToHex(read.data),
     });
+    stage = 'chain_validation';
     if (
       job.id !== BigInt(context.jobId) ||
       !equal(job.client, m.buyer) ||
@@ -134,18 +140,22 @@ export function onJob(runtime: TeeRuntime<Config>, payload: HTTPPayload) {
 
       return `JOB_DISPATCHED jobId=${job.id}`;
     }
+    stage = 'submission_state';
     if (job.status !== 2 || !trigger.submitTx) throw new Error('NOT_SUBMITTED');
+    stage = 'receipt_read';
     const receipt = evm
       .getTransactionReceipt(don, {
         hash: hexToBase64(trigger.submitTx as Hex),
       })
       .result().receipt;
+    stage = 'receipt_validation';
     if (
       !receipt ||
       receipt.status !== 1n ||
       !equal(bytesToHex(receipt.txHash), trigger.submitTx)
     )
       throw new Error('RECEIPT_PENDING');
+    stage = 'receipt_logs';
     const logs = parseEventLogs({
       abi: escrowAbi,
       eventName: 'JobSubmitted',
@@ -167,12 +177,14 @@ export function onJob(runtime: TeeRuntime<Config>, payload: HTTPPayload) {
       (l) => l.args.jobId === job.id && equal(l.args.provider, m.provider),
     );
     if (!submitted) throw new Error('COMMITMENT_PENDING');
+    stage = 'artifact_transport';
     const artifact = getAgentTask(
       runtime,
       runtime.config,
       agentToken,
       trigger.requestId,
     );
+    stage = 'artifact_validation';
     const envelope = deliverySchema.parse(artifact.envelope);
     const hash = jobCommitment('result', envelope);
     if (
@@ -183,9 +195,11 @@ export function onJob(runtime: TeeRuntime<Config>, payload: HTTPPayload) {
       hash !== submitted.args.deliverable
     )
       throw new Error('INTEGRITY_PENDING');
+    stage = 'evaluation';
     const decision = evaluate(m.input, m.policy, envelope.result);
     if (!runtime.config.writeReport)
       return `JOB_EVALUATED jobId=${job.id} decision=${decision} broadcast=false`;
+    stage = 'report';
     const report = don
       .report({
         encodedPayload: hexToBase64(
@@ -203,6 +217,7 @@ export function onJob(runtime: TeeRuntime<Config>, payload: HTTPPayload) {
         hashingAlgo: 'keccak256',
       })
       .result();
+    stage = 'write_report';
     const written = evm
       .writeReport(don, {
         receiver: m.evaluator,
@@ -218,10 +233,20 @@ export function onJob(runtime: TeeRuntime<Config>, payload: HTTPPayload) {
       throw new Error('REPORT_PENDING');
 
     return `JOB_EVALUATED jobId=${job.id} decision=${decision} txHash=${written.txHash ? bytesToHex(written.txHash) : 'not-broadcast'}`;
-  } catch {
-    throw new Error(
-      'JOB_PENDING: context, transport, integrity or chain verification failed',
-    );
+  } catch (error) {
+    // Only locally defined error codes may leave the private handler.
+    const code =
+      error instanceof Error &&
+      [
+        'HTTP_TRANSPORT_PENDING',
+        'HTTP_RESPONSE_PENDING',
+        'HTTP_MEDIA_TYPE_PENDING',
+        'HTTP_JSON_PENDING',
+        'A2A_VERSION_PENDING',
+      ].includes(error.message)
+        ? error.message
+        : 'VALIDATION_FAILED';
+    throw new Error(`JOB_PENDING: ${stage} ${code}`);
   }
 }
 
